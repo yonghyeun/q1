@@ -4,8 +4,8 @@
 - task 목적에 맞는 전용 서브에이전트를 템플릿 복제 방식으로 빠르게 생성한다.
 
 ## 생성 절차
-1. 새 작업 ID를 확정한다. 예: `T-0002`
-2. `_template/prompt.md`를 복제해 `T-0002-<purpose>.md`를 만든다.
+1. 새 작업 ID를 확정한다. 예: `T-000N`
+2. `_template/prompt.md`를 복제해 `T-000N-<purpose>.md`를 만든다.
 3. 프롬프트에 task 범위/수용 기준/리스크 초점을 채운다.
 4. `_template/config-snippet.toml`을 참고해 `agent-team/sot/codex-runtime.manifest.toml`에 agent 블록을 추가한다.
 5. `python3 agent-team/scripts/generate_codex_runtime.py`를 실행한다.

@@ -5,21 +5,22 @@ Improve system-level performance by evaluating repeated failures and optimizing 
 
 ## Cadence
 - Weekly review window: one fixed review session.
-- Data window: latest 7 days of `RunReport` and `FeedbackRecord`.
+- Data window: latest 7 days of `RunReport`, `FeedbackRecord`, `run-log.md` span 기록.
 
 ## Weekly Process
 1. Aggregate metrics: accuracy, rework rate, token cost.
-2. Select top 3 recurring failure clusters.
-3. For each cluster, draft 2 intervention candidates:
+2. Inspect span-level bottlenecks from `run-log.md` (반복 반려 span, 잦은 회귀 경로).
+3. Select top 3 recurring failure clusters.
+4. For each cluster, draft 2 intervention candidates:
    - process/codebase intervention
    - routing/prompt intervention
-4. Define A/B test with acceptance thresholds.
-5. Run controlled trial on representative tasks.
-6. Approve one of:
+5. Define A/B test with acceptance thresholds.
+6. Run controlled trial on representative tasks.
+7. Approve one of:
    - promote change,
    - iterate,
    - rollback.
-7. Update protocol/persona docs only for promoted changes.
+8. Update protocol/persona docs only for promoted changes.
 
 ## Promotion Order
 1. Process and codebase fixes
@@ -38,6 +39,7 @@ Improve system-level performance by evaluating repeated failures and optimizing 
 
 ## Meeting Artifacts
 - Weekly KPI snapshot
+- Span bottleneck report
 - Failure cluster ranking
 - Experiment log
 - Change decision register

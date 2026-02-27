@@ -5,21 +5,26 @@ Capture quality signals after every task and route immediate improvements.
 
 ## Workflow
 1. Planner or Leader emits `TaskBrief`.
-2. Leader emits `LeaderPlan` with approval gates.
-3. Builder executes approved item.
-4. Reviewer validates output against acceptance checks.
-5. Human approves/rejects stage outcome.
-6. Team records `RunReport`.
-7. If failed or rework requested, create `FeedbackRecord` with `change_target`.
-8. Leader decides next step: retry, redesign, or defer.
+2. Leader(또는 Planner) writes `trace.md` with span map and gate rules.
+3. Team executes one span at a time.
+4. For every span, human records decision/evidence in `run-log.md`.
+5. If span is accepted, move to next span; if not, follow retry/rollback path in `trace.md`.
+6. At stage boundary, human performs ADLC gate approval.
+7. Team records `RunReport`.
+8. If failed or rework requested, create `FeedbackRecord` with `change_target`.
+9. Leader decides next step: retry, redesign, or defer.
 
 ## Routing Rules
 - Rework count `>= 2` for same tag: force root-cause review before retry.
 - `risk_level=high`: reviewer + human gate mandatory before progression.
 - Missing acceptance checks: bounce back to Planner.
+- Missing run-log span entry: block progression until log is completed.
 
 ## Minimum Data to Log
-- Task ID and ADLC stage
+- Task ID / span_id / ADLC stage
+- Owner agent
+- Input artifacts / output artifacts
+- Acceptance check result (pass/fail + reason)
 - Human decision
 - Token cost
 - Latency

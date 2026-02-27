@@ -1,4 +1,4 @@
-# ADLC Protocol v1
+# ADLC Protocol v0.1.0
 
 ## Purpose
 This protocol routes work across the Core 4 agent team for SaaS exploration/ideation.
@@ -10,6 +10,12 @@ Use the ADLC lifecycle for every task:
 2. Design
 3. Execute
 4. Improve
+
+## Execution Model (v0.1.0)
+- `task-brief.json`까지는 사용자 의도와 범위를 확정하는 입력 단계다.
+- `task-brief.json` 이후는 `trace.md`를 기준으로 수동 span 실행을 수행한다.
+- 각 span은 사람이 직접 판정하며(`approved|changes_requested|rejected`), 판정 근거는 `run-log.md`에 기록한다.
+- 단계 게이트(Explore/Design/Execute/Improve)는 기존 정책대로 human approval required를 유지한다.
 
 ## Roles
 - `adlc-leader`: Owns goal alignment, decomposition, routing, and final gate orchestration.
@@ -31,6 +37,15 @@ All major ADLC stages require human approval:
 - Improve action approval
 
 Do not auto-skip gates. Suggest gate relaxation only in improvement reviews backed by evidence.
+
+## Span-level Manual Operation Rule
+- v0.1.0에서는 모든 span/node를 수동으로 진행한다.
+- 다음 span으로 이동하기 전에 반드시 `run-log.md`에 아래를 남긴다:
+  - span_id, owner_agent, input/output artifacts
+  - acceptance check 판정(pass/fail) + 근거
+  - human decision(approved/changes_requested/rejected)
+  - next_span(재시도/회귀 포함)
+- `run-log.md` 필수 항목 누락 시 다음 span 진행을 금지한다.
 
 ## Output Contract (Required Sections)
 Every role output must include:
@@ -62,6 +77,7 @@ Track these primary metrics on every run:
 - Accuracy (human approval pass rate)
 - Rework rate (average retries per task)
 - Token cost (tokens per completed task)
+- Latency (seconds per span and per task)
 
 ## Artifacts
 Use the interface contracts in `agent-team/interfaces/`:
@@ -70,3 +86,7 @@ Use the interface contracts in `agent-team/interfaces/`:
 - `handoff-packet.schema.json`
 - `run-report.schema.json`
 - `feedback-record.schema.json`
+
+Use operational markdown artifacts in `agent-team/runs/T-000N/`:
+- `trace.md` (natural-language execution trace definition)
+- `run-log.md` (span-by-span manual execution ledger)

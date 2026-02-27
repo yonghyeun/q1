@@ -5,12 +5,20 @@
 
 ## 필수 갱신 순서
 1. `task-brief.json`
-2. `leader-plan.json`
-3. `handoff.json`
+2. `trace.md`
+3. `run-log.md` (span 실행 시마다 누적 기록)
 4. 실행 산출물(예: `problem-definition.md`)
 5. `run-report.json`
 6. `feedback-record.json`(재작업/실패 시)
 7. `status.md`
+
+## span 기록 최소 항목
+- `span_id`
+- `owner_agent`
+- `input_artifacts` / `output_artifacts`
+- `acceptance_check_result`
+- `human_decision`
+- `next_span`
 
 ## 반영 조건
 - 실패 1회: 로컬 수정 후 재시도
