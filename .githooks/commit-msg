@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+MESSAGE_FILE="${1:-}"
+
+if [[ -z "${MESSAGE_FILE}" || ! -f "${MESSAGE_FILE}" ]]; then
+  echo "commit-msg hook 오류: 커밋 메시지 파일을 찾을 수 없습니다." >&2
+  exit 1
+fi
+
+fail() {
+  cat >&2 <<'EOF'
+❌ 커밋 메시지 형식이 규칙과 다릅니다.
+
+필수 규칙:
+1) 커밋 메시지 내용은 2줄(제목/설명)이어야 합니다.
+2) 제목 형식:
+   <카테고리>(<layer>) : <작업 내용>
+3) 카테고리 허용값:
+   feat|fix|refactor|style|docs|config|chore|test
+4) layer 허용값:
+   ui|api|domain|db|shared|infra|doc
+5) 작업 내용/설명에는 한국어가 포함되어야 합니다.
+
+예시:
+git commit -m "feat(api) : 이벤트 생성 API 구현" -m "이벤트 생성 요청을 처리하고 응답을 반환하는 엔드포인트 추가"
+EOF
+  exit 1
+}
+
+mapfile -t RAW_LINES < <(sed $'s/\r$//' "${MESSAGE_FILE}")
+
+LINES=()
+for line in "${RAW_LINES[@]}"; do
+  if [[ "${line}" =~ ^# ]]; then
+    continue
+  fi
+  LINES+=("${line}")
+done
+
+while ((${#LINES[@]} > 0)); do
+  LAST_INDEX=$((${#LINES[@]} - 1))
+  if [[ -z "${LINES[$LAST_INDEX]//[[:space:]]/}" ]]; then
+    unset 'LINES[$LAST_INDEX]'
+    continue
+  fi
+  break
+done
+
+NON_EMPTY_LINES=()
+for line in "${LINES[@]}"; do
+  if [[ -n "${line//[[:space:]]/}" ]]; then
+    NON_EMPTY_LINES+=("${line}")
+  fi
+done
+
+if ((${#NON_EMPTY_LINES[@]} != 2)); then
+  fail
+fi
+
+SUBJECT="${NON_EMPTY_LINES[0]}"
+BODY="${NON_EMPTY_LINES[1]}"
+SUBJECT_REGEX='^(feat|fix|refactor|style|docs|config|chore|test)[[:space:]]*\([[:space:]]*([a-z][a-z0-9-]*)[[:space:]]*\)[[:space:]]*:[[:space:]]+(.+)$'
+
+if ! [[ "${SUBJECT}" =~ ${SUBJECT_REGEX} ]]; then
+  fail
+fi
+
+LAYER="${BASH_REMATCH[2]}"
+TASK_TEXT="${BASH_REMATCH[3]}"
+
+if ! [[ "${LAYER}" =~ ^(ui|api|domain|db|shared|infra|doc)$ ]]; then
+  fail
+fi
+
+has_hangul() {
+  printf '%s' "$1" | grep -Pq '\p{Hangul}'
+}
+
+if ! has_hangul "${TASK_TEXT}"; then
+  fail
+fi
+
+if ! has_hangul "${BODY}"; then
+  fail
+fi
+
+exit 0

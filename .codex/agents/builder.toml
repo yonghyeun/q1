@@ -1,0 +1,5 @@
+# AUTO-GENERATED FILE. DO NOT EDIT.
+# Source: agent-team/sot/codex-runtime.manifest.toml
+
+profile = "builder"
+model_instructions_file = "builder.md"

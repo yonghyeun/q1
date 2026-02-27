@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+cd "${ROOT_DIR}"
+
+STAGED_FILES="$(git diff --cached --name-only)"
+if [[ -z "${STAGED_FILES}" ]]; then
+  exit 0
+fi
+
+if ! printf '%s\n' "${STAGED_FILES}" | grep -Eq '^(agent-team/sot/|agent-team/subagents/|agent-team/scripts/(generate_codex_runtime|verify_codex_runtime_sync)\.py|\.codex/config\.toml|\.codex/agents/)'; then
+  exit 0
+fi
+
+python3 agent-team/scripts/verify_codex_runtime_sync.py

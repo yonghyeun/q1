@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://adlc.local/schemas/run-report.schema.json",
+  "title": "RunReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "result",
+    "human_decision",
+    "token_cost",
+    "latency",
+    "rework_count",
+    "failure_tags"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^T-[0-9]{4}$"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "explore",
+        "design",
+        "execute",
+        "improve"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO-8601 datetime."
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "success",
+        "partial",
+        "failure"
+      ]
+    },
+    "human_decision": {
+      "type": "string",
+      "enum": [
+        "approved",
+        "rejected",
+        "changes_requested"
+      ]
+    },
+    "token_cost": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "latency": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Elapsed seconds."
+    },
+    "rework_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "failure_tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "unclear_scope",
+          "bad_handoff",
+          "weak_acceptance_criteria",
+          "tool_misuse",
+          "missing_context",
+          "quality_gap",
+          "risk_missed",
+          "other"
+        ]
+      }
+    },
+    "kpi_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "accuracy": {
+          "type": "number",
+          "minimum": 0
+        },
+        "rework_rate": {
+          "type": "number",
+          "minimum": 0
+        },
+        "token_cost": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

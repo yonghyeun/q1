@@ -1,0 +1,4 @@
+[agents.task_t_000n_purpose]
+description = "T-000N 전용 서브에이전트. <purpose> 작업에만 사용한다."
+config_file = "agents/task-t-000n-purpose.toml"
+

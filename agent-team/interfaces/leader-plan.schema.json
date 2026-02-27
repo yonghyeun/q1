@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://adlc.local/schemas/leader-plan.schema.json",
+  "title": "LeaderPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "hypothesis",
+    "work_items",
+    "owner_map",
+    "approval_gates",
+    "success_criteria"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^T-[0-9]{4}$"
+    },
+    "plan_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "hypothesis": {
+      "type": "string",
+      "minLength": 1
+    },
+    "work_items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "description",
+          "adlc_stage"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "adlc_stage": {
+            "type": "string",
+            "enum": [
+              "explore",
+              "design",
+              "execute",
+              "improve"
+            ]
+          }
+        }
+      }
+    },
+    "owner_map": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "enum": [
+          "adlc-leader",
+          "planner-pm",
+          "builder",
+          "reviewer"
+        ]
+      }
+    },
+    "approval_gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stage",
+          "required",
+          "approver"
+        ],
+        "properties": {
+          "stage": {
+            "type": "string",
+            "enum": [
+              "explore",
+              "design",
+              "execute",
+              "improve"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "approver": {
+            "type": "string",
+            "enum": [
+              "human"
+            ]
+          }
+        }
+      }
+    },
+    "success_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    }
+  }
+}

@@ -1,0 +1,5 @@
+# AUTO-GENERATED FILE. DO NOT EDIT.
+# Source: agent-team/sot/codex-runtime.manifest.toml
+
+profile = "adlc_leader"
+model_instructions_file = "adlc-leader.md"

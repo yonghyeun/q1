@@ -1,0 +1,17 @@
+{
+  "task_id": "T-0002",
+  "from_stage": "design",
+  "to_stage": "execute",
+  "from_role": "adlc-leader",
+  "to_role": "builder",
+  "task": "Create a concise interview synthesis worksheet draft based on approved design.",
+  "acceptance_checks": [
+    "Includes objective and expected output fields",
+    "Includes risk notes section",
+    "Can be used without additional clarifications"
+  ],
+  "context_refs": [
+    "agent-team/protocol/PROTOCOL.md",
+    "agent-team/sot/agents/builder.md"
+  ]
+}
