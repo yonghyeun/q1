@@ -26,7 +26,7 @@
    - CLI 예시: `./scripts/repo/pr_create.sh --title "[T-0007] 작업 제목" --body-file /tmp/pr.md`
    - 본문은 `.github/pull_request_template.md` 필수 섹션을 모두 채운 markdown 파일로 작성한다.
 5. Remote merge 후 head branch 자동 삭제
-6. 로컬에서 `fetch --prune`, `pull --ff-only`, merged branch 삭제
+6. 로컬에서 `fetch --prune`, `pull --rebase`, merged branch 삭제
 
 ## PR 원칙
 - 대상 브랜치: `main` 고정
@@ -60,7 +60,7 @@
 - Local:
   1. `git switch main`
   2. `git fetch origin --prune`
-  3. `git pull --ff-only origin main`
+  3. `git pull --rebase origin main`
   4. `git branch -d <merged-branch>`
   - 스크립트: `scripts/repo/post_merge_cleanup.sh <merged-branch>`
 

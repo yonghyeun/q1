@@ -22,6 +22,8 @@ Keep policy enforcement in repository scripts, not in the skill text.
 - Prefer `--dry-run` first for high-risk or unfamiliar tasks.
 - `open-pr/full`에서 PR 본문은 `gh-pr-create` 스킬 규칙(근거 수집 + 템플릿 충실 작성)을 따른다.
 - merge 시 issue 자동 종료를 의도하므로 PR 본문에는 `Closes #<branch-issue>`를 유지한다.
+- merge 모드에서 제목을 강제하려면 `--merge-subject`를 사용한다.
+- `--merge-subject` 미지정 시 squash/merge는 PR 제목을 merge subject로 자동 사용한다.
 
 ## Guardrails
 - Do not bypass atomic checks.

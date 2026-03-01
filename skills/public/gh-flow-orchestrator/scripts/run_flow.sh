@@ -18,6 +18,7 @@ usage() {
     [--pr-title "PR 제목"] \
     [--pr-body-file /tmp/pr.md] \
     [--merge-method squash|merge|rebase] \
+    [--merge-subject "머지 커밋 제목"] \
     [--dry-run]
 
 예시:
@@ -28,7 +29,7 @@ usage() {
     --slug billing-flow --pr-title "[T-0002] 결제 플로우 정리" --pr-body-file /tmp/pr.md
 
   # merge 단계만
-  ./skills/public/gh-flow-orchestrator/scripts/run_flow.sh --mode merge --merge-method squash
+  ./skills/public/gh-flow-orchestrator/scripts/run_flow.sh --mode merge --merge-method squash --merge-subject "[T-0002] 결제 플로우 정리"
 EOF
 }
 
@@ -42,6 +43,7 @@ SLUG=""
 PR_TITLE=""
 PR_BODY_FILE=""
 MERGE_METHOD="squash"
+MERGE_SUBJECT=""
 DRY_RUN=0
 
 while [[ $# -gt 0 ]]; do
@@ -56,6 +58,7 @@ while [[ $# -gt 0 ]]; do
     --pr-title) PR_TITLE="${2:-}"; shift 2 ;;
     --pr-body-file) PR_BODY_FILE="${2:-}"; shift 2 ;;
     --merge-method) MERGE_METHOD="${2:-}"; shift 2 ;;
+    --merge-subject) MERGE_SUBJECT="${2:-}"; shift 2 ;;
     --dry-run) DRY_RUN=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "알 수 없는 옵션: $1" >&2; usage; exit 1 ;;
@@ -120,10 +123,15 @@ case "${MODE}" in
     fi
     ;;
   merge)
+    MERGE_ARGS=(./scripts/repo/pr_merge.sh --method "${MERGE_METHOD}")
+    if [[ -n "${MERGE_SUBJECT}" ]]; then
+      MERGE_ARGS+=(--subject "${MERGE_SUBJECT}")
+    fi
     if [[ ${DRY_RUN} -eq 1 ]]; then
-      run_cmd ./scripts/repo/pr_merge.sh --method "${MERGE_METHOD}" --dry-run
+      MERGE_ARGS+=(--dry-run)
+      run_cmd "${MERGE_ARGS[@]}"
     else
-      run_cmd ./scripts/repo/pr_merge.sh --method "${MERGE_METHOD}"
+      run_cmd "${MERGE_ARGS[@]}"
     fi
     ;;
   full)

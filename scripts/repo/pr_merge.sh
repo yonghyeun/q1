@@ -7,16 +7,18 @@ cd "${ROOT_DIR}"
 usage() {
   cat <<'EOF'
 사용법:
-  ./scripts/repo/pr_merge.sh [--pr <number-or-url>] [--method <squash|merge|rebase>] [--dry-run]
+  ./scripts/repo/pr_merge.sh [--pr <number-or-url>] [--method <squash|merge|rebase>] [--subject "<merge-subject>"] [--dry-run]
 
 예시:
   ./scripts/repo/pr_merge.sh --method squash
+  ./scripts/repo/pr_merge.sh --method squash --subject "[T-0001] 브랜치 거버넌스 v1"
   ./scripts/repo/pr_merge.sh --pr 42 --method rebase
 EOF
 }
 
 PR_TARGET=""
 METHOD="squash"
+SUBJECT=""
 DRY_RUN=0
 
 while [[ $# -gt 0 ]]; do
@@ -27,6 +29,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --method)
       METHOD="${2:-}"
+      shift 2
+      ;;
+    --subject)
+      SUBJECT="${2:-}"
       shift 2
       ;;
     --dry-run)
@@ -91,11 +97,38 @@ case "${METHOD}" in
   rebase) MERGE_ARGS+=(--rebase) ;;
 esac
 
+MERGE_SUBJECT=""
+if [[ "${METHOD}" == "squash" || "${METHOD}" == "merge" ]]; then
+  if [[ -n "${SUBJECT}" ]]; then
+    MERGE_SUBJECT="${SUBJECT}"
+  else
+    if [[ ${DRY_RUN} -eq 0 ]]; then
+      MERGE_SUBJECT="$(gh pr view "${VIEW_TARGET}" --json title --jq .title)"
+      if [[ -z "${MERGE_SUBJECT}" ]]; then
+        echo "❌ PR 제목을 조회할 수 없어 merge subject를 자동 설정할 수 없습니다." >&2
+        exit 1
+      fi
+    else
+      MERGE_SUBJECT="<PR_TITLE_FROM_GH>"
+    fi
+  fi
+elif [[ -n "${SUBJECT}" ]]; then
+  echo "⚠️ --method rebase에서는 --subject가 적용되지 않아 무시합니다." >&2
+fi
+
+if [[ -n "${MERGE_SUBJECT}" ]]; then
+  MERGE_ARGS+=(--subject "${MERGE_SUBJECT}")
+fi
+
 MERGE_ARGS+=(--delete-branch)
 
 if [[ ${DRY_RUN} -eq 1 ]]; then
+  PRINT_CMD="gh"
+  for arg in "${MERGE_ARGS[@]}"; do
+    PRINT_CMD+=" $(printf '%q' "${arg}")"
+  done
   echo "✅ dry-run: PR merge 명령"
-  echo "gh ${MERGE_ARGS[*]}"
+  echo "${PRINT_CMD}"
   echo "./scripts/repo/post_merge_cleanup.sh ${BRANCH}"
   exit 0
 fi

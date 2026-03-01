@@ -23,7 +23,19 @@ if [[ "${CURRENT_BRANCH}" == "${MERGED_BRANCH}" ]]; then
 fi
 
 git fetch origin --prune
-git pull --ff-only origin main
-git branch -d "${MERGED_BRANCH}"
+if ! git pull --rebase origin main; then
+  echo "❌ main 브랜치 rebase pull에 실패했습니다." >&2
+  echo "   충돌이 발생했다면 아래 순서로 수동 정리 후 다시 실행하세요." >&2
+  echo "   1) git status" >&2
+  echo "   2) (필요 시) git rebase --abort" >&2
+  echo "   3) 충돌 해결 후 git pull --rebase origin main" >&2
+  exit 1
+fi
+
+if git show-ref --verify --quiet "refs/heads/${MERGED_BRANCH}"; then
+  git branch -d "${MERGED_BRANCH}"
+else
+  echo "ℹ️ 로컬 브랜치가 이미 없습니다: ${MERGED_BRANCH}"
+fi
 
 echo "✅ merge 후 로컬 정리 완료: ${MERGED_BRANCH}"

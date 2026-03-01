@@ -16,6 +16,7 @@
   - `./skills/public/gh-flow-orchestrator/scripts/run_flow.sh --mode open-pr --pr-title "[T-0002] 결제 플로우 정리" --pr-body-file /tmp/pr.md`
 - merge:
   - `./skills/public/gh-flow-orchestrator/scripts/run_flow.sh --mode merge --merge-method squash`
+  - `./skills/public/gh-flow-orchestrator/scripts/run_flow.sh --mode merge --merge-method squash --merge-subject "[T-0002] 결제 플로우 정리"`
 
 ## Body quality rule
 - Issue/PR 본문 파일은 템플릿 필수 섹션을 모두 채워야 한다.
@@ -28,3 +29,7 @@
 - 제목/본문 수정은 `gh pr edit` 대신 API PATCH를 사용한다.
   - `gh api --method PATCH repos/<owner>/<repo>/pulls/<number> -f title='<new-title>'`
   - `BODY=\"$(cat /tmp/pr.md)\" && gh api --method PATCH repos/<owner>/<repo>/pulls/<number> -f body=\"$BODY\"`
+
+## Merge note
+- `--merge-method squash|merge`에서 subject 미지정 시 PR 제목이 merge subject로 자동 사용된다.
+- merge 후 local cleanup은 `pull --rebase` 기준으로 동작하며, 충돌 시 즉시 실패 후 수동 해결한다.

@@ -24,8 +24,8 @@
 - `start_task_from_issue.sh`: issue 번호 기반 브랜치/task 폴더 시작
 - `pr_create.sh`: 정책/본문 검증 후 PR 생성 (`--body-file` 필수)
 - `pr_title_guard.sh`: PR 제목 컨벤션 생성/검증 (`[T-000N] 요약`)
-- `pr_merge.sh`: PR merge + remote branch 삭제 + local cleanup 연계
-- `post_merge_cleanup.sh`: merge 후 로컬 브랜치 정리
+- `pr_merge.sh`: PR merge + remote branch 삭제 + local cleanup 연계 (`--subject` 지원, squash/merge는 PR 제목 자동 subject)
+- `post_merge_cleanup.sh`: merge 후 로컬 브랜치 정리 (`pull --rebase origin main`)
 
 ## 테스트
 - 브랜치 검증 테스트:
@@ -34,3 +34,5 @@
   - `python3 -m unittest scripts.repo.tests.test_pr_issue_guard -v`
 - PR 제목 컨벤션 테스트:
   - `python3 -m unittest scripts.repo.tests.test_pr_title_guard -v`
+- PR merge dry-run 동작 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_pr_merge_dry_run -v`
