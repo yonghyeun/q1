@@ -1,7 +1,7 @@
 {
   "task_id": "T-0001",
-  "stage": "execute",
-  "created_at": "2026-03-01T15:50:00Z",
+  "stage": "improve",
+  "created_at": "2026-03-01T16:55:00Z",
   "result": "pass",
   "human_decision": "approved",
   "token_cost": 0,
@@ -13,5 +13,5 @@
     "rework_rate": 0.0,
     "token_cost": 0
   },
-  "notes": "브랜치 정책 검증 엔진과 훅/CI 연동을 적용하고 단위/E2E 확인을 완료했다."
+  "notes": "Issue 추적형 브랜치 전략(i<issue>-T-<task>)과 PR close 일치 검증, merge 후 정리 전략을 반영하고 단위 테스트 13건을 통과했다."
 }

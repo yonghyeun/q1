@@ -10,9 +10,11 @@
 - Risk Level: medium
 
 ## 1) Definition of Done
-- `task/T-000N-...` 네이밍 검증이 훅/CI에서 동일하게 동작한다.
+- `task/i<issue>-T-000N-...` 네이밍 검증이 훅/CI에서 동일하게 동작한다.
 - `main` 직접 작업이 로컬 훅에서 차단된다.
 - PR 필수 산출물 검증(`task-brief.json`, `trace.md`, `run-log.md`, `run-report.json`)이 CI에서 차단된다.
+- PR 본문의 `Closes #<issue>`가 브랜치 issue 번호와 일치해야 CI를 통과한다.
+- feature/bug/chore issue 템플릿과 PR 템플릿이 저장소에 배치된다.
 - 에이전트는 `context/core/policy-routing.md` 기반으로 정책 문서를 최소 로드한다.
 
 ## 2) Span Map
@@ -23,12 +25,13 @@
 | S3.execute.impl | execute | builder | 훅/스크립트/CI/문서 구현 | trace.md | 코드/문서 변경 | validate-name/context/pr 동작 | S2 회귀 |
 | S4.execute.verify | execute | reviewer | 단위/E2E 검증 및 리스크 평가 | 구현 결과 | run-log.md, run-report.json | 테스트 통과/예상 실패 케이스 확인 | S3 재시도 |
 | S5.improve.wrapup | improve | adlc-leader | 운영 반영 및 후속과제 정리 | run-report.json | status.md | 다음 실행 액션 명확 | S4 회귀 |
+| S6.improve.issue-transition | improve | adlc-leader | issue-driven 전략 전환 반영 | policy/docs/scripts | workflow + templates + cleanup script | issue 추적/정리 규칙 일관성 | S5 회귀 |
 
 ## 3) Gate Rules (Human Required)
 - Explore Gate: approved
 - Design Gate: approved
 - Execute Gate: approved
-- Improve Gate: pending
+- Improve Gate: approved
 
 ## 4) Logging Rule (Every Span)
 각 span 종료 후 `run-log.md`에 span_id, 결과, human decision을 기록한다.

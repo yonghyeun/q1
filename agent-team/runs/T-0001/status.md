@@ -10,6 +10,6 @@
   - Explore: approved
   - Design: approved
   - Execute: approved
-  - Improve: pending
+  - Improve: approved
 - Active Sub-agent: none
-- Next Action: 원격 저장소에서 branch protection(required check: branch-governance) 적용
+- Next Action: origin remote/gh auth 설정 후 실제 issue 생성 및 브랜치 issue 번호를 실번호로 동기화

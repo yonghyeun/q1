@@ -108,13 +108,45 @@
 - Next Span:
   - S5.improve.wrapup
 
+### [Span] S6.improve.issue-driven-transition
+- Stage: improve
+- Owner Agent: adlc-leader
+- Started At: 2026-03-01T16:20:00Z
+- Ended At: 2026-03-01T16:55:00Z
+- Input Artifacts:
+  - policies/branch-pr-convention.md
+  - scripts/repo/branch_guard.py
+  - .github/workflows/branch-governance.yml
+- Output Artifacts:
+  - .github/ISSUE_TEMPLATE/feature.md
+  - .github/ISSUE_TEMPLATE/bug.md
+  - .github/ISSUE_TEMPLATE/chore.md
+  - .github/pull_request_template.md
+  - scripts/repo/pr_issue_guard.py
+  - scripts/repo/issue_create.sh
+  - scripts/repo/start_task_from_issue.sh
+  - scripts/repo/post_merge_cleanup.sh
+- Acceptance Check Result:
+  - pass
+  - Evidence: issue+task 브랜치 포맷, PR issue close 일치 검증, merge 후 정리 전략을 문서/스크립트/테스트로 반영함
+- Human Decision:
+  - approved
+  - Decision Note: 즉시 강제 전환 정책 구현 완료
+- Cost & Latency:
+  - token_cost: n/a
+  - latency_seconds: n/a
+- Risk Note:
+  - 현재 local 환경에서 origin/gh auth 미설정으로 실제 issue 생성은 보류
+- Next Span:
+  - S7.improve.remote-enable
+
 ---
 
 ## Running Summary
-- Total Spans Executed: 4
-- Approved Count: 4
+- Total Spans Executed: 5
+- Approved Count: 5
 - Changes Requested Count: 0
 - Rejected Count: 0
 - Rework Count: 0
 - Open Risks:
-  - 원격 저장소 branch protection 설정 미반영
+  - origin/gh auth 미설정 상태에서 실제 remote issue 생성 미검증

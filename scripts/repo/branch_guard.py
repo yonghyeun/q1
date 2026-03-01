@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 import json
 import re
 import subprocess
@@ -20,6 +21,14 @@ class BranchPolicyError(Exception):
         self.exit_code = exit_code
 
 
+@dataclass(frozen=True)
+class BranchMeta:
+    branch: str
+    issue_token: str
+    issue_number: str
+    task_id: str
+
+
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
@@ -32,6 +41,7 @@ def load_rules(path: Path) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
     required_keys = [
         "branch_regex",
+        "issue_token_regex",
         "task_id_regex",
         "reserved_branches",
         "required_context_for_push",
@@ -89,7 +99,32 @@ def parse_task_id(branch: str, task_id_regex: str) -> str:
     return task_id
 
 
-def validate_branch_name(branch: str, rules: dict[str, Any]) -> str:
+def parse_issue_token(branch: str, issue_token_regex: str) -> tuple[str, str]:
+    match = re.search(r"i\d+", branch)
+    if not match:
+        raise BranchPolicyError(
+            f"브랜치에서 issue 토큰을 찾을 수 없습니다: {branch}",
+            EXIT_INVALID_NAME,
+        )
+
+    issue_token = match.group(0)
+    if not re.fullmatch(issue_token_regex, issue_token):
+        raise BranchPolicyError(
+            f"issue 토큰 형식이 정책과 다릅니다: {issue_token}",
+            EXIT_INVALID_NAME,
+        )
+
+    issue_number = issue_token.removeprefix("i")
+    if not issue_number:
+        raise BranchPolicyError(
+            f"issue 번호를 파싱할 수 없습니다: {issue_token}",
+            EXIT_INVALID_NAME,
+        )
+
+    return issue_token, issue_number
+
+
+def parse_branch_meta(branch: str, rules: dict[str, Any]) -> BranchMeta:
     reserved = set(rules["reserved_branches"])
     if branch in reserved:
         raise BranchPolicyError(
@@ -104,7 +139,18 @@ def validate_branch_name(branch: str, rules: dict[str, Any]) -> str:
             EXIT_INVALID_NAME,
         )
 
-    return parse_task_id(branch, rules["task_id_regex"])
+    issue_token, issue_number = parse_issue_token(branch, rules["issue_token_regex"])
+    task_id = parse_task_id(branch, rules["task_id_regex"])
+    return BranchMeta(
+        branch=branch,
+        issue_token=issue_token,
+        issue_number=issue_number,
+        task_id=task_id,
+    )
+
+
+def validate_branch_name(branch: str, rules: dict[str, Any]) -> BranchMeta:
+    return parse_branch_meta(branch, rules)
 
 
 def validate_context(task_id: str, rules: dict[str, Any]) -> None:
@@ -170,20 +216,29 @@ def main() -> int:
         branch = args.branch or current_branch()
 
         if args.command == "validate-name":
-            task_id = validate_branch_name(branch, rules)
-            print(f"✅ branch name valid: {branch} (task_id={task_id})")
+            meta = validate_branch_name(branch, rules)
+            print(
+                "✅ branch name valid: "
+                f"{branch} (issue={meta.issue_token}, task_id={meta.task_id})"
+            )
             return 0
 
-        task_id = validate_branch_name(branch, rules)
+        meta = validate_branch_name(branch, rules)
         if args.command == "validate-context":
-            validate_context(task_id, rules)
-            print(f"✅ branch context valid: {branch} -> {task_id}")
+            validate_context(meta.task_id, rules)
+            print(
+                "✅ branch context valid: "
+                f"{branch} -> issue={meta.issue_number}, task_id={meta.task_id}"
+            )
             return 0
 
         if args.command == "validate-pr":
-            validate_context(task_id, rules)
-            validate_pr_artifacts(task_id, rules)
-            print(f"✅ PR gate artifacts valid: {branch} -> {task_id}")
+            validate_context(meta.task_id, rules)
+            validate_pr_artifacts(meta.task_id, rules)
+            print(
+                "✅ PR gate artifacts valid: "
+                f"{branch} -> issue={meta.issue_number}, task_id={meta.task_id}"
+            )
             return 0
 
         parser.error(f"unknown command: {args.command}")

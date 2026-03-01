@@ -9,6 +9,7 @@
 1. `policies/branch-policy.rules.json` (기계 검증 규칙)
 2. `policies/branch-pr-convention.md` (운영 규칙/예외)
 3. `agent-team/integration/pr-gate-policy.md` (승인 게이트)
+4. `.github/pull_request_template.md` (PR 본문 작성 기준)
 
 ### `commit_message` 관련 요청
 1. `policies/commit-convention.md`

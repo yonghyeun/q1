@@ -65,9 +65,13 @@ q1/
 - 규칙 SoT: `policies/branch-policy.rules.json`
 - 운영 정책: `policies/branch-pr-convention.md`
 - 검증 엔진: `scripts/repo/branch_guard.py`
+- PR-이슈 링크 검증: `scripts/repo/pr_issue_guard.py`
 - 로컬 강제: `.githooks/pre-commit`, `.githooks/pre-push`
 - CI 강제: `.github/workflows/branch-governance.yml`
 - 훅 설치: `./scripts/repo/install-hooks.sh`
+- issue 생성 표준: `./scripts/repo/issue_create.sh`
+- 시작 플로우: `issue 생성 -> task/i<issue>-T-<task>-<slug> 브랜치 -> PR(Closes #issue) -> merge`
+- merge 후 로컬 정리: `./scripts/repo/post_merge_cleanup.sh <merged-branch>`
 
 ## context, policies를 docs와 분리한 이유
 

@@ -13,9 +13,10 @@ import branch_guard  # noqa: E402
 
 
 RULES = {
-    "policy_version": "v1.0.0",
+    "policy_version": "v1.1.0",
     "default_branch": "main",
-    "branch_regex": r"^task/T-[0-9]{4}-[a-z0-9]+(?:-[a-z0-9]+)*$",
+    "branch_regex": r"^task/i[0-9]+-T-[0-9]{4}-[a-z0-9]+(?:-[a-z0-9]+)*$",
+    "issue_token_regex": r"^i[0-9]+$",
     "task_id_regex": r"^T-[0-9]{4}$",
     "reserved_branches": ["main"],
     "required_context_for_push": ["agent-team/runs/{task_id}"],
@@ -30,11 +31,13 @@ RULES = {
 
 class BranchGuardTests(unittest.TestCase):
     def test_validate_branch_name_success(self) -> None:
-        task_id = branch_guard.validate_branch_name(
-            "task/T-0001-branch-governance",
+        meta = branch_guard.validate_branch_name(
+            "task/i1234-T-0001-branch-governance",
             RULES,
         )
-        self.assertEqual(task_id, "T-0001")
+        self.assertEqual(meta.task_id, "T-0001")
+        self.assertEqual(meta.issue_token, "i1234")
+        self.assertEqual(meta.issue_number, "1234")
 
     def test_validate_branch_name_rejects_reserved(self) -> None:
         with self.assertRaises(branch_guard.BranchPolicyError) as ctx:
@@ -43,7 +46,12 @@ class BranchGuardTests(unittest.TestCase):
 
     def test_validate_branch_name_rejects_invalid_format(self) -> None:
         with self.assertRaises(branch_guard.BranchPolicyError) as ctx:
-            branch_guard.validate_branch_name("feature/T-0001-something", RULES)
+            branch_guard.validate_branch_name("task/T-0001-something", RULES)
+        self.assertEqual(ctx.exception.exit_code, branch_guard.EXIT_INVALID_NAME)
+
+    def test_validate_branch_name_rejects_missing_task_id(self) -> None:
+        with self.assertRaises(branch_guard.BranchPolicyError) as ctx:
+            branch_guard.validate_branch_name("task/i1234-missing-task", RULES)
         self.assertEqual(ctx.exception.exit_code, branch_guard.EXIT_INVALID_NAME)
 
     def test_validate_context_success(self) -> None:
@@ -90,7 +98,7 @@ class BranchGuardTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             rules_path = Path(temp_dir) / "rules.json"
             broken = dict(RULES)
-            del broken["task_id_regex"]
+            del broken["issue_token_regex"]
             rules_path.write_text(json.dumps(broken), encoding="utf-8")
 
             with self.assertRaises(branch_guard.BranchPolicyError) as ctx:
