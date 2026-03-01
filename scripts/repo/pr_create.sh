@@ -92,14 +92,41 @@ if [[ -n "${BODY_FILE}" ]]; then
 else
   TEMP_BODY_FILE="$(mktemp)"
   cat > "${TEMP_BODY_FILE}" <<EOF
+## Issue Link (Required)
 Closes #${ISSUE_NUMBER}
 
 ## 목적 (Why)
-- ${TASK_ID} 작업 반영
+- ${TASK_ID} 작업 반영 및 이슈 #${ISSUE_NUMBER} 해결
 
 ## 변경 요약 (What)
 - 브랜치: ${BRANCH}
 - runs: agent-team/runs/${TASK_ID}/
+
+## 범위
+### In Scope
+- ${TASK_ID} 범위 산출물 반영
+- 브랜치/PR 정책 게이트 통과
+
+### Out of Scope
+- 후속 태스크에서 처리할 별도 기능 변경
+
+## 영향도 / 리스크
+- 영향 범위: 브랜치 ${BRANCH} 기준 변경 파일 일체
+- 잠재 리스크:
+  - 정책/템플릿 변경 시 본문과 검증 조건 불일치 가능
+- 완화 방안:
+  - PR 생성 전 branch/pr guard를 재검증
+
+## 리뷰 포인트 (Reviewer Focus)
+- 이슈 링크(Closes #${ISSUE_NUMBER})와 브랜치 issue 번호 일치 여부
+- task 컨텍스트(\`agent-team/runs/${TASK_ID}/\`) 산출물 충족 여부
+
+## 수동 검증 (선택)
+- 필요한 경우 검증 명령과 결과를 기입
+
+## 참고 링크
+- Task ID: \`${TASK_ID}\`
+- runs: \`agent-team/runs/${TASK_ID}/\`
 EOF
   USE_BODY_FILE="${TEMP_BODY_FILE}"
 fi
