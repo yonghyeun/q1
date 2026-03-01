@@ -56,15 +56,12 @@ fi
 
 case "${TYPE}" in
   feature)
-    TEMPLATE_NAME="Feature Request"
     TEMPLATE_FILE="feature.md"
     ;;
   bug)
-    TEMPLATE_NAME="Bug Report"
     TEMPLATE_FILE="bug.md"
     ;;
   chore)
-    TEMPLATE_NAME="Chore / Ops"
     TEMPLATE_FILE="chore.md"
     ;;
   *)
@@ -76,12 +73,32 @@ esac
 ./scripts/repo/gh_preflight.sh
 
 FULL_TITLE="[${TASK_ID}] ${TITLE}"
-
-if ISSUE_URL="$(gh issue create --template "${TEMPLATE_NAME}" --title "${FULL_TITLE}" 2>/dev/null)"; then
-  :
-else
-  ISSUE_URL="$(gh issue create --template "${TEMPLATE_FILE}" --title "${FULL_TITLE}")"
+TEMPLATE_PATH=".github/ISSUE_TEMPLATE/${TEMPLATE_FILE}"
+if [[ ! -f "${TEMPLATE_PATH}" ]]; then
+  echo "❌ 이슈 템플릿 파일을 찾을 수 없습니다: ${TEMPLATE_PATH}" >&2
+  exit 1
 fi
+
+TEMP_BODY_FILE="$(mktemp)"
+awk '
+  BEGIN { sep=0 }
+  /^---$/ { sep++; next }
+  sep >= 2 { print }
+' "${TEMPLATE_PATH}" > "${TEMP_BODY_FILE}"
+
+python3 - "${TEMP_BODY_FILE}" "${TASK_ID}" <<'PY'
+from pathlib import Path
+import sys
+
+body_path = Path(sys.argv[1])
+task_id = sys.argv[2]
+body = body_path.read_text(encoding="utf-8")
+body = body.replace("T-000N", task_id)
+body_path.write_text(body, encoding="utf-8")
+PY
+
+ISSUE_URL="$(gh issue create -t "${FULL_TITLE}" -F "${TEMP_BODY_FILE}")"
+rm -f "${TEMP_BODY_FILE}"
 
 ISSUE_NUMBER="$(printf '%s' "${ISSUE_URL}" | grep -Eo '[0-9]+$' || true)"
 
