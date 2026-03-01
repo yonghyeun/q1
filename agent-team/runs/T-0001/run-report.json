@@ -1,0 +1,17 @@
+{
+  "task_id": "T-0001",
+  "stage": "execute",
+  "created_at": "2026-03-01T15:50:00Z",
+  "result": "pass",
+  "human_decision": "approved",
+  "token_cost": 0,
+  "latency": 0,
+  "rework_count": 0,
+  "failure_tags": [],
+  "kpi_snapshot": {
+    "accuracy": 1.0,
+    "rework_rate": 0.0,
+    "token_cost": 0
+  },
+  "notes": "브랜치 정책 검증 엔진과 훅/CI 연동을 적용하고 단위/E2E 확인을 완료했다."
+}

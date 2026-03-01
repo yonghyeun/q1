@@ -1,0 +1,23 @@
+{
+  "task_id": "T-0001",
+  "created_at": "2026-03-01T14:50:00Z",
+  "stage": "explore",
+  "goal": "브랜치 컨벤션을 task-id 단일형으로 엄격 강제하고 훅/CI/에이전트 라우팅까지 일관되게 연결한다.",
+  "scope_in": [
+    "브랜치 정책 문서와 기계 규칙 SoT 작성",
+    "로컬 훅(pre-commit/pre-push) 연동",
+    "CI 브랜치 게이트 추가",
+    "에이전트 정책 라우팅 최소 로딩 구조 반영"
+  ],
+  "scope_out": [
+    "원격 브랜치 보호 규칙의 실제 SaaS 설정",
+    "릴리즈 브랜치 전략(Git-flow) 전환"
+  ],
+  "constraints": [
+    "기존 ADLC 수동 승인 정책 유지",
+    "정책 중복 최소화(AGENTS는 라우팅 중심)",
+    "로컬 훅 우회 가능성을 CI로 보완"
+  ],
+  "deadline": "2026-03-08",
+  "risk_level": "medium"
+}
