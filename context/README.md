@@ -9,3 +9,7 @@
 
 핵심 라우팅 컨텍스트:
 - `core/policy-routing.md`: 브랜치/PR/게이트 정책 문서 로드 우선순위
+
+역할 구분:
+- `context/tasks/`: task별 입력 컨텍스트(임시/실험 자료)
+- `agent-team/runs/`: task별 실행 증적(판정/로그/리포트)
