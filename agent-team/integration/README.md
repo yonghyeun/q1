@@ -5,3 +5,4 @@
 - `required-artifacts.md`: 태스크/PR 단위 필수 산출물
 - `pr-gate-policy.md`: PR 승인 게이트 정책
 - `automation-roadmap.md`: 수동 승인에서 자동화로 확장하는 계획
+- 브랜치 규칙 강제는 `policies/branch-policy.rules.json`, `scripts/repo/branch_guard.py`와 함께 동작한다.

@@ -17,8 +17,9 @@
 
 ```txt
 q1/
+├─ .github/workflows/           # CI 게이트(브랜치 정책 등)
 ├─ .codex/                      # Codex 런타임 산출물(에이전트 프롬프트/설정)
-├─ .githooks/                   # commit-msg, pre-commit 등 Git 훅 규칙
+├─ .githooks/                   # commit-msg, pre-commit, pre-push 훅 규칙
 ├─ agent-team/                  # ADLC 오케스트레이션 SoT/운영 자산
 │  ├─ protocol/                 # 팀 운영 규약(게이트, KPI, 라우팅)
 │  ├─ interfaces/               # handoff/run-report 등 스키마
@@ -51,12 +52,22 @@ q1/
 
 - `.codex/`: `agent-team/sot`를 기반으로 생성되는 Codex 실행 자산이다.
 - `.githooks/`: 커밋 메시지/사전검증 같은 Git 훅 정책을 강제한다.
+- `.github/workflows/`: 로컬 훅 우회 시에도 서버에서 차단하는 CI 정책을 운영한다.
 - `agent-team/`: ADLC 에이전트 팀 운영의 중심 폴더다.
 - `apps/`: 실제 제품 코드가 위치하는 영역이다.
 - `docs/`: 사람 중심 설명 문서(공유/의사결정 기록)의 기본 위치다.
 - `context/`: 에이전트가 실행 시 직접 읽는 입력 컨텍스트 저장소다.
 - `policies/`: 커밋/PR/품질/보안/보관 정책 등 규칙 문서의 단일 출처다.
 - `scripts/`: 여러 영역에서 공통 사용되는 리포 전역 스크립트 저장소다.
+
+## 브랜치 거버넌스(엄격 모드)
+
+- 규칙 SoT: `policies/branch-policy.rules.json`
+- 운영 정책: `policies/branch-pr-convention.md`
+- 검증 엔진: `scripts/repo/branch_guard.py`
+- 로컬 강제: `.githooks/pre-commit`, `.githooks/pre-push`
+- CI 강제: `.github/workflows/branch-governance.yml`
+- 훅 설치: `./scripts/repo/install-hooks.sh`
 
 ## context, policies를 docs와 분리한 이유
 

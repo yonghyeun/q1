@@ -4,6 +4,8 @@
 - 작업 단위 폴더: `agent-team/runs/T-000N/`
 - ID 레지스트리: `agent-team/runs/index.json`
 
+브랜치 정책(`task/T-000N-...`)과 1:1 매핑되므로, 작업 시작 시 폴더를 먼저 생성한다.
+
 ## 필수 파일
 - `task-brief.json`
 - `trace.md`

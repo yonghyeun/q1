@@ -4,6 +4,7 @@
 
 - `commit-convention.md`
 - `branch-pr-convention.md`
+- `branch-policy.rules.json`
 - `quality-gates.md`
 - `security-secrets.md`
 - `retention-policy.md`

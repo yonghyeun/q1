@@ -5,6 +5,7 @@
 - 단계 승인 누락 시 다음 단계 진행 금지
 
 ## PR 체크 항목
+- 브랜치 정책 통과 여부(`scripts/repo/branch_guard.py validate-pr`)
 - 필수 산출물 존재 여부
 - 산출물 간 정합성(계획/실행/리포트)
 - reviewer 검토 필요 변경의 승인 기록 여부

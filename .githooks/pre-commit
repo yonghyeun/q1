@@ -4,6 +4,8 @@ set -euo pipefail
 ROOT_DIR="$(git rev-parse --show-toplevel)"
 cd "${ROOT_DIR}"
 
+python3 scripts/repo/branch_guard.py validate-name
+
 STAGED_FILES="$(git diff --cached --name-only)"
 if [[ -z "${STAGED_FILES}" ]]; then
   exit 0
