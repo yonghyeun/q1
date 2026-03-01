@@ -12,4 +12,4 @@
   - Execute: approved
   - Improve: approved
 - Active Sub-agent: none
-- Next Action: origin remote/gh auth 설정 후 실제 issue 생성 및 브랜치 issue 번호를 실번호로 동기화
+- Next Action: local skills를 CODEX_HOME에 설치하고 실이슈 번호로 end-to-end(issue create → pr create → merge) 운영 검증

@@ -140,13 +140,43 @@
 - Next Span:
   - S7.improve.remote-enable
 
+### [Span] S7.improve.skill-packaging
+- Stage: improve
+- Owner Agent: adlc-leader
+- Started At: 2026-03-02T01:00:00Z
+- Ended At: 2026-03-02T01:15:00Z
+- Input Artifacts:
+  - scripts/repo/issue_create.sh
+  - scripts/repo/pr_create.sh
+  - scripts/repo/pr_merge.sh
+  - scripts/repo/post_merge_cleanup.sh
+- Output Artifacts:
+  - skills/public/gh-issue-create/*
+  - skills/public/gh-pr-create/*
+  - skills/public/gh-pr-merge/*
+  - skills/public/git-branch-cleanup/*
+  - skills/public/gh-flow-orchestrator/*
+- Acceptance Check Result:
+  - pass
+  - Evidence: 5개 스킬 모두 quick_validate 통과 + orchestrator dry-run 시나리오 통과
+- Human Decision:
+  - approved
+  - Decision Note: 원자 스킬 + 오케스트레이션 스킬 패턴 적용 승인
+- Cost & Latency:
+  - token_cost: n/a
+  - latency_seconds: n/a
+- Risk Note:
+  - skill 로직과 repo 스크립트 동시 변경 시 동기화 관리 필요
+- Next Span:
+  - S8.improve.release
+
 ---
 
 ## Running Summary
-- Total Spans Executed: 5
-- Approved Count: 5
+- Total Spans Executed: 6
+- Approved Count: 6
 - Changes Requested Count: 0
 - Rejected Count: 0
 - Rework Count: 0
 - Open Risks:
-  - origin/gh auth 미설정 상태에서 실제 remote issue 생성 미검증
+  - origin/gh auth 환경별 차이로 실제 gh create/merge 단계에서 운영 검증 필요

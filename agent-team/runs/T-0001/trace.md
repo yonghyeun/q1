@@ -15,6 +15,7 @@
 - PR 필수 산출물 검증(`task-brief.json`, `trace.md`, `run-log.md`, `run-report.json`)이 CI에서 차단된다.
 - PR 본문의 `Closes #<issue>`가 브랜치 issue 번호와 일치해야 CI를 통과한다.
 - feature/bug/chore issue 템플릿과 PR 템플릿이 저장소에 배치된다.
+- issue-create/pr-create/pr-merge/branch-cleanup/flow-orchestrator 스킬이 생성되고 유효성 검증을 통과한다.
 - 에이전트는 `context/core/policy-routing.md` 기반으로 정책 문서를 최소 로드한다.
 
 ## 2) Span Map
@@ -26,6 +27,7 @@
 | S4.execute.verify | execute | reviewer | 단위/E2E 검증 및 리스크 평가 | 구현 결과 | run-log.md, run-report.json | 테스트 통과/예상 실패 케이스 확인 | S3 재시도 |
 | S5.improve.wrapup | improve | adlc-leader | 운영 반영 및 후속과제 정리 | run-report.json | status.md | 다음 실행 액션 명확 | S4 회귀 |
 | S6.improve.issue-transition | improve | adlc-leader | issue-driven 전략 전환 반영 | policy/docs/scripts | workflow + templates + cleanup script | issue 추적/정리 규칙 일관성 | S5 회귀 |
+| S7.improve.skill-packaging | improve | adlc-leader | atomic + orchestration skill 패키징 | scripts/repo, .github templates | skills/public/* | skill validate 통과 + dry-run 확인 | S6 회귀 |
 
 ## 3) Gate Rules (Human Required)
 - Explore Gate: approved

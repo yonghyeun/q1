@@ -8,7 +8,8 @@
     "로컬 훅(pre-commit/pre-push) 연동",
     "CI 브랜치 게이트 + PR issue 링크 게이트 추가",
     "이슈 템플릿/PR 템플릿 추가",
-    "merge 후 remote/local 정리 스크립트 반영"
+    "merge 후 remote/local 정리 스크립트 반영",
+    "issue/PR/merge/cleanup atomic skill + orchestration skill 정의"
   ],
   "scope_out": [
     "원격 브랜치 보호 규칙의 실제 SaaS 설정",

@@ -21,6 +21,8 @@
 - `gh_preflight.sh`: `origin` remote/`gh auth` 사전 점검
 - `issue_create.sh`: gh CLI로 issue 생성
 - `start_task_from_issue.sh`: issue 번호 기반 브랜치/task 폴더 시작
+- `pr_create.sh`: 정책 검증 후 PR 생성(`Closes #issue` 포함)
+- `pr_merge.sh`: PR merge + remote branch 삭제 + local cleanup 연계
 - `post_merge_cleanup.sh`: merge 후 로컬 브랜치 정리
 
 ## 테스트

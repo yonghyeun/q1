@@ -1,0 +1,3 @@
+interface:
+  display_name: "Branch Cleanup"
+  short_description: "Clean local branches after merge safely"
