@@ -17,12 +17,15 @@ Keep policy enforcement in repository scripts, not in the skill text.
 ## Execute
 - Run:
   - `./skills/public/gh-flow-orchestrator/scripts/run_flow.sh --mode <start|open-pr|merge|full> ...`
+- `open-pr/full` 모드에서는 `--pr-body-file`을 반드시 제공한다.
+- `full` 모드에서 새 issue 생성 시 `--issue-body-file`을 반드시 제공한다.
 - Prefer `--dry-run` first for high-risk or unfamiliar tasks.
 
 ## Guardrails
 - Do not bypass atomic checks.
 - Stop immediately when any sub-step fails.
 - Surface exact failed command and next recovery action.
+- 본문 파일은 템플릿 섹션을 모두 채운 상태여야 하며 placeholder가 없어야 한다.
 
 ## References
 - Workflow and examples: `references/workflow.md`

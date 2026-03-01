@@ -35,3 +35,21 @@ jobs:
           python3 scripts/repo/pr_issue_guard.py \
             --branch "${HEAD_REF}" \
             --pr-body-file /tmp/pr_body.md
+
+  pr-body-quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate PR body quality
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          cat > /tmp/pr_body.md <<EOF
+          ${PR_BODY}
+          EOF
+          chmod +x scripts/repo/body_quality_guard.py
+          python3 scripts/repo/body_quality_guard.py \
+            --kind pr \
+            --body-file /tmp/pr_body.md

@@ -14,7 +14,8 @@
 ## 표준 흐름 (Issue-Driven)
 1. GitHub issue 생성 (`feature|bug|chore` 템플릿)
    - 템플릿 위치: `.github/ISSUE_TEMPLATE/`
-   - CLI 예시: `./scripts/repo/issue_create.sh --type feature --task-id T-0007 --title "작업 제목"`
+   - CLI 예시: `./scripts/repo/issue_create.sh --type feature --task-id T-0007 --title "작업 제목" --body-file /tmp/issue.md`
+   - 본문은 템플릿 섹션을 모두 채운 markdown 파일로 작성한다.
 2. 작업 브랜치 생성
    - `git switch main`
    - `git pull --ff-only`
@@ -22,6 +23,8 @@
 3. 브랜치의 `task-id`에 대응하는 경로를 준비한다.
    - `agent-team/runs/<task-id>/`
 4. PR 생성 시 본문에 `Closes #1234`를 반드시 포함한다.
+   - CLI 예시: `./scripts/repo/pr_create.sh --title "[T-0007] 작업 제목" --body-file /tmp/pr.md`
+   - 본문은 `.github/pull_request_template.md` 필수 섹션을 모두 채운 markdown 파일로 작성한다.
 5. Remote merge 후 head branch 자동 삭제
 6. 로컬에서 `fetch --prune`, `pull --ff-only`, merged branch 삭제
 

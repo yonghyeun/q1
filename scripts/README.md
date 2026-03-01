@@ -16,12 +16,13 @@
 - `bootstrap-task.sh`: `agent-team/runs/<task-id>/` 초기 폴더 생성
 - `install-hooks.sh`: `.githooks` 설치/권한 설정
 - `branch_guard.py`: 브랜치/컨텍스트/PR 산출물 정책 검증
+- `body_quality_guard.py`: issue/PR 본문 품질(섹션 충실도/placeholder) 검증
 - `ci-branch-gate.sh`: CI에서 브랜치 정책 차단 게이트 실행
 - `pr_issue_guard.py`: PR 본문 close 키워드와 브랜치 issue 번호 일치 검증
 - `gh_preflight.sh`: `origin` remote/`gh auth` 사전 점검
-- `issue_create.sh`: gh CLI로 issue 생성
+- `issue_create.sh`: gh CLI로 issue 생성 (`--body-file` 필수)
 - `start_task_from_issue.sh`: issue 번호 기반 브랜치/task 폴더 시작
-- `pr_create.sh`: 정책 검증 후 PR 생성(`Closes #issue` 포함)
+- `pr_create.sh`: 정책/본문 검증 후 PR 생성 (`--body-file` 필수)
 - `pr_merge.sh`: PR merge + remote branch 삭제 + local cleanup 연계
 - `post_merge_cleanup.sh`: merge 후 로컬 브랜치 정리
 

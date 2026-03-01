@@ -71,7 +71,7 @@ q1/
 - 로컬 강제: `.githooks/pre-commit`, `.githooks/pre-push`
 - CI 강제: `.github/workflows/branch-governance.yml`
 - 훅 설치: `./scripts/repo/install-hooks.sh`
-- issue 생성 표준: `./scripts/repo/issue_create.sh`
+- issue 생성 표준: `./scripts/repo/issue_create.sh --type <...> --task-id <...> --title "<...>" --body-file <...>`
 - 시작 플로우: `issue 생성 -> task/i<issue>-T-<task>-<slug> 브랜치 -> PR(Closes #issue) -> merge`
 - merge 후 로컬 정리: `./scripts/repo/post_merge_cleanup.sh <merged-branch>`
 
