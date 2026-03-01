@@ -14,6 +14,7 @@ Current operating baseline: **v0.1.0 (Natural-language Trace + Manual Span Loggi
 - `runs/`: task-id 단위 실행 로그와 상태 추적 문서.
 - `sot/`: `.codex` 런타임 생성 원천(매니페스트 + 에이전트 프롬프트).
 - `scripts/`: 런타임 생성/동기화 검증 스크립트.
+- `integration/`: 제품 개발 플로우(PR/게이트)와 ADLC 운영을 결합하는 정책.
 
 ## Quick Start
 1. Start from `protocol/PROTOCOL.md`.
