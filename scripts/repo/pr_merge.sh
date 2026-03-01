@@ -53,7 +53,9 @@ case "${METHOD}" in
     ;;
 esac
 
-./scripts/repo/gh_preflight.sh
+if [[ ${DRY_RUN} -eq 0 ]]; then
+  ./scripts/repo/gh_preflight.sh
+fi
 
 BRANCH="$(git branch --show-current)"
 if [[ -z "${BRANCH}" ]]; then

@@ -75,7 +75,9 @@ else
   exit 1
 fi
 
-./scripts/repo/gh_preflight.sh
+if [[ ${DRY_RUN} -eq 0 ]]; then
+  ./scripts/repo/gh_preflight.sh
+fi
 python3 scripts/repo/branch_guard.py validate-name --branch "${BRANCH}"
 python3 scripts/repo/branch_guard.py validate-context --branch "${BRANCH}"
 python3 scripts/repo/branch_guard.py validate-pr --branch "${BRANCH}"
