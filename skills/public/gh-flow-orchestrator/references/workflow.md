@@ -20,3 +20,6 @@
 ## Body quality rule
 - Issue/PR 본문 파일은 템플릿 필수 섹션을 모두 채워야 한다.
 - placeholder(`T-000N`, `<issue-number>`)나 빈 bullet은 허용되지 않는다.
+- PR 본문은 작성 전에 `git diff`/`git log`/`runs 산출물` 근거를 먼저 확인한다.
+- PR 이슈 링크는 기본적으로 `Closes #<branch-issue-number>`를 사용한다.
+- 실행하지 않은 테스트 결과를 기재하지 않는다(테스트 workflow 도입 전에는 추정 표현 금지).
