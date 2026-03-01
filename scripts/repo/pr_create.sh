@@ -75,6 +75,8 @@ else
   exit 1
 fi
 
+./scripts/repo/pr_title_guard.sh validate --title "${TITLE}" --branch "${BRANCH}"
+
 if [[ ${DRY_RUN} -eq 0 ]]; then
   ./scripts/repo/gh_preflight.sh
 fi

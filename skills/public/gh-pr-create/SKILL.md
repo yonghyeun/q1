@@ -22,10 +22,23 @@ PR 본문을 쓰기 전에 아래 근거를 먼저 확인한다.
    - `변경 요약(What)`에는 실제 변경 파일/모듈 단위를 포함한다(예: `scripts/repo/pr_create.sh`, `.github/workflows/branch-governance.yml`).
    - `범위`는 In/Out을 명확히 분리하고, 추후 과제를 Out-of-Scope에 분명히 적는다.
    - `수동 검증(선택)`은 실제 실행한 명령만 적는다. 실행하지 않은 테스트 결과를 추정/기재하지 않는다.
-2. Run:
+2. PR 제목을 컨벤션으로 생성/검증한다.
+   - 생성: `./scripts/repo/pr_title_guard.sh generate --task-id <T-000N> --summary "<요약>"`
+   - 검증: `./scripts/repo/pr_title_guard.sh validate --title "[T-000N] <요약>" --branch <current-branch>`
+3. Run:
    - `./skills/public/gh-pr-create/scripts/run.sh --title "<PR title>" --body-file /tmp/pr.md`
-3. Use `--draft` when the user wants review-before-ready mode.
-4. Use `--dry-run` when user asks for preview only.
+4. Use `--draft` when the user wants review-before-ready mode.
+5. Use `--dry-run` when user asks for preview only.
+
+## Existing PR Update Rule
+- 이미 같은 head branch의 PR이 열려 있으면, PR 수정은 `gh pr edit` 대신 `gh api --method PATCH`를 사용한다.
+- 권장 명령:
+  - 제목 수정:
+    - `gh api --method PATCH repos/<owner>/<repo>/pulls/<number> -f title='<new-title>'`
+  - 본문 수정:
+    - `BODY=\"$(cat /tmp/pr.md)\"`
+    - `gh api --method PATCH repos/<owner>/<repo>/pulls/<number> -f body=\"$BODY\"`
+- 수정 후 `gh pr view <number> --json title,body,url`로 반영 여부를 반드시 확인한다.
 
 ## Issue Closing Policy
 - 기본 정책은 `Closes #<issue-number>` 유지다(merge 시 해당 issue 자동 종료 목적).

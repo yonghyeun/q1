@@ -21,6 +21,7 @@ Issue 본문 작성 전에 아래 근거를 먼저 확인한다.
    - `Scope`/`Acceptance Criteria`는 실제 실행 가능한 항목으로 작성한다.
    - 실행하지 않은 결과(테스트 통과, 운영 반영 완료 등)를 사실처럼 적지 않는다.
    - 확인되지 않은 메타데이터(assignee 확정, 외부 승인 완료 등)는 단정적으로 기재하지 않는다.
+   - 샘플 톤이 필요하면 `references/sample-feature-issue.md`를 기준으로 맞춘다.
 2. Confirm repository root and run:
    - `./skills/public/gh-issue-create/scripts/run.sh --type <feature|bug|chore> --task-id <T-000N> --title "<title>" --body-file /tmp/issue.md`
 3. Capture output values:
@@ -38,3 +39,4 @@ Issue 본문 작성 전에 아래 근거를 먼저 확인한다.
 
 ## References
 - Command details: `references/commands.md`
+- Body sample: `references/sample-feature-issue.md`

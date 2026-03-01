@@ -29,6 +29,7 @@ Keep policy enforcement in repository scripts, not in the skill text.
 - Surface exact failed command and next recovery action.
 - 본문 파일은 템플릿 섹션을 모두 채운 상태여야 하며 placeholder가 없어야 한다.
 - 실행하지 않은 테스트를 본문에 적지 않는다.
+- 이미 생성된 PR의 제목/본문 수정이 필요하면 `gh pr edit` 대신 `gh api --method PATCH`를 사용한다.
 
 ## References
 - Workflow and examples: `references/workflow.md`

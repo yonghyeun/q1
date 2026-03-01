@@ -3,10 +3,26 @@
 ## Required
 - `./scripts/repo/pr_create.sh --title "<PR title>" --body-file <path>`
 
+## Title convention helper
+- 생성:
+  - `./scripts/repo/pr_title_guard.sh generate --task-id <T-000N> --summary "<요약>"`
+- 검증:
+  - `./scripts/repo/pr_title_guard.sh validate --title "[T-000N] <요약>" --branch <current-branch>`
+
 ## Optional
 - `--base main`
 - `--draft`
 - `--dry-run`
+
+## Existing PR update (use API PATCH)
+- `gh pr edit` 대신 아래 패턴을 사용한다.
+- 제목:
+  - `gh api --method PATCH repos/<owner>/<repo>/pulls/<number> -f title='<new-title>'`
+- 본문:
+  - `BODY=\"$(cat <body-file>)\"`
+  - `gh api --method PATCH repos/<owner>/<repo>/pulls/<number> -f body=\"$BODY\"`
+- 확인:
+  - `gh pr view <number> --json title,body,url`
 
 ## Validations included
 1. branch naming policy
