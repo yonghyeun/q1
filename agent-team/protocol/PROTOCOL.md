@@ -65,6 +65,7 @@ Every role output must include:
 - Do not include repository-discoverable information in protocol or persona files.
 - Load context dynamically by task type; avoid broad static context.
 - Prefer concise, high-signal context from the last 3 relevant failures.
+- For branch/PR operations, follow `context/core/policy-routing.md` and enforce `policies/branch-policy.rules.json`.
 
 ## Failure Policy
 - If the same failure class repeats twice:

@@ -19,6 +19,7 @@
 - 공통 규칙은 루트 AGENTS, 작업별 규칙은 하위 AGENTS 또는 task 전용 서브에이전트에 둔다.
 - 작업 중 필요한 문서만 선택적으로 로드한다.
 - `.codex/` 실행 파일은 `agent-team/` SoT에서 생성된 결과물로 취급한다.
+- 브랜치/PR/훅 관련 요청은 `context/core/policy-routing.md`를 기준으로 정책 문서를 동적 로드한다.
 
 ## KPI
 - Accuracy(승인 통과율), Rework Rate(재작업률), Token Cost(작업당 비용)를 기본 추적 지표로 사용한다.

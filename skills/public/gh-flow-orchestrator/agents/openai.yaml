@@ -1,0 +1,3 @@
+interface:
+  display_name: "GH Flow Orchestrator"
+  short_description: "Orchestrate issue to PR merge workflow"
