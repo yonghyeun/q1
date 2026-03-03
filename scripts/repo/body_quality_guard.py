@@ -21,7 +21,6 @@ PR_REQUIRED_HEADINGS = [
 
 ISSUE_REQUIRED_HEADINGS = {
     "feature": [
-        "## Task ID",
         "## Problem / Opportunity",
         "## Goal",
         "## In Scope",
@@ -30,7 +29,6 @@ ISSUE_REQUIRED_HEADINGS = {
         "## Risks",
     ],
     "bug": [
-        "## Task ID",
         "## Bug Summary",
         "## Reproduction Steps",
         "## Expected Behavior",
@@ -39,7 +37,6 @@ ISSUE_REQUIRED_HEADINGS = {
         "## Risks",
     ],
     "chore": [
-        "## Task ID",
         "## Objective",
         "## Scope",
         "## Operational Impact",
@@ -49,7 +46,7 @@ ISSUE_REQUIRED_HEADINGS = {
 }
 
 PLACEHOLDER_PATTERNS = [
-    re.compile(r"T-000N"),
+    re.compile(r"<wbs-id>", re.IGNORECASE),
     re.compile(r"Closes #<issue-number>", re.IGNORECASE),
     re.compile(r"<issue-number>", re.IGNORECASE),
     re.compile(r"<!--"),
@@ -127,11 +124,6 @@ def ensure_no_placeholders(body: str) -> None:
         raise BodyQualityError(f"미완성 텍스트/플레이스홀더가 남아 있습니다: {uniq}")
 
 
-def ensure_issue_task_id(body: str) -> None:
-    if not re.search(r"## Task ID\s*\n-\s*T-[0-9]{4}", body):
-        raise BodyQualityError("Task ID 섹션에 유효한 T-0000 형식이 필요합니다.")
-
-
 def ensure_close_keyword(body: str) -> None:
     if not re.search(r"\b(closes|fixes|resolves)\s*#\d+\b", body, flags=re.IGNORECASE):
         raise BodyQualityError("PR 본문에 Closes/Fixes/Resolves #N 링크가 필요합니다.")
@@ -169,7 +161,6 @@ def validate_issue_body(body: str, issue_type: str) -> None:
     required_headings = ISSUE_REQUIRED_HEADINGS[issue_type]
     ensure_required_headings(body, required_headings)
     ensure_no_placeholders(body)
-    ensure_issue_task_id(body)
     validate_sections_have_content(
         body,
         [heading for heading in required_headings if heading != "## Acceptance Criteria"],

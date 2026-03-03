@@ -11,7 +11,7 @@ usage() {
 
 예시:
   ./scripts/repo/pr_merge.sh --method squash
-  ./scripts/repo/pr_merge.sh --method squash --subject "[T-0001] 브랜치 거버넌스 v1"
+  ./scripts/repo/pr_merge.sh --method squash --subject "[config] 브랜치 거버넌스 v1"
   ./scripts/repo/pr_merge.sh --pr 42 --method rebase
 EOF
 }

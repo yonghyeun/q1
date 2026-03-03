@@ -25,16 +25,13 @@ jobs:
 
       - name: Validate PR issue closing link
         env:
-          HEAD_REF: ${{ github.head_ref }}
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          cat > /tmp/pr_body.md <<EOF
+          cat > /tmp/pr_body.md <<EOF2
           ${PR_BODY}
-          EOF
+          EOF2
           chmod +x scripts/repo/pr_issue_guard.py
-          python3 scripts/repo/pr_issue_guard.py \
-            --branch "${HEAD_REF}" \
-            --pr-body-file /tmp/pr_body.md
+          python3 scripts/repo/pr_issue_guard.py --pr-body-file /tmp/pr_body.md
 
   pr-body-quality-gate:
     runs-on: ubuntu-latest
@@ -46,9 +43,9 @@ jobs:
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          cat > /tmp/pr_body.md <<EOF
+          cat > /tmp/pr_body.md <<EOF2
           ${PR_BODY}
-          EOF
+          EOF2
           chmod +x scripts/repo/body_quality_guard.py
           python3 scripts/repo/body_quality_guard.py \
             --kind pr \

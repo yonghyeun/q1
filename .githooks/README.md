@@ -26,21 +26,12 @@ chmod +x .githooks/pre-push
 - 제목/설명에 한국어 포함
 
 ## 브랜치 정책 검증
-- 브랜치 형식: `task/i1234-T-0001-short-topic`
-- 정규식: `^task/i[0-9]+-T-[0-9]{4}-[a-z0-9]+(?:-[a-z0-9]+)*$`
+- 브랜치 형식: `<scope>/<short-topic>`
+- 허용 scope: `feature|fix|docs|config|chore|refactor|hotfix`
+- 예시: `config/wbs-governance-reset`
 - `main` 브랜치 직접 커밋/푸시 금지
-- `pre-push`에서 `agent-team/runs/<task-id>/` 존재 여부를 확인
 - 공통 검증 스크립트: `scripts/repo/branch_guard.py`
-- PR에서는 브랜치 issue 번호와 동일한 `Closes #<issue>` 문구가 필수
-
-## SoT 동기화 검증
-- `pre-commit`은 SoT 관련 파일 변경 시 `.codex` 생성 결과와 동기화를 검사합니다.
-- 불일치 시 아래 명령으로 재생성 후 다시 커밋합니다.
-
-```bash
-python3 agent-team/scripts/generate_codex_runtime.py
-python3 agent-team/scripts/verify_codex_runtime_sync.py
-```
+- PR 본문에는 `Closes #<issue>` 또는 동등한 close keyword가 필요
 
 ## 예시
 ```bash

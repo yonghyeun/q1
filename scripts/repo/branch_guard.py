@@ -24,9 +24,7 @@ class BranchPolicyError(Exception):
 @dataclass(frozen=True)
 class BranchMeta:
     branch: str
-    issue_token: str
-    issue_number: str
-    task_id: str
+    scope: str
 
 
 def repo_root() -> Path:
@@ -41,8 +39,6 @@ def load_rules(path: Path) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
     required_keys = [
         "branch_regex",
-        "issue_token_regex",
-        "task_id_regex",
         "reserved_branches",
         "required_context_for_push",
         "required_artifacts_for_pr",
@@ -66,7 +62,6 @@ def current_branch() -> str:
         raise BranchPolicyError("현재 Git 브랜치를 확인할 수 없습니다.", EXIT_INVALID_NAME) from exc
 
     if not branch:
-        # detached HEAD 대응
         branch = (
             subprocess.check_output(
                 ["git", "rev-parse", "--abbrev-ref", "HEAD"],
@@ -83,45 +78,13 @@ def current_branch() -> str:
     return branch
 
 
-def parse_task_id(branch: str, task_id_regex: str) -> str:
-    match = re.search(r"T-\d{4}", branch)
-    if not match:
+def parse_scope(branch: str) -> str:
+    if "/" not in branch:
         raise BranchPolicyError(
-            f"브랜치에서 task-id를 찾을 수 없습니다: {branch}",
+            f"브랜치 scope를 찾을 수 없습니다: {branch}",
             EXIT_INVALID_NAME,
         )
-    task_id = match.group(0)
-    if not re.fullmatch(task_id_regex, task_id):
-        raise BranchPolicyError(
-            f"task-id 형식이 정책과 다릅니다: {task_id}",
-            EXIT_INVALID_NAME,
-        )
-    return task_id
-
-
-def parse_issue_token(branch: str, issue_token_regex: str) -> tuple[str, str]:
-    match = re.search(r"i\d+", branch)
-    if not match:
-        raise BranchPolicyError(
-            f"브랜치에서 issue 토큰을 찾을 수 없습니다: {branch}",
-            EXIT_INVALID_NAME,
-        )
-
-    issue_token = match.group(0)
-    if not re.fullmatch(issue_token_regex, issue_token):
-        raise BranchPolicyError(
-            f"issue 토큰 형식이 정책과 다릅니다: {issue_token}",
-            EXIT_INVALID_NAME,
-        )
-
-    issue_number = issue_token.removeprefix("i")
-    if not issue_number:
-        raise BranchPolicyError(
-            f"issue 번호를 파싱할 수 없습니다: {issue_token}",
-            EXIT_INVALID_NAME,
-        )
-
-    return issue_token, issue_number
+    return branch.split("/", 1)[0]
 
 
 def parse_branch_meta(branch: str, rules: dict[str, Any]) -> BranchMeta:
@@ -139,27 +102,19 @@ def parse_branch_meta(branch: str, rules: dict[str, Any]) -> BranchMeta:
             EXIT_INVALID_NAME,
         )
 
-    issue_token, issue_number = parse_issue_token(branch, rules["issue_token_regex"])
-    task_id = parse_task_id(branch, rules["task_id_regex"])
-    return BranchMeta(
-        branch=branch,
-        issue_token=issue_token,
-        issue_number=issue_number,
-        task_id=task_id,
-    )
+    return BranchMeta(branch=branch, scope=parse_scope(branch))
 
 
 def validate_branch_name(branch: str, rules: dict[str, Any]) -> BranchMeta:
     return parse_branch_meta(branch, rules)
 
 
-def validate_context(task_id: str, rules: dict[str, Any]) -> None:
+def validate_context(rules: dict[str, Any]) -> None:
     missing: list[str] = []
     root = repo_root()
-    templates: list[str] = rules["required_context_for_push"]
+    required_paths: list[str] = rules["required_context_for_push"]
 
-    for template in templates:
-        rel_path = template.format(task_id=task_id)
+    for rel_path in required_paths:
         target = root / rel_path
         if not target.exists():
             missing.append(rel_path)
@@ -171,20 +126,19 @@ def validate_context(task_id: str, rules: dict[str, Any]) -> None:
         )
 
 
-def validate_pr_artifacts(task_id: str, rules: dict[str, Any]) -> None:
+def validate_pr_artifacts(rules: dict[str, Any]) -> None:
     root = repo_root()
-    run_dir = root / "agent-team" / "runs" / task_id
     required: list[str] = rules["required_artifacts_for_pr"]
     missing: list[str] = []
 
-    for artifact in required:
-        target = run_dir / artifact
+    for rel_path in required:
+        target = root / rel_path
         if not target.exists():
-            missing.append(str(target.relative_to(root)))
+            missing.append(rel_path)
 
     if missing:
         raise BranchPolicyError(
-            "PR 필수 산출물이 누락되었습니다:\n- " + "\n- ".join(missing),
+            "PR 필수 파일이 누락되었습니다:\n- " + "\n- ".join(missing),
             EXIT_ARTIFACT_MISSING,
         )
 
@@ -217,28 +171,19 @@ def main() -> int:
 
         if args.command == "validate-name":
             meta = validate_branch_name(branch, rules)
-            print(
-                "✅ branch name valid: "
-                f"{branch} (issue={meta.issue_token}, task_id={meta.task_id})"
-            )
+            print(f"✅ branch name valid: {meta.branch} (scope={meta.scope})")
             return 0
 
         meta = validate_branch_name(branch, rules)
         if args.command == "validate-context":
-            validate_context(meta.task_id, rules)
-            print(
-                "✅ branch context valid: "
-                f"{branch} -> issue={meta.issue_number}, task_id={meta.task_id}"
-            )
+            validate_context(rules)
+            print(f"✅ branch context valid: {meta.branch}")
             return 0
 
         if args.command == "validate-pr":
-            validate_context(meta.task_id, rules)
-            validate_pr_artifacts(meta.task_id, rules)
-            print(
-                "✅ PR gate artifacts valid: "
-                f"{branch} -> issue={meta.issue_number}, task_id={meta.task_id}"
-            )
+            validate_context(rules)
+            validate_pr_artifacts(rules)
+            print(f"✅ PR gate artifacts valid: {meta.branch}")
             return 0
 
         parser.error(f"unknown command: {args.command}")

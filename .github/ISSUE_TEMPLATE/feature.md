@@ -1,13 +1,13 @@
 ---
 name: Feature Request
 about: 기능 개선/신규 기능 작업을 위한 이슈 템플릿
-title: "[T-000N] "
+title: ""
 labels: feature
 assignees: ""
 ---
 
-## Task ID
-- T-000N
+## WBS Link (Optional)
+- 
 
 ## Problem / Opportunity
 - 

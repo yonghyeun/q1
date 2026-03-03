@@ -1,5 +1,0 @@
-# AUTO-GENERATED FILE. DO NOT EDIT.
-# Source: agent-team/sot/codex-runtime.manifest.toml
-
-profile = "planner_pm"
-model_instructions_file = "planner-pm.md"

@@ -35,15 +35,15 @@ Closes #1
   - 가드 검증 및 테스트 실행
 
 ## 리뷰 포인트 (Reviewer Focus)
-- issue 번호와 close-link 일치 여부
+- issue 번호와 close-link 존재 여부
 
 ## 참고 링크
-- Task ID: `T-0001`
+- 정책 문서: policies/branch-pr-convention.md
 """
 
 
-ISSUE_BODY_VALID = """## Task ID
-- T-0001
+ISSUE_BODY_VALID = """## WBS Link (Optional)
+- WBS-01
 
 ## Objective
 - 정책 기반 workflow의 실제 적용 범위를 명확히 한다.
@@ -80,9 +80,9 @@ class BodyQualityGuardTests(unittest.TestCase):
     def test_validate_issue_body_success(self) -> None:
         guard.validate_issue_body(ISSUE_BODY_VALID, "chore")
 
-    def test_validate_issue_body_rejects_task_placeholder(self) -> None:
+    def test_validate_issue_body_rejects_placeholder(self) -> None:
         with self.assertRaises(guard.BodyQualityError):
-            guard.validate_issue_body(ISSUE_BODY_VALID.replace("T-0001", "T-000N"), "chore")
+            guard.validate_issue_body(ISSUE_BODY_VALID.replace("WBS-01", "<wbs-id>"), "chore")
 
     def test_read_text_missing_file(self) -> None:
         with self.assertRaises(guard.BodyQualityError):
