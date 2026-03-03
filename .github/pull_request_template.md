@@ -31,5 +31,5 @@ Closes #<issue-number>
 - 
 
 ## 참고 링크
-- Task ID: `T-000N`
-- task context: `context/tasks/T-000N/`
+- 관련 정책/문서 링크
+- 필요 시 WBS 문서 링크

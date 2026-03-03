@@ -4,21 +4,26 @@ set -euo pipefail
 EXIT_INVALID_INPUT=1
 EXIT_INVALID_TITLE=10
 EXIT_BRANCH_PARSE_FAIL=11
-EXIT_TASK_MISMATCH=12
+EXIT_SCOPE_MISMATCH=12
 
 usage() {
-  cat <<'EOF'
+  cat <<'EOH'
 사용법:
   # 제목 생성
-  ./scripts/repo/pr_title_guard.sh generate --task-id <T-000N> --summary "<요약>"
+  ./scripts/repo/pr_title_guard.sh generate --scope <scope> --summary "<요약>"
 
   # 제목 검증
-  ./scripts/repo/pr_title_guard.sh validate --title "[T-000N] 요약" [--branch task/i123-T-000N-topic]
+  ./scripts/repo/pr_title_guard.sh validate --title "[scope] 요약" [--branch config/topic]
 
 설명:
-  - PR 제목 컨벤션: [T-000N] <요약>
-  - --branch를 주면 브랜치의 task-id와 제목 task-id 일치 여부까지 검증합니다.
-EOF
+  - PR 제목 컨벤션: [scope] <요약>
+  - 허용 scope: feature|fix|docs|config|chore|refactor|hotfix
+  - --branch를 주면 브랜치 prefix와 제목 scope 일치 여부를 검증합니다.
+EOH
+}
+
+is_valid_scope() {
+  [[ "$1" =~ ^(feature|fix|docs|config|chore|refactor|hotfix)$ ]]
 }
 
 MODE="${1:-}"
@@ -30,12 +35,12 @@ shift || true
 
 case "${MODE}" in
   generate)
-    TASK_ID=""
+    SCOPE=""
     SUMMARY=""
     while [[ $# -gt 0 ]]; do
       case "$1" in
-        --task-id)
-          TASK_ID="${2:-}"
+        --scope)
+          SCOPE="${2:-}"
           shift 2
           ;;
         --summary)
@@ -54,15 +59,17 @@ case "${MODE}" in
       esac
     done
 
-    if [[ -z "${TASK_ID}" || -z "${SUMMARY}" ]]; then
-      echo "❌ generate에는 --task-id, --summary가 필요합니다." >&2
+    if [[ -z "${SCOPE}" || -z "${SUMMARY}" ]]; then
+      echo "❌ generate에는 --scope, --summary가 필요합니다." >&2
       exit "${EXIT_INVALID_INPUT}"
     fi
-    if ! [[ "${TASK_ID}" =~ ^T-[0-9]{4}$ ]]; then
-      echo "❌ task-id 형식이 잘못되었습니다: ${TASK_ID}" >&2
+
+    if ! is_valid_scope "${SCOPE}"; then
+      echo "❌ scope 형식이 잘못되었습니다: ${SCOPE}" >&2
       exit "${EXIT_INVALID_INPUT}"
     fi
-    echo "[${TASK_ID}] ${SUMMARY}"
+
+    echo "[${SCOPE}] ${SUMMARY}"
     ;;
 
   validate)
@@ -95,28 +102,33 @@ case "${MODE}" in
       exit "${EXIT_INVALID_INPUT}"
     fi
 
-    if ! [[ "${TITLE}" =~ ^\[(T-[0-9]{4})\][[:space:]]+.+$ ]]; then
+    if ! [[ "${TITLE}" =~ ^\[([a-z]+)\][[:space:]]+.+$ ]]; then
       echo "❌ PR 제목 형식이 정책과 다릅니다: ${TITLE}" >&2
-      echo "   허용 형식: [T-000N] 요약" >&2
+      echo "   허용 형식: [scope] 요약" >&2
       exit "${EXIT_INVALID_TITLE}"
     fi
-    TITLE_TASK_ID="${BASH_REMATCH[1]}"
+
+    TITLE_SCOPE="${BASH_REMATCH[1]}"
+    if ! is_valid_scope "${TITLE_SCOPE}"; then
+      echo "❌ PR 제목 scope 허용값이 아닙니다: ${TITLE_SCOPE}" >&2
+      exit "${EXIT_INVALID_TITLE}"
+    fi
 
     if [[ -n "${BRANCH}" ]]; then
-      if [[ "${BRANCH}" =~ (T-[0-9]{4}) ]]; then
-        BRANCH_TASK_ID="${BASH_REMATCH[1]}"
+      if [[ "${BRANCH}" =~ ^([a-z]+)/ ]]; then
+        BRANCH_SCOPE="${BASH_REMATCH[1]}"
       else
-        echo "❌ 브랜치에서 task-id를 찾을 수 없습니다: ${BRANCH}" >&2
+        echo "❌ 브랜치에서 scope를 찾을 수 없습니다: ${BRANCH}" >&2
         exit "${EXIT_BRANCH_PARSE_FAIL}"
       fi
 
-      if [[ "${TITLE_TASK_ID}" != "${BRANCH_TASK_ID}" ]]; then
-        echo "❌ PR 제목 task-id와 브랜치 task-id가 다릅니다: title=${TITLE_TASK_ID}, branch=${BRANCH_TASK_ID}" >&2
-        exit "${EXIT_TASK_MISMATCH}"
+      if [[ "${TITLE_SCOPE}" != "${BRANCH_SCOPE}" ]]; then
+        echo "❌ PR 제목 scope와 브랜치 scope가 다릅니다: title=${TITLE_SCOPE}, branch=${BRANCH_SCOPE}" >&2
+        exit "${EXIT_SCOPE_MISMATCH}"
       fi
     fi
 
-    echo "✅ PR 제목 컨벤션 통과: ${TITLE_TASK_ID}"
+    echo "✅ PR 제목 컨벤션 통과: ${TITLE_SCOPE}"
     ;;
 
   *)

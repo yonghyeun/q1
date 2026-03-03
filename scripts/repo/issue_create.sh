@@ -5,17 +5,16 @@ ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "${ROOT_DIR}"
 
 usage() {
-  cat <<'EOF'
+  cat <<'EOH'
 사용법:
-  ./scripts/repo/issue_create.sh --type <feature|bug|chore> --task-id <T-000N> --title "<제목>" --body-file <file>
+  ./scripts/repo/issue_create.sh --type <feature|bug|chore> --title "<제목>" --body-file <file>
 
 예시:
-  ./scripts/repo/issue_create.sh --type feature --task-id T-0001 --title "브랜치 거버넌스 고도화" --body-file /tmp/issue.md
-EOF
+  ./scripts/repo/issue_create.sh --type feature --title "브랜치 거버넌스 고도화" --body-file /tmp/issue.md
+EOH
 }
 
 TYPE=""
-TASK_ID=""
 TITLE=""
 BODY_FILE=""
 
@@ -23,10 +22,6 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --type)
       TYPE="${2:-}"
-      shift 2
-      ;;
-    --task-id)
-      TASK_ID="${2:-}"
       shift 2
       ;;
     --title)
@@ -49,13 +44,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z "${TYPE}" || -z "${TASK_ID}" || -z "${TITLE}" || -z "${BODY_FILE}" ]]; then
+if [[ -z "${TYPE}" || -z "${TITLE}" || -z "${BODY_FILE}" ]]; then
   usage
-  exit 1
-fi
-
-if ! [[ "${TASK_ID}" =~ ^T-[0-9]{4}$ ]]; then
-  echo "❌ task-id 형식이 잘못되었습니다: ${TASK_ID}" >&2
   exit 1
 fi
 
@@ -70,7 +60,6 @@ esac
 
 ./scripts/repo/gh_preflight.sh
 
-FULL_TITLE="[${TASK_ID}] ${TITLE}"
 if [[ ! -f "${BODY_FILE}" ]]; then
   echo "❌ --body-file 파일을 찾을 수 없습니다: ${BODY_FILE}" >&2
   exit 1
@@ -81,8 +70,7 @@ python3 scripts/repo/body_quality_guard.py \
   --issue-type "${TYPE}" \
   --body-file "${BODY_FILE}"
 
-ISSUE_URL="$(gh issue create -t "${FULL_TITLE}" -F "${BODY_FILE}")"
-
+ISSUE_URL="$(gh issue create -t "${TITLE}" -F "${BODY_FILE}")"
 ISSUE_NUMBER="$(printf '%s' "${ISSUE_URL}" | grep -Eo '[0-9]+$' || true)"
 
 if [[ -z "${ISSUE_NUMBER}" ]]; then

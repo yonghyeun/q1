@@ -26,12 +26,12 @@ chmod +x .githooks/pre-push
 - 제목/설명에 한국어 포함
 
 ## 브랜치 정책 검증
-- 브랜치 형식: `task/i1234-T-0001-short-topic`
-- 정규식: `^task/i[0-9]+-T-[0-9]{4}-[a-z0-9]+(?:-[a-z0-9]+)*$`
+- 브랜치 형식: `<scope>/<short-topic>`
+- 허용 scope: `feature|fix|docs|config|chore|refactor|hotfix`
+- 예시: `config/wbs-governance-reset`
 - `main` 브랜치 직접 커밋/푸시 금지
-- `pre-push`에서 `context/tasks/<task-id>/` 존재 여부를 확인
 - 공통 검증 스크립트: `scripts/repo/branch_guard.py`
-- PR에서는 브랜치 issue 번호와 동일한 `Closes #<issue>` 문구가 필수
+- PR 본문에는 `Closes #<issue>` 또는 동등한 close keyword가 필요
 
 ## 예시
 ```bash

@@ -20,32 +20,32 @@ class PrTitleGuardTests(unittest.TestCase):
     def test_generate_success(self) -> None:
         result = self.run_script(
             "generate",
-            "--task-id",
-            "T-0001",
+            "--scope",
+            "config",
             "--summary",
             "브랜치 거버넌스 정비",
         )
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout.strip(), "[T-0001] 브랜치 거버넌스 정비")
+        self.assertEqual(result.stdout.strip(), "[config] 브랜치 거버넌스 정비")
 
-    def test_generate_rejects_invalid_task_id(self) -> None:
+    def test_generate_rejects_invalid_scope(self) -> None:
         result = self.run_script(
             "generate",
-            "--task-id",
-            "T-1",
+            "--scope",
+            "invalid",
             "--summary",
             "요약",
         )
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("task-id 형식", result.stderr)
+        self.assertIn("scope 형식", result.stderr)
 
     def test_validate_success_with_branch(self) -> None:
         result = self.run_script(
             "validate",
             "--title",
-            "[T-0007] PR 제목 예시",
+            "[config] PR 제목 예시",
             "--branch",
-            "task/i22-T-0007-title-check",
+            "config/wbs-governance-reset",
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("컨벤션 통과", result.stdout)
@@ -54,20 +54,20 @@ class PrTitleGuardTests(unittest.TestCase):
         result = self.run_script(
             "validate",
             "--title",
-            "T-0007 PR 제목 예시",
+            "config PR 제목 예시",
             "--branch",
-            "task/i22-T-0007-title-check",
+            "config/wbs-governance-reset",
         )
         self.assertEqual(result.returncode, 10)
         self.assertIn("허용 형식", result.stderr)
 
-    def test_validate_rejects_task_id_mismatch(self) -> None:
+    def test_validate_rejects_scope_mismatch(self) -> None:
         result = self.run_script(
             "validate",
             "--title",
-            "[T-0008] PR 제목 예시",
+            "[docs] PR 제목 예시",
             "--branch",
-            "task/i22-T-0007-title-check",
+            "config/wbs-governance-reset",
         )
         self.assertEqual(result.returncode, 12)
         self.assertIn("다릅니다", result.stderr)

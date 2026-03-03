@@ -1,13 +1,13 @@
 ---
 name: Bug Report
 about: 버그 수정 작업을 위한 이슈 템플릿
-title: "[T-000N] "
+title: ""
 labels: bug
 assignees: ""
 ---
 
-## Task ID
-- T-000N
+## WBS Link (Optional)
+- 
 
 ## Bug Summary
 - 

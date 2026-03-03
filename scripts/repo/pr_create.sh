@@ -5,14 +5,14 @@ ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "${ROOT_DIR}"
 
 usage() {
-  cat <<'EOF'
+  cat <<'EOH'
 사용법:
   ./scripts/repo/pr_create.sh --title "<PR 제목>" --body-file <file> [--base main] [--draft] [--dry-run]
 
 예시:
-  ./scripts/repo/pr_create.sh --title "[T-0001] 브랜치 정책 고도화" --body-file /tmp/pr.md
-  ./scripts/repo/pr_create.sh --title "[T-0001] 브랜치 정책 고도화" --body-file /tmp/pr.md --draft
-EOF
+  ./scripts/repo/pr_create.sh --title "[config] 브랜치 정책 정리" --body-file /tmp/pr.md
+  ./scripts/repo/pr_create.sh --title "[config] 브랜치 정책 정리" --body-file /tmp/pr.md --draft
+EOH
 }
 
 TITLE=""
@@ -67,19 +67,12 @@ if [[ -z "${BRANCH}" ]]; then
   exit 1
 fi
 
-if [[ "${BRANCH}" =~ ^task/i([0-9]+)-(T-[0-9]{4})-([a-z0-9-]+)$ ]]; then
-  ISSUE_NUMBER="${BASH_REMATCH[1]}"
-  TASK_ID="${BASH_REMATCH[2]}"
-else
-  echo "❌ 브랜치 형식이 정책과 다릅니다: ${BRANCH}" >&2
-  exit 1
-fi
-
 ./scripts/repo/pr_title_guard.sh validate --title "${TITLE}" --branch "${BRANCH}"
 
 if [[ ${DRY_RUN} -eq 0 ]]; then
   ./scripts/repo/gh_preflight.sh
 fi
+
 python3 scripts/repo/branch_guard.py validate-name --branch "${BRANCH}"
 python3 scripts/repo/branch_guard.py validate-context --branch "${BRANCH}"
 python3 scripts/repo/branch_guard.py validate-pr --branch "${BRANCH}"
@@ -88,24 +81,20 @@ if [[ ! -f "${BODY_FILE}" ]]; then
   echo "❌ --body-file 파일을 찾을 수 없습니다: ${BODY_FILE}" >&2
   exit 1
 fi
-USE_BODY_FILE="${BODY_FILE}"
 
-python3 scripts/repo/body_quality_guard.py \
-  --kind pr \
-  --body-file "${USE_BODY_FILE}"
-
-python3 scripts/repo/pr_issue_guard.py --branch "${BRANCH}" --pr-body-file "${USE_BODY_FILE}"
+python3 scripts/repo/body_quality_guard.py --kind pr --body-file "${BODY_FILE}"
+python3 scripts/repo/pr_issue_guard.py --pr-body-file "${BODY_FILE}"
 
 if [[ ${DRY_RUN} -eq 1 ]]; then
   echo "✅ dry-run: PR 생성 명령"
-  echo "gh pr create --base ${BASE} --head ${BRANCH} --title \"${TITLE}\" --body-file \"${USE_BODY_FILE}\" $([[ ${DRAFT} -eq 1 ]] && echo '--draft')"
+  echo "gh pr create --base ${BASE} --head ${BRANCH} --title \"${TITLE}\" --body-file \"${BODY_FILE}\" $([[ ${DRAFT} -eq 1 ]] && echo '--draft')"
   exit 0
 fi
 
-CREATE_ARGS=(pr create --base "${BASE}" --head "${BRANCH}" --title "${TITLE}" --body-file "${USE_BODY_FILE}")
+CREATE_ARGS=(pr create --base "${BASE}" --head "${BRANCH}" --title "${TITLE}" --body-file "${BODY_FILE}")
 if [[ ${DRAFT} -eq 1 ]]; then
   CREATE_ARGS+=(--draft)
 fi
 
 gh "${CREATE_ARGS[@]}"
-echo "✅ PR 생성 완료: branch=${BRANCH}, issue=#${ISSUE_NUMBER}"
+echo "✅ PR 생성 완료: branch=${BRANCH}"
