@@ -18,6 +18,9 @@
 1. `policies/quality-gates.md`
 2. `policies/retention-policy.md`
 
+### `security` 관련 요청
+1. `policies/security-secrets.md`
+
 ## 운영 규칙
 - 에이전트는 기본적으로 라우팅된 문서만 우선 로드한다.
 - 규칙 해석이 충돌할 때는 `policies/`의 기계 규칙 파일을 우선한다.
