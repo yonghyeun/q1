@@ -11,14 +11,14 @@ import pr_issue_guard  # noqa: E402
 
 
 RULES_JSON = """{
-  "policy_version": "v1.1.0",
+  "policy_version": "v2.0.0",
   "default_branch": "main",
   "branch_regex": "^task/i[0-9]+-T-[0-9]{4}-[a-z0-9]+(?:-[a-z0-9]+)*$",
   "issue_token_regex": "^i[0-9]+$",
   "task_id_regex": "^T-[0-9]{4}$",
   "reserved_branches": ["main"],
-  "required_context_for_push": ["agent-team/runs/{task_id}"],
-  "required_artifacts_for_pr": ["task-brief.json", "trace.md", "run-log.md", "run-report.json"]
+  "required_context_for_push": ["context/tasks/{task_id}"],
+  "required_artifacts_for_pr": ["context.md", "result.md"]
 }"""
 
 

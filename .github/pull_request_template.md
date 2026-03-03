@@ -32,4 +32,4 @@ Closes #<issue-number>
 
 ## 참고 링크
 - Task ID: `T-000N`
-- runs: `agent-team/runs/T-000N/`
+- task context: `context/tasks/T-000N/`

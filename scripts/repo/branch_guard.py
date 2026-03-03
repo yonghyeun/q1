@@ -66,7 +66,6 @@ def current_branch() -> str:
         raise BranchPolicyError("현재 Git 브랜치를 확인할 수 없습니다.", EXIT_INVALID_NAME) from exc
 
     if not branch:
-        # detached HEAD 대응
         branch = (
             subprocess.check_output(
                 ["git", "rev-parse", "--abbrev-ref", "HEAD"],
@@ -173,18 +172,18 @@ def validate_context(task_id: str, rules: dict[str, Any]) -> None:
 
 def validate_pr_artifacts(task_id: str, rules: dict[str, Any]) -> None:
     root = repo_root()
-    run_dir = root / "agent-team" / "runs" / task_id
+    task_dir = root / "context" / "tasks" / task_id
     required: list[str] = rules["required_artifacts_for_pr"]
     missing: list[str] = []
 
     for artifact in required:
-        target = run_dir / artifact
+        target = task_dir / artifact
         if not target.exists():
             missing.append(str(target.relative_to(root)))
 
     if missing:
         raise BranchPolicyError(
-            "PR 필수 산출물이 누락되었습니다:\n- " + "\n- ".join(missing),
+            "PR 필수 파일이 누락되었습니다:\n- " + "\n- ".join(missing),
             EXIT_ARTIFACT_MISSING,
         )
 

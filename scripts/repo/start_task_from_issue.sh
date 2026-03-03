@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "${ROOT_DIR}"
 
 usage() {
-  cat <<'EOF'
+  cat <<'EOH'
 사용법:
   ./scripts/repo/start_task_from_issue.sh \
     --task-id <T-000N> \
@@ -14,7 +14,7 @@ usage() {
 
 예시:
   ./scripts/repo/start_task_from_issue.sh --task-id T-0001 --issue 1234 --slug branch-governance
-EOF
+EOH
 }
 
 TASK_ID=""
@@ -84,4 +84,4 @@ python3 scripts/repo/branch_guard.py validate-context
 
 echo "✅ 작업 시작 준비 완료"
 echo "   - branch: ${BRANCH}"
-echo "   - task dir: agent-team/runs/${TASK_ID}"
+echo "   - task dir: context/tasks/${TASK_ID}"

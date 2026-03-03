@@ -13,18 +13,16 @@ import branch_guard  # noqa: E402
 
 
 RULES = {
-    "policy_version": "v1.1.0",
+    "policy_version": "v2.0.0",
     "default_branch": "main",
     "branch_regex": r"^task/i[0-9]+-T-[0-9]{4}-[a-z0-9]+(?:-[a-z0-9]+)*$",
     "issue_token_regex": r"^i[0-9]+$",
     "task_id_regex": r"^T-[0-9]{4}$",
     "reserved_branches": ["main"],
-    "required_context_for_push": ["agent-team/runs/{task_id}"],
+    "required_context_for_push": ["context/tasks/{task_id}"],
     "required_artifacts_for_pr": [
-        "task-brief.json",
-        "trace.md",
-        "run-log.md",
-        "run-report.json",
+        "context.md",
+        "result.md",
     ],
 }
 
@@ -57,7 +55,7 @@ class BranchGuardTests(unittest.TestCase):
     def test_validate_context_success(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            (root / "agent-team/runs/T-0001").mkdir(parents=True)
+            (root / "context/tasks/T-0001").mkdir(parents=True)
             with patch("branch_guard.repo_root", return_value=root):
                 branch_guard.validate_context("T-0001", RULES)
 
@@ -72,10 +70,10 @@ class BranchGuardTests(unittest.TestCase):
     def test_validate_pr_artifacts_success(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            run_dir = root / "agent-team/runs/T-0001"
-            run_dir.mkdir(parents=True)
+            task_dir = root / "context/tasks/T-0001"
+            task_dir.mkdir(parents=True)
             for artifact in RULES["required_artifacts_for_pr"]:
-                (run_dir / artifact).write_text("ok", encoding="utf-8")
+                (task_dir / artifact).write_text("ok", encoding="utf-8")
 
             with patch("branch_guard.repo_root", return_value=root):
                 branch_guard.validate_pr_artifacts("T-0001", RULES)
@@ -83,16 +81,16 @@ class BranchGuardTests(unittest.TestCase):
     def test_validate_pr_artifacts_missing(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            run_dir = root / "agent-team/runs/T-0001"
-            run_dir.mkdir(parents=True)
-            (run_dir / "task-brief.json").write_text("ok", encoding="utf-8")
+            task_dir = root / "context/tasks/T-0001"
+            task_dir.mkdir(parents=True)
+            (task_dir / "context.md").write_text("ok", encoding="utf-8")
 
             with patch("branch_guard.repo_root", return_value=root):
                 with self.assertRaises(branch_guard.BranchPolicyError) as ctx:
                     branch_guard.validate_pr_artifacts("T-0001", RULES)
 
             self.assertEqual(ctx.exception.exit_code, branch_guard.EXIT_ARTIFACT_MISSING)
-            self.assertIn("run-report.json", str(ctx.exception))
+            self.assertIn("result.md", str(ctx.exception))
 
     def test_load_rules_missing_required_key(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

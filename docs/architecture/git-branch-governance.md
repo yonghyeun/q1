@@ -21,12 +21,11 @@
 ## 데이터 흐름
 1. 개발자가 GitHub issue 생성 후 `task/i<issue>-T-000N-...` 브랜치 생성
 2. 커밋 시 `pre-commit`이 브랜치 이름 검증
-3. 푸시 시 `pre-push`가 브랜치 이름 + `agent-team/runs/<task-id>/` 존재 여부 검증
-4. PR CI에서 이름/컨텍스트/필수 산출물 + `Closes #<issue>` 일치 검증
-5. PR 게이트 문서(`agent-team/integration/pr-gate-policy.md`)와 동일 기준으로 승인
-6. Merge 후 remote head branch 자동 삭제 + local cleanup
+3. 푸시 시 `pre-push`가 브랜치 이름 + `context/tasks/<task-id>/` 존재 여부 검증
+4. PR CI에서 이름/컨텍스트/필수 파일 + `Closes #<issue>` 일치 검증
+5. Merge 후 remote head branch 자동 삭제 + local cleanup
 
 ## 설계 원칙
 - 정책 본문을 AGENTS에 중복하지 않는다.
-- 규칙 변경 시 `branch-policy.rules.json`만 수정하고 훅/CI/에이전트가 재사용한다.
+- 규칙 변경 시 `branch-policy.rules.json` 중심으로 훅/CI/스크립트를 함께 갱신한다.
 - 긴급 상황에서도 브랜치 네이밍 예외를 만들지 않는다.

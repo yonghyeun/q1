@@ -9,7 +9,6 @@ source "${ROOT_DIR}/scripts/lib/common.sh"
 log_info "저장소 기본 점검을 시작합니다."
 
 REQUIRED_PATHS=(
-  "agent-team"
   "apps/web"
   "docs"
   "context"
