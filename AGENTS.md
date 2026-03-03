@@ -15,7 +15,7 @@
 ## 컨텍스트 정책
 - 코드/문서에서 바로 발견 가능한 정보는 AGENTS에 기록하지 않는다.
 - 브랜치/PR/훅 관련 요청은 `context/core/policy-routing.md`를 기준으로 정책 문서를 동적 로드한다.
-- task별 실행 기록은 `context/tasks/<task-id>/` 기준으로 관리한다.
+- WBS 운영 문서는 `context/wbs/`에 관리한다.
 
 ## KPI
 - Accuracy(승인 통과율), Rework Rate(재작업률), Token Cost(작업당 비용)를 기본 추적 지표로 사용한다.

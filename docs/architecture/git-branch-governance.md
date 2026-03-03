@@ -3,7 +3,7 @@
 ## 목표
 - 브랜치 규칙을 문서 합의가 아니라 실행 가능한 정책으로 운영한다.
 - 로컬 훅/CI/에이전트가 동일한 규칙 SoT를 참조하게 만들어 정책 드리프트를 방지한다.
-- GitHub issue → branch → PR → merge 흐름을 자동 추적으로 연결한다.
+- 이슈 → 브랜치 → PR → merge 흐름을 자동 추적으로 연결한다.
 
 ## 구성 요소
 1. **사람용 정책**
@@ -19,10 +19,10 @@
    - `context/core/policy-routing.md`
 
 ## 데이터 흐름
-1. 개발자가 GitHub issue 생성 후 `task/i<issue>-T-000N-...` 브랜치 생성
+1. 개발자가 이슈를 생성하고 `<scope>/<slug>` 브랜치 생성
 2. 커밋 시 `pre-commit`이 브랜치 이름 검증
-3. 푸시 시 `pre-push`가 브랜치 이름 + `context/tasks/<task-id>/` 존재 여부 검증
-4. PR CI에서 이름/컨텍스트/필수 파일 + `Closes #<issue>` 일치 검증
+3. 푸시 시 `pre-push`가 브랜치 이름 및 컨텍스트 검증
+4. PR CI에서 브랜치 정책 및 close-link(`Closes/Fixes/Resolves #N`) 검증
 5. Merge 후 remote head branch 자동 삭제 + local cleanup
 
 ## 설계 원칙

@@ -24,7 +24,7 @@ q1/
 ├─ docs/                        # 설명 문서(아키텍처/제품)
 ├─ context/                     # 실행 입력 컨텍스트
 │  ├─ core/                     # 장기 유지 핵심 컨텍스트
-│  └─ tasks/                    # task-id 단위 작업 기록/결과
+│  └─ wbs/                      # WBS 단계 운영 문서
 ├─ policies/                    # 저장소 운영 정책(커밋/PR/품질/보관)
 ├─ skills/                      # 재사용 가능한 Codex 스킬
 ├─ scripts/                     # 리포 전역 공통 스크립트
@@ -38,18 +38,11 @@ q1/
 - 규칙 SoT: `policies/branch-policy.rules.json`
 - 운영 정책: `policies/branch-pr-convention.md`
 - 검증 엔진: `scripts/repo/branch_guard.py`
-- PR-이슈 링크 검증: `scripts/repo/pr_issue_guard.py`
+- PR close-link 검증: `scripts/repo/pr_issue_guard.py`
 - 로컬 강제: `.githooks/pre-commit`, `.githooks/pre-push`
 - CI 강제: `.github/workflows/branch-governance.yml`
 - 시작 플로우:
-  - `issue 생성 -> task/i<issue>-T-<task>-<slug> 브랜치 -> context/tasks/<task-id> 준비 -> PR(Closes #issue)`
-
-## task 컨텍스트 최소 기준
-
-`context/tasks/<task-id>/`에 아래 파일을 유지한다.
-
-1. `context.md` - 작업 배경/제약/결정 근거
-2. `result.md` - 실행 결과/검증 요약/후속 조치
+  - `issue 생성 -> <scope>/<slug> 브랜치 -> PR(Closes #issue)`
 
 ## 확장 원칙
 

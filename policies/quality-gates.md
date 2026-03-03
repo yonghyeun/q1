@@ -10,5 +10,5 @@
 3. Stage 3: CI blocking
 
 ## 운영 품질 게이트
-- PR 전 `context/tasks/<task-id>/`의 최소 산출물(`context.md`, `result.md`)을 준비한다.
+- 브랜치/PR/훅/CI 거버넌스 정책 위반 시 머지하지 않는다.
 - 고위험 변경은 PR 본문에 롤백 계획을 포함한다.
