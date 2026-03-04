@@ -2,6 +2,8 @@
 
 기능 목록이 아니라 "경험/플로우" 기준으로 적는다.
 
+Terminology SoT: [glossary.md](glossary.md)
+
 ## Core Flow (Happy Path)
 
 1. 유저가 채널 URL을 등록한다.
@@ -19,7 +21,7 @@
 ## Screens (최소)
 
 - Source 등록 화면
-- Video 목록 화면
+- Video Feed 화면
 - Player + Note 편집 화면(핵심)
 
 ## Video Feed & Pagination

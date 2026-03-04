@@ -10,3 +10,4 @@
 - `one-pager.md`
 - `problem-brief.md`
 - `mvp-spec.md`
+- `glossary.md` (도메인 용어 SoT)
