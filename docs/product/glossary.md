@@ -64,7 +64,7 @@
 ### Video URL Open
 
 - 정의: 유저가 유튜브 "영상 URL"을 붙여넣어 특정 Video를 바로 여는 진입 경로.
-- 목적: 목록 탐색 없이도 Player+Note의 코어 가치를 즉시 경험하게 한다.
+- 목적: 목록 탐색 없이도 Player + Note의 코어 가치를 즉시 경험하게 한다.
 
 ### Player + Note
 
@@ -86,4 +86,3 @@
 
 - 정의: 유저가 unote에서 학습 목적으로 연속 사용한 시간 구간.
 - 참고: 계측 관점의 session cut-off(예: 30분 inactivity)는 analytics 구현에서 정한다.
-
