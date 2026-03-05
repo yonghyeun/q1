@@ -9,8 +9,9 @@
 2. 문제/가설 배경: [product/problem-brief.md](product/problem-brief.md)
 3. 도메인 용어(유비쿼터스 언어 SoT): [product/glossary.md](product/glossary.md)
 4. MVP 경험/플로우 SoT: [product/mvp-spec.md](product/mvp-spec.md)
-5. 계측 이벤트 SoT: [../context/analytics/events.md](../context/analytics/events.md)
-6. 기술 방향(코어): [../context/core/technical-context.md](../context/core/technical-context.md)
+5. 외부 제약(YouTube 정책 체크): [product/youtube-api-policy-notes.md](product/youtube-api-policy-notes.md)
+6. 계측 이벤트 SoT: [../context/analytics/events.md](../context/analytics/events.md)
+7. 기술 방향(코어): [../context/core/technical-context.md](../context/core/technical-context.md)
 
 ## 제품(Product)
 
@@ -18,6 +19,7 @@
 - Problem brief: [product/problem-brief.md](product/problem-brief.md)
 - MVP spec(SoT): [product/mvp-spec.md](product/mvp-spec.md)
 - Glossary(SoT): [product/glossary.md](product/glossary.md)
+- YouTube 정책 체크(노트): [product/youtube-api-policy-notes.md](product/youtube-api-policy-notes.md)
 - Product docs 안내: [product/README.md](product/README.md)
 
 ## 컨텍스트(Context, 실행 입력)
@@ -53,4 +55,3 @@
 - Agent 운영 규칙: [../AGENTS.md](../AGENTS.md)
 - Soul(원칙): [../SOUL.md](../SOUL.md)
 - Git hooks: [../.githooks/README.md](../.githooks/README.md)
-

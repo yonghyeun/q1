@@ -24,6 +24,17 @@ Terminology SoT: [glossary.md](glossary.md)
 - Video Feed 화면
 - Player + Note 편집 화면(핵심)
 
+## YouTube Policy Constraints (MVP)
+
+YouTube API/임베드 플레이어 정책과 충돌하지 않도록, MVP에서는 아래를 제약으로 고정한다.
+상세 근거/링크 SoT: [youtube-api-policy-notes.md](youtube-api-policy-notes.md)
+
+- Player + Note는 "한 화면"이되 **플레이어 위 오버레이 UI를 두지 않는다**(좌우/상하 분할로 해결).
+- 임베드 플레이어의 **표준 경험(기능/브랜딩/광고 등)을 차단/변형하지 않는다**(공식 API 범위 내 제어만).
+- **커스텀 PiP/백그라운드 재생은 제공하지 않는다**(플레이어가 보이지 않는 상태에서의 재생 유도/우회 금지).
+- YouTube API Data(메타데이터 등)는 **장기 저장하지 않고 TTL/갱신을 전제로** 다룬다(장기 보관은 `video_id`/유저 생성 Note 중심).
+- 유료화는 “시청”이 아니라 **노트/학습 부가가치 기능**에만 걸고, 재생을 결제 장벽 뒤에 두지 않는다.
+
 ## Video Feed & Pagination
 
 목록은 "학습 세션 보호(산만함 최소화)"를 위해 유튜브 홈/추천 대신, 앱 내부에서만 탐색한다.
@@ -68,6 +79,8 @@ Terminology SoT: [glossary.md](glossary.md)
 ## Out of Scope
 
 - 영상 다운로드/클리핑
+- 커스텀 PiP/백그라운드 재생(정책 리스크)
+- 플레이어 오버레이 UI 또는 광고/기능 차단(정책 위반 가능)
 - 회원가입/로그인, 클라우드 동기화/백업
 - 고급 협업(권한/코멘트)
 - 정교한 추천/개인화 피드
