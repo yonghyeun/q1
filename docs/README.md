@@ -2,6 +2,8 @@
 
 설명/공유 목적의 문서를 관리한다.
 
+Start here: `docs/index.md`
+
 - `architecture/`: 저장소/시스템 구조 설명
 - `product/`: 제품 요구사항, 시나리오, 화면 정책
 
