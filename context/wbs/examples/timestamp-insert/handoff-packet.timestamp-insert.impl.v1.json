@@ -1,0 +1,69 @@
+{
+  "packet_id": "H-EX-2026-03-06-001",
+  "slice_id": "EX-MVP-TS-INSERT",
+  "parent_wbs": "example/mvp-wbs-v0",
+  "owner_role": "impl",
+  "handoff_from": "operator",
+  "handoff_to": "impl",
+  "goal": "Player + Note 화면에서 버튼으로 현재 재생 시점을 노트에 Markdown 타임스탬프로 삽입한다.",
+  "why": "타임스탬프 삽입은 MVP 핵심 학습 루프를 닫는 기능이다.",
+  "inputs": [
+    "docs/product/mvp-spec.md:12",
+    "docs/product/mvp-spec.md:61",
+    "docs/product/contracts/domain.ts:38",
+    "docs/product/contracts/storage.ts:40"
+  ],
+  "contracts": [
+    "docs/product/contracts/domain.ts",
+    "docs/product/contracts/storage.ts"
+  ],
+  "acceptance_criteria": [
+    "버튼 클릭 시 현재 정수 초가 HH:MM:SS Markdown 링크로 노트에 삽입된다.",
+    "삽입 링크는 외부 이동 없이 앱 내부 seek 처리와 호환되는 URL 포맷을 유지한다.",
+    "삽입 이후 note 저장 모델과 충돌하지 않는다."
+  ],
+  "owned_paths": [
+    "apps/web/src/features/player-note/timestamp/**",
+    "apps/web/src/features/player-note/editor/**"
+  ],
+  "non_goals": [
+    "단축키 삽입 구현",
+    "타임스탬프 클릭 seek 구현"
+  ],
+  "dependencies": [
+    "player time adapter",
+    "note editor insert command"
+  ],
+  "required_tests": [
+    "unit",
+    "integration",
+    "contract"
+  ],
+  "validator_rules": [
+    "inputs_resolve",
+    "contract_paths_resolve",
+    "owned_paths_declared",
+    "required_tests_declared",
+    "required_fields_present"
+  ],
+  "review_rubric": [
+    "acceptance_criteria_evidenced",
+    "no_contract_violation",
+    "no_owned_path_violation",
+    "next_actor_can_decide",
+    "goal_progress_is_real"
+  ],
+  "escalation_policy": {
+    "on_block": "operator_review",
+    "on_contract_break": "contract_owner_review",
+    "on_repeat_failure": "revisit_wbs"
+  },
+  "expected_outputs": [
+    "code_changes",
+    "tests",
+    "trace_summary"
+  ],
+  "open_risks": [
+    "editor insert command 표면이 packet 입력에 충분히 명시되지 않았다."
+  ]
+}

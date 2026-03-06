@@ -1,0 +1,70 @@
+{
+  "packet_id": "H-EX-2026-03-06-002",
+  "slice_id": "EX-MVP-TS-INSERT",
+  "parent_wbs": "example/mvp-wbs-v0",
+  "owner_role": "impl",
+  "handoff_from": "operator",
+  "handoff_to": "impl",
+  "goal": "현재 재생 시점을 Markdown 타임스탬프로 변환하고 note editor insert command에 안전하게 전달한다.",
+  "why": "첫 handoff의 모호한 입력을 줄여 impl handoff를 완료 가능한 단위로 좁힌다.",
+  "inputs": [
+    "docs/product/mvp-spec.md:12",
+    "docs/product/mvp-spec.md:61",
+    "docs/product/contracts/domain.ts:38",
+    "docs/product/contracts/storage.ts:40",
+    "context/wbs/examples/timestamp-insert/editor-command-surface.md:1"
+  ],
+  "contracts": [
+    "docs/product/contracts/domain.ts",
+    "docs/product/contracts/storage.ts"
+  ],
+  "acceptance_criteria": [
+    "현재 정수 초가 HH:MM:SS Markdown 링크로 변환된다.",
+    "변환된 Markdown이 noteEditor.insertAtCursor에 전달된다.",
+    "이번 handoff 결과만으로 다음 integration actor가 UI wiring을 이어받을 수 있다."
+  ],
+  "owned_paths": [
+    "apps/web/src/features/player-note/timestamp/**",
+    "apps/web/src/features/player-note/editor/**"
+  ],
+  "non_goals": [
+    "analytics emission 구현",
+    "최종 UI wiring 검증"
+  ],
+  "dependencies": [
+    "player time adapter",
+    "note editor insert command"
+  ],
+  "required_tests": [
+    "unit",
+    "integration",
+    "contract"
+  ],
+  "validator_rules": [
+    "inputs_resolve",
+    "contract_paths_resolve",
+    "owned_paths_declared",
+    "required_tests_declared",
+    "required_fields_present"
+  ],
+  "review_rubric": [
+    "acceptance_criteria_evidenced",
+    "no_contract_violation",
+    "no_owned_path_violation",
+    "next_actor_can_decide",
+    "goal_progress_is_real"
+  ],
+  "escalation_policy": {
+    "on_block": "operator_review",
+    "on_contract_break": "contract_owner_review",
+    "on_repeat_failure": "revisit_wbs"
+  },
+  "expected_outputs": [
+    "code_changes",
+    "tests",
+    "trace_summary"
+  ],
+  "open_risks": [
+    "최종 analytics 연결은 다음 integration handoff로 넘겨진다."
+  ]
+}
