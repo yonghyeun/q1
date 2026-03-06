@@ -40,6 +40,7 @@
 - Agent handoff schema: [../context/wbs/agent-handoff-schema.md](../context/wbs/agent-handoff-schema.md)
 - Orchestration flow: [../context/wbs/orchestration-flow.md](../context/wbs/orchestration-flow.md)
 - Run ledger schema: [../context/wbs/run-ledger-schema.md](../context/wbs/run-ledger-schema.md)
+- Structured output enforcement: [../context/wbs/structured-output-enforcement.md](../context/wbs/structured-output-enforcement.md)
 
 ## 정책(Policies, 저장소 운영)
 

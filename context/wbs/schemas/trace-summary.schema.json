@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "context/wbs/schemas/trace-summary.schema.json",
+  "title": "Trace Summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "trace_id",
+    "packet_id",
+    "agent_role",
+    "execution_state",
+    "result",
+    "failure_type",
+    "started_at",
+    "ended_at",
+    "changes",
+    "tests_run",
+    "requested_decision",
+    "next_action",
+    "confidence"
+  ],
+  "properties": {
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "packet_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agent_role": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_state": {
+      "type": "string",
+      "enum": [
+        "in_progress",
+        "blocked",
+        "review_required",
+        "done"
+      ]
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "success",
+        "partial",
+        "failed"
+      ]
+    },
+    "failure_type": {
+      "type": "string",
+      "enum": [
+        "none",
+        "implementation",
+        "contract",
+        "missing_input",
+        "harness",
+        "orchestration",
+        "wbs"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ended_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "tests_run": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "tests_not_run": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "decisions_made": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "feedback": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "target",
+          "severity",
+          "note"
+        ],
+        "properties": {
+          "target": {
+            "type": "string",
+            "enum": [
+              "packet",
+              "wbs",
+              "contracts",
+              "harness",
+              "orchestration"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "must_fix",
+              "should_fix",
+              "nice_to_have"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "requested_decision": {
+      "type": "string",
+      "enum": [
+        "accept",
+        "rework",
+        "block",
+        "cancel",
+        "remediate",
+        "close",
+        "dispatch"
+      ]
+    },
+    "next_action": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    }
+  }
+}

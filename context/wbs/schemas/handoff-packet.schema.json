@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "context/wbs/schemas/handoff-packet.schema.json",
+  "title": "Handoff Packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "packet_id",
+    "slice_id",
+    "parent_wbs",
+    "owner_role",
+    "handoff_from",
+    "handoff_to",
+    "goal",
+    "inputs",
+    "contracts",
+    "acceptance_criteria",
+    "owned_paths",
+    "required_tests",
+    "validator_rules",
+    "review_rubric",
+    "expected_outputs"
+  ],
+  "properties": {
+    "packet_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "slice_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_wbs": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner_role": {
+      "type": "string",
+      "minLength": 1
+    },
+    "handoff_from": {
+      "type": "string",
+      "minLength": 1
+    },
+    "handoff_to": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal": {
+      "type": "string",
+      "minLength": 1
+    },
+    "why": {
+      "type": "string"
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "contracts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "owned_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "non_goals": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required_tests": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "unit",
+          "integration",
+          "component",
+          "contract",
+          "e2e",
+          "smoke",
+          "manual_review"
+        ]
+      }
+    },
+    "validator_rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "inputs_resolve",
+          "contract_paths_resolve",
+          "owned_paths_declared",
+          "required_tests_declared",
+          "required_fields_present"
+        ]
+      }
+    },
+    "review_rubric": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "acceptance_criteria_evidenced",
+          "no_contract_violation",
+          "no_owned_path_violation",
+          "next_actor_can_decide",
+          "goal_progress_is_real"
+        ]
+      }
+    },
+    "escalation_policy": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "expected_outputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "code_changes",
+          "tests",
+          "trace_summary",
+          "docs_update",
+          "decision_note",
+          "run_ledger_update"
+        ]
+      }
+    },
+    "open_risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "context/wbs/schemas/run-ledger.schema.json",
+  "title": "Run Ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "parent_wbs",
+    "updated_at",
+    "slice_entries"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_wbs": {
+      "type": "string",
+      "minLength": 1
+    },
+    "updated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "slice_entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "slice_id",
+          "slice_state",
+          "current_owner",
+          "active_packet_id",
+          "active_packet_disposition",
+          "latest_trace_id",
+          "latest_execution_state",
+          "latest_result",
+          "recent_failure_type",
+          "next_operator_decision",
+          "open_feedback",
+          "packet_history",
+          "updated_at"
+        ],
+        "properties": {
+          "slice_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "slice_state": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "ready",
+              "active",
+              "blocked",
+              "integration_review",
+              "done",
+              "cancelled"
+            ]
+          },
+          "current_owner": {
+            "type": "string",
+            "minLength": 1
+          },
+          "active_packet_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "active_packet_disposition": {
+            "type": "string",
+            "enum": [
+              "issued",
+              "active",
+              "closed",
+              "superseded",
+              "cancelled"
+            ]
+          },
+          "latest_trace_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "latest_execution_state": {
+            "type": "string",
+            "enum": [
+              "in_progress",
+              "blocked",
+              "review_required",
+              "done"
+            ]
+          },
+          "latest_result": {
+            "type": "string",
+            "enum": [
+              "success",
+              "partial",
+              "failed"
+            ]
+          },
+          "recent_failure_type": {
+            "type": "string",
+            "enum": [
+              "none",
+              "implementation",
+              "contract",
+              "missing_input",
+              "harness",
+              "orchestration",
+              "wbs"
+            ]
+          },
+          "next_operator_decision": {
+            "type": "string",
+            "enum": [
+              "dispatch",
+              "accept",
+              "rework",
+              "block",
+              "cancel",
+              "remediate",
+              "close"
+            ]
+          },
+          "open_feedback": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "target",
+                "severity",
+                "note"
+              ],
+              "properties": {
+                "target": {
+                  "type": "string",
+                  "enum": [
+                    "packet",
+                    "wbs",
+                    "contracts",
+                    "harness",
+                    "orchestration"
+                  ]
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": [
+                    "must_fix",
+                    "should_fix",
+                    "nice_to_have"
+                  ]
+                },
+                "note": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          "packet_history": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "packet_id",
+                "disposition"
+              ],
+              "properties": {
+                "packet_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "disposition": {
+                  "type": "string",
+                  "enum": [
+                    "issued",
+                    "active",
+                    "closed",
+                    "superseded",
+                    "cancelled"
+                  ]
+                }
+              }
+            }
+          },
+          "updated_at": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}
