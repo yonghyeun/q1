@@ -5,6 +5,7 @@
 - 제품 방향: `Next.js` 단일 앱 중심(MVP)
 - 운영 방향: 브랜치/PR 거버넌스 + 수동 병렬 단일 에이전트
 - 목표: 낮은 인지 부하로 반복 가능한 개발 운영 체계 유지
+- interface contracts(SoT, 임시): `docs/product/contracts/README.md`
 
 ## 아키텍처 원칙
 
@@ -21,7 +22,7 @@ q1/
 ├─ .githooks/                   # commit-msg, pre-commit, pre-push 훅 규칙
 ├─ apps/                        # 제품 실행 코드 영역
 │  └─ web/                      # Next.js MVP 앱
-├─ docs/                        # 설명 문서(아키텍처/제품)
+├─ docs/                        # 설명 문서(아키텍처/제품, contracts 포함)
 ├─ context/                     # 실행 입력 컨텍스트
 │  ├─ core/                     # 장기 유지 핵심 컨텍스트
 │  └─ wbs/                      # WBS 단계 운영 문서

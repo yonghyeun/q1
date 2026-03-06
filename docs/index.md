@@ -20,6 +20,7 @@
 - MVP spec(SoT): [product/mvp-spec.md](product/mvp-spec.md)
 - Glossary(SoT): [product/glossary.md](product/glossary.md)
 - YouTube 정책 체크(노트): [product/youtube-api-policy-notes.md](product/youtube-api-policy-notes.md)
+- Contracts(interfaces SoT, temp): [product/contracts/README.md](product/contracts/README.md)
 - Product docs 안내: [product/README.md](product/README.md)
 
 ## 컨텍스트(Context, 실행 입력)
