@@ -12,6 +12,7 @@
 
 - 기본 포맷은 **Markdown 문서 + 고정된 구조의 YAML block**을 권장한다.
 - handoff는 **task packet**과 **trace summary**를 분리한다.
+- operator 상태 전이는 `operator decision event`로 별도 관리한다.
 - 원 요청은 자주 바꾸지 않고, 실행 결과는 append-only에 가깝게 남긴다.
 - `packet`은 가능한 한 불변(immutable)으로 유지하고, runtime 상태는 `trace`와 `run ledger`가 책임진다.
 
@@ -35,8 +36,18 @@
 
 따라서 권장 원칙은 다음과 같다.
 
-- `packet`: 상대적으로 안정적, 필요 시 버전 업
-- `trace`: 실행 중 계속 갱신
+- `packet`: 상대적으로 안정적, 필요 시 새 packet으로 supersede
+- `trace`: 실행 중 계속 누적
+- `operator decision`: trace 검토 후 상태 전이 판단을 기록
+
+## 식별과 정렬
+
+runtime artifact는 모두 `run_id`와 `seq`를 가져야 한다.
+
+- `run_id`: 어떤 orchestration run에 속하는지
+- `seq`: run 내부 총순서를 만드는 정수
+
+파일명은 탐색용이고, 실제 정렬/참조는 artifact 내부 `seq`와 ID를 기준으로 한다.
 
 ## 표준 운영 원칙
 
@@ -78,11 +89,14 @@
 
 ```yaml
 packet_id: H-2026-03-06-001
+run_id: RUN-2026-03-06-A
+seq: 1
 slice_id: MVP-TS-INSERT
 parent_wbs: mvp-wbs/v1
 owner_role: impl
 handoff_from: operator
 handoff_to: impl
+supersedes_packet_id:
 goal: 현재 재생 시점을 노트에 마크다운 타임스탬프로 삽입한다.
 why: 타임스탬프 레퍼런싱은 핵심 학습 UX다.
 inputs:
@@ -132,9 +146,12 @@ open_risks:
 ## packet 필드 설명
 
 - `packet_id`: handoff 단위의 고유 ID
+- `run_id`: 소속 orchestration run
+- `seq`: run 내부 총순서
 - `slice_id`: WBS 기준 작업 슬라이스 ID
 - `parent_wbs`: 어떤 WBS 버전을 기준으로 생성된 packet인지
 - `owner_role`: 현재 packet 책임 역할
+- `supersedes_packet_id`: 이전 packet을 대체하는 재발행이면 참조
 - `goal`: 한 문장으로 끝나는 목표
 - `why`: 제품/운영 관점의 이유
 - `inputs`: 읽어야 하는 최소 입력
@@ -156,26 +173,38 @@ trace는 packet과 별도 문서 또는 별도 섹션으로 관리한다.
 
 ```yaml
 trace_id: T-2026-03-06-014
+run_id: RUN-2026-03-06-A
+seq: 2
 packet_id: H-2026-03-06-001
+slice_id: MVP-TS-INSERT
 agent_role: impl
+attempt_index: 1
 execution_state: review_required
 result: partial
 failure_type: orchestration
 started_at: 2026-03-06T10:00:00+09:00
 ended_at: 2026-03-06T10:24:00+09:00
+summary: editor insert command 계약 부재로 integration-ready 판정이 불가했다.
+artifacts_used:
+  - docs/product/mvp-spec.md:61
 changes:
   - apps/web/src/features/timestamp/insert-timestamp.ts
   - apps/web/src/features/timestamp/insert-timestamp.test.ts
 tests_run:
-  - pnpm test -- timestamp
-tests_not_run:
-  - e2e not available yet
+  - command: pnpm test -- timestamp
+    result: passed
+tests_skipped:
+  - command: pnpm test -- timestamp-integration
+    reason_code: missing_input
+    reason_detail: editor command surface 계약이 packet inputs에 없다.
 decisions_made:
   - timestamp format은 HH:MM:SS를 고정
-blockers:
-  - 없음
+new_facts:
+  - 현재 packet만으로는 note editor insert command의 입력/출력 경계가 복원되지 않는다.
+blockers: []
 risks:
-  - editor adapter가 바뀌면 command surface 수정 필요
+  - code: editor_surface_undefined
+    detail: editor adapter가 바뀌면 command surface 수정이 필요하다.
 feedback:
   - target: harness
     severity: should_fix
@@ -185,23 +214,34 @@ feedback:
     note: editor command surface 명세가 inputs에 더 명확히 적혀야 함
 requested_decision: rework
 next_action: integration agent가 editor wiring을 검토
+decision_rationale: 입력 부족이 원인이므로 구현 재시도보다 packet 보강 후 재작업이 적절하다.
+context_notes:
+  - 이번 handoff는 markdown 생성 로직까지는 검증했지만 editor wiring은 닫지 못했다.
 confidence: medium
 ```
 
 ## trace 필드 설명
 
+- `run_id`: 소속 orchestration run
+- `seq`: run 내부 총순서
 - `execution_state`: 현재 실행 상태 (`in_progress | blocked | review_required | done`)
+- `attempt_index`: 같은 packet 아래 몇 번째 시도인지
 - `result`: 이번 실행의 자기 평가 결과 (`success | partial | failed`)
 - `failure_type`: 주요 실패 원인 분류 (`none | implementation | contract | missing_input | harness | orchestration | wbs`)
+- `summary`: 이번 실행의 짧은 상태 요약
+- `artifacts_used`: 실제 읽은 입력/증거 참조
 - `changes`: 실제 수정 파일
-- `tests_run`: 실행한 검증
-- `tests_not_run`: 못 한 검증과 이유
+- `tests_run`: 실행한 검증 명령과 결과
+- `tests_skipped`: 건너뛴 검증 명령과 이유 코드/상세
 - `decisions_made`: 구현 중 새로 생긴 결정
-- `blockers`: 즉시 해결이 필요한 장애
-- `risks`: 아직 남아 있는 리스크
+- `new_facts`: 이번 실행으로 새로 드러난 사실
+- `blockers`: 즉시 해결이 필요한 장애 코드와 상세
+- `risks`: 아직 남아 있는 리스크 코드와 상세
 - `feedback`: packet/WBS/contract/harness/orchestration에 반영해야 할 피드백
 - `requested_decision`: trace 작성자가 operator에게 권장하는 다음 판정
 - `next_action`: 다음 담당자에게 기대하는 한 줄 액션
+- `decision_rationale`: 왜 그 판정을 권장하는지에 대한 서술
+- `context_notes`: 다음 actor/operator가 알아야 할 서술형 맥락
 - `confidence`: `low | medium | high`
 
 ## 상태 소유권
@@ -210,6 +250,7 @@ confidence: medium
 
 - `packet`: handoff 명세 자체를 담고, runtime 상태는 갖지 않는다
 - `trace.execution_state`: 개별 실행의 현재 상태를 나타낸다
+- `operator decision`: trace 검토 후 내려진 상태 전이 판단을 남긴다
 - `run ledger`: 현재 slice 상태, active packet, next decision의 SoT를 가진다
 
 ## 평가 기준과 실패 분류

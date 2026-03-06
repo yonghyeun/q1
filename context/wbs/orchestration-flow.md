@@ -8,7 +8,7 @@ handoff packet과 trace가 어떻게 생성·이동·축적되고
 
 ## 목적
 
-- WBS, handoff packet, trace, run ledger의 역할을 구분한다.
+- WBS, handoff packet, trace, operator decision, run ledger의 역할을 구분한다.
 - "누가 지금 무엇을 들고 있는가"를 한 번에 이해할 수 있게 한다.
 - 완료, 재작업, blocked, remediation(되돌림/수정) 흐름을 표준화한다.
 - 실패 조건, 평가 기준, 피드백 루프를 명시한다.
@@ -49,13 +49,19 @@ handoff packet과 trace가 어떻게 생성·이동·축적되고
 - orchestration control-plane
 - 현재 어떤 slice가 누구 손에 있고, 다음 판단이 무엇인지 보여준다
 
+### 5. Operator Decision
+
+- operator의 상태 전이 기록
+- 어떤 trace를 보고 어떤 판정을 내렸는지와, ledger 갱신의 근거를 남긴다
+
 ## 아티팩트 간 관계
 
 권장 관계는 아래와 같다.
 
 - `1 WBS slice -> N packets`
 - `1 packet -> N trace entries`
-- `1 run ledger -> N slices / packets / decisions`
+- `1 run ledger(current) -> N slices / packets / decisions`
+- `1 run ledger(snapshot) -> 1 decision checkpoint`
 
 즉, WBS는 오래 살고, packet은 handoff마다 생기며, trace는 packet 실행 중 누적된다.
 
@@ -65,6 +71,7 @@ handoff packet과 trace가 어떻게 생성·이동·축적되고
 
 - `packet`: handoff 명세를 담는 불변 문서
 - `trace.execution_state`: 개별 실행의 상태
+- `operator decision`: 상태 전이와 판정 사유
 - `run ledger.slice_state`: slice의 현재 상태
 - `run ledger.active_packet_id`: 지금 어떤 packet이 살아 있는지
 
@@ -101,7 +108,7 @@ operator는 WBS slice에서 handoff packet을 만든다.
 즉, packet은 WBS 전체를 복제하는 것이 아니라,
 WBS의 일부를 실행 가능한 요청으로 얇게 투영(projection)한 것이다.
 packet 자체는 발행 후 가능한 한 불변으로 유지하고,
-현재 실행 상태는 trace와 run ledger에서 관리한다.
+현재 실행 상태는 trace, operator decision, run ledger에서 관리한다.
 
 ### 2. Packet 할당
 
@@ -151,6 +158,7 @@ actor는 작업 종료 시 단순히 결과만 반환하지 않고,
 ### 4. Operator 판정
 
 operator는 trace, 결과물, 테스트 결과를 보고 아래 중 하나를 결정한다.
+이 판정은 `operator decision event`로 별도 기록한다.
 
 operator는 최소한 아래 평가 기준을 체크해야 한다.
 
@@ -173,6 +181,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 - 현 handoff 목적을 충족했고
 - 다음 actor에게 넘길 준비가 되었을 때
 - 새 packet을 생성해 다음 actor에게 넘긴다
+- decision 직후 snapshot ledger를 남긴다
 
 예:
 - impl 완료 -> integration 검토 packet 생성
@@ -182,6 +191,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 
 - 방향은 맞지만 미완성/불충분할 때
 - 기존 packet/trace는 유지하고 새 packet으로 재지시한다
+- `supersedes_packet_id`와 decision event로 lineage를 연결한다
 
 핵심은 "과거 기록 삭제"가 아니라 "새 시도 생성"이다.
 
@@ -194,6 +204,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 
 - 외부 결정, 누락된 계약, 미준비 의존성 때문에 더 진행할 수 없을 때
 - `trace.execution_state`와 `run ledger.slice_state`를 `blocked`로 반영한다
+- blocked decision 직후 snapshot ledger를 남긴다
 
 권장 사용 사례:
 
@@ -205,6 +216,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 
 - 이 handoff 자체가 잘못 정의됐거나, slice 경계를 다시 쪼개야 할 때
 - run ledger에서 해당 packet을 `cancelled` disposition으로 기록하고 WBS를 수정하거나 재분할한다
+- cancel decision 자체도 별도 decision event로 남긴다
 
 권장 사용 사례:
 
@@ -215,6 +227,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 
 - 잘못된 변경이 이미 반영됐고, 되돌림 또는 수정이 필요할 때
 - trace를 지우지 않고 remediation packet을 새로 만든다
+- remediation packet 발행 전 decision event를 먼저 남긴다
 
 리버트는 기록 삭제가 아니라 "새로운 corrective action"으로 남기는 것이 원칙이다.
 
@@ -229,9 +242,18 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 
 완료 시 operator는:
 
+- decision event를 남기고
 - run ledger에서 active packet을 `closed` 또는 `superseded`로 기록하고
-- WBS slice를 완료 처리하며
-- run ledger의 현재 상태를 갱신한다
+- current ledger를 갱신하며
+- 해당 decision 시점 snapshot ledger를 남기고
+- WBS slice를 완료 처리한다
+
+## 정렬과 checkpoint
+
+- runtime artifact는 모두 `run-local seq`를 가진다.
+- 시간값은 참고 정보이고, ordering 정본은 `seq`다.
+- `current ledger`는 각 run당 1개만 유지한다.
+- `snapshot ledger`는 decision 직후 append-only로 저장한다.
 
 ## 실패 분류와 대응 규칙
 

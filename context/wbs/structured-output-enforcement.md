@@ -40,6 +40,7 @@
 - 단점: template, schema, validator 세 레이어를 함께 유지해야 한다
 
 현재 저장소에는 **D안**을 기본 추천으로 둔다.
+artifact 종류는 `handoff-packet`, `trace-summary`, `operator-decision`, `run-ledger`를 기준으로 본다.
 
 ## 권장 운영 모델
 
@@ -88,7 +89,7 @@
 
 ## 이 저장소 기준 결론
 
-- handoff/trace/ledger는 **template만으로 운영하지 않는다**
+- handoff/trace/decision/ledger는 **template만으로 운영하지 않는다**
 - global Codex config도 **hard enforcement 수단으로 보지 않는다**
 - 반복 생성이 필요한 곳은 `schema + validator + harness`를 우선 적용한다
 - 사람 검토와 토론이 필요한 곳은 `template`을 같이 둔다

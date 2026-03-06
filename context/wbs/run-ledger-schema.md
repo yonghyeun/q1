@@ -1,6 +1,6 @@
 # Run Ledger Schema
 
-run ledger는 수동 오케스트레이션의 현재 상태 SoT다.
+run ledger는 수동 오케스트레이션의 상태 projection이다.
 
 이 문서는 `agent-handoff-schema.md`가 정의한 `packet`/`trace`를
 실행 시점의 상태와 연결해 주는 control-plane 스키마를 정의한다.
@@ -11,6 +11,7 @@ run ledger는 수동 오케스트레이션의 현재 상태 SoT다.
 - active packet, 최신 trace, 다음 operator decision을 연결한다.
 - 실패 유형과 미반영 feedback을 누적해 재작업과 구조 개선을 구분한다.
 - 추후 자동 오케스트레이션이 읽을 상태 정본을 마련한다.
+- current 상태와 snapshot checkpoint를 분리한다.
 
 ## 왜 별도 ledger가 필요한가
 
@@ -31,7 +32,8 @@ run ledger는 수동 오케스트레이션의 현재 상태 SoT다.
 - `WBS`: 계획의 SoT
 - `packet`: handoff 명세
 - `trace`: 실행 이력
-- `run ledger`: 현재 상태의 SoT
+- `operator decision`: 상태 전이 기록
+- `run ledger`: 현재 상태 projection 또는 snapshot projection
 
 중요한 원칙은, packet에 runtime 상태를 넣지 않고 ledger가 현재 상태를 소유하게 하는 것이다.
 
@@ -39,6 +41,8 @@ run ledger는 수동 오케스트레이션의 현재 상태 SoT다.
 
 ```yaml
 run_id: RUN-2026-03-06-A
+ledger_kind: current
+projection_seq: 6
 parent_wbs: mvp-wbs/v1
 updated_at: 2026-03-06T12:30:00+09:00
 slice_entries:
@@ -51,6 +55,8 @@ slice_entries:
     latest_execution_state: review_required
     latest_result: partial
     recent_failure_type: orchestration
+    latest_decision_id: D-2026-03-06-001
+    latest_decision: rework
     next_operator_decision: rework
     open_feedback:
       - target: packet
@@ -58,13 +64,21 @@ slice_entries:
         note: editor command surface 입력 명세를 보강해야 함
     packet_history:
       - packet_id: H-2026-03-06-001
-        disposition: active
+        disposition: superseded
+        trace_count: 1
+        latest_trace_id: T-2026-03-06-014
+        latest_result: partial
+        superseded_by_packet_id: H-2026-03-06-002
+        recent_trace_refs:
+          - T-2026-03-06-014
     updated_at: 2026-03-06T12:30:00+09:00
 ```
 
 ## 필드 설명
 
 - `run_id`: 현재 orchestration run 식별자
+- `ledger_kind`: `current | snapshot`
+- `projection_seq`: 이 ledger projection이 반영한 마지막 event seq
 - `parent_wbs`: 어떤 WBS 버전을 기준으로 ledger를 해석해야 하는지
 - `updated_at`: ledger 전체 갱신 시각
 - `slice_entries`: slice별 현재 상태 엔트리 목록
@@ -80,9 +94,11 @@ slice_entries:
 - `latest_execution_state`: 가장 최근 trace의 실행 상태
 - `latest_result`: 최신 자기 평가 결과
 - `recent_failure_type`: 최근 실패 유형
+- `latest_decision_id`: 최신 operator decision
+- `latest_decision`: 최신 operator decision 종류
 - `next_operator_decision`: operator가 다음에 내려야 할 판단
 - `open_feedback`: 아직 반영되지 않은 feedback item
-- `packet_history`: packet lifecycle 참조 목록
+- `packet_history`: packet lineage와 trace 요약을 함께 가진 참조 목록
 - `updated_at`: slice 엔트리 마지막 갱신 시각
 
 ## 상태 권장안
@@ -117,7 +133,7 @@ slice_entries:
 
 ## 표준 운영 규칙
 
-### 1. Ledger가 현재 상태의 정본이다
+### 1. Current ledger가 최신 상태의 정본이다
 
 - 현재 누가 무엇을 들고 있는지 판단할 때는 packet이나 trace가 아니라 ledger를 먼저 본다.
 - packet과 trace는 ledger가 가리키는 참조 대상이다.
@@ -127,10 +143,12 @@ slice_entries:
 - packet은 발행 후 가능한 한 수정하지 않는다.
 - 상태 변경은 ledger entry 갱신으로 표현한다.
 
-### 3. Trace는 이력, ledger는 최신 상태
+### 3. Trace/decision은 이력, ledger는 projection
 
 - trace는 append-only로 남긴다.
-- ledger는 최신 정보만 요약해 보여준다.
+- decision도 append-only로 남긴다.
+- current ledger는 최신 정보만 요약해 보여준다.
+- snapshot ledger는 특정 decision 시점의 frozen projection을 남긴다.
 
 ### 4. Feedback은 ledger에서 추적
 
@@ -144,6 +162,7 @@ run ledger validator가 있다면 최소한 아래를 검사하는 것이 좋다
 - `slice_id`가 WBS에 존재하는가
 - `active_packet_id`가 실제 packet 문서와 연결되는가
 - `latest_trace_id`가 실제 trace 문서와 연결되는가
+- `latest_decision_id`가 실제 decision 문서와 연결되는가
 - `latest_execution_state`와 `active_packet_disposition`이 모순되지 않는가
 - `slice_state: done`인데 `next_operator_decision`이 남아 있지 않은가
 
@@ -157,12 +176,12 @@ run ledger validator가 있다면 최소한 아래를 검사하는 것이 좋다
 
 ### 단점
 
-- packet, trace, ledger의 3중 구조를 관리해야 한다
-- ledger 갱신 discipline이 없으면 금방 stale해질 수 있다
+- packet, trace, decision, ledger의 4중 구조를 관리해야 한다
+- current ledger와 snapshot ledger 갱신 discipline이 없으면 금방 stale해질 수 있다
 
 ## 이 저장소 기준 권장안
 
-- run ledger는 `context/wbs/`에서 관리한다
-- packet/trace 문서와 분리해 현재 상태만 담는다
+- current ledger와 snapshot ledger를 구분한다
+- packet/trace/decision 문서와 분리해 현재 상태 projection만 담는다
 - active slice 수가 적더라도 early stage부터 ledger를 두는 편이 낫다
 - 자동 오케스트레이션은 ledger가 stale하지 않게 유지될 때만 시도한다
