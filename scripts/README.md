@@ -24,6 +24,8 @@
 - `pr_title_guard.sh`: PR 제목 컨벤션 생성/검증 (`[scope] 요약`)
 - `pr_merge.sh`: PR merge + remote branch 삭제 + local cleanup 연계
 - `post_merge_cleanup.sh`: merge 후 로컬 브랜치 정리 (`pull --rebase origin main`)
+- `codex_wbs_emit.sh`: `codex exec --output-schema`로 WBS artifact 생성 + 검증
+- `validate_wbs_artifact.py`: WBS packet/trace/run ledger schema + semantic 검증
 
 ## 테스트
 - 브랜치 검증 테스트:
@@ -34,3 +36,5 @@
   - `python3 -m unittest scripts.repo.tests.test_pr_title_guard -v`
 - PR merge dry-run 동작 테스트:
   - `python3 -m unittest scripts.repo.tests.test_pr_merge_dry_run -v`
+- WBS artifact validator 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_validate_wbs_artifact -v`
