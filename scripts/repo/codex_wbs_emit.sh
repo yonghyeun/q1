@@ -11,6 +11,7 @@ usage() {
 kind:
   - handoff-packet
   - trace-summary
+  - operator-decision
   - run-ledger
 
 설명:
@@ -80,6 +81,9 @@ case "${KIND}" in
     ;;
   trace-summary)
     SCHEMA_REL="context/wbs/schemas/trace-summary.schema.json"
+    ;;
+  operator-decision)
+    SCHEMA_REL="context/wbs/schemas/operator-decision.schema.json"
     ;;
   run-ledger)
     SCHEMA_REL="context/wbs/schemas/run-ledger.schema.json"

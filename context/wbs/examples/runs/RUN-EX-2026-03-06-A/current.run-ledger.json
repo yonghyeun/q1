@@ -1,5 +1,7 @@
 {
   "run_id": "RUN-EX-2026-03-06-A",
+  "ledger_kind": "current",
+  "projection_seq": 6,
   "parent_wbs": "example/mvp-wbs-v0",
   "updated_at": "2026-03-06T11:05:00+09:00",
   "slice_entries": [
@@ -8,12 +10,15 @@
       "slice_state": "integration_review",
       "current_owner": "operator",
       "active_packet_id": "H-EX-2026-03-06-002",
-      "active_packet_disposition": "active",
+      "active_packet_disposition": "closed",
       "latest_trace_id": "T-EX-2026-03-06-002",
       "latest_execution_state": "review_required",
       "latest_result": "success",
       "recent_failure_type": "none",
-      "next_operator_decision": "accept",
+      "latest_decision_id": "D-EX-2026-03-06-002",
+      "latest_decision": "accept",
+      "latest_decision_at": "2026-03-06T11:05:00+09:00",
+      "next_operator_decision": "dispatch",
       "open_feedback": [
         {
           "target": "wbs",
@@ -24,11 +29,25 @@
       "packet_history": [
         {
           "packet_id": "H-EX-2026-03-06-001",
-          "disposition": "superseded"
+          "disposition": "superseded",
+          "trace_count": 1,
+          "latest_trace_id": "T-EX-2026-03-06-001",
+          "latest_result": "partial",
+          "superseded_by_packet_id": "H-EX-2026-03-06-002",
+          "recent_trace_refs": [
+            "T-EX-2026-03-06-001"
+          ]
         },
         {
           "packet_id": "H-EX-2026-03-06-002",
-          "disposition": "active"
+          "disposition": "closed",
+          "trace_count": 1,
+          "latest_trace_id": "T-EX-2026-03-06-002",
+          "latest_result": "success",
+          "supersedes_packet_id": "H-EX-2026-03-06-001",
+          "recent_trace_refs": [
+            "T-EX-2026-03-06-002"
+          ]
         }
       ],
       "updated_at": "2026-03-06T11:05:00+09:00"

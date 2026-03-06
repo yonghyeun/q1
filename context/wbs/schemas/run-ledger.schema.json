@@ -6,6 +6,8 @@
   "additionalProperties": false,
   "required": [
     "run_id",
+    "ledger_kind",
+    "projection_seq",
     "parent_wbs",
     "updated_at",
     "slice_entries"
@@ -14,6 +16,25 @@
     "run_id": {
       "type": "string",
       "minLength": 1
+    },
+    "ledger_kind": {
+      "type": "string",
+      "enum": [
+        "current",
+        "snapshot"
+      ]
+    },
+    "projection_seq": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "source_decision_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_seq": {
+      "type": "integer",
+      "minimum": 1
     },
     "parent_wbs": {
       "type": "string",
@@ -39,6 +60,9 @@
           "latest_execution_state",
           "latest_result",
           "recent_failure_type",
+          "latest_decision_id",
+          "latest_decision",
+          "latest_decision_at",
           "next_operator_decision",
           "open_feedback",
           "packet_history",
@@ -112,6 +136,26 @@
               "wbs"
             ]
           },
+          "latest_decision_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "latest_decision": {
+            "type": "string",
+            "enum": [
+              "dispatch",
+              "accept",
+              "rework",
+              "block",
+              "cancel",
+              "remediate",
+              "close"
+            ]
+          },
+          "latest_decision_at": {
+            "type": "string",
+            "minLength": 1
+          },
           "next_operator_decision": {
             "type": "string",
             "enum": [
@@ -168,7 +212,10 @@
               "additionalProperties": false,
               "required": [
                 "packet_id",
-                "disposition"
+                "disposition",
+                "trace_count",
+                "latest_trace_id",
+                "latest_result"
               ],
               "properties": {
                 "packet_id": {
@@ -182,8 +229,39 @@
                     "active",
                     "closed",
                     "superseded",
-                    "cancelled"
+                      "cancelled"
+                    ]
+                },
+                "trace_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "latest_trace_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "latest_result": {
+                  "type": "string",
+                  "enum": [
+                    "success",
+                    "partial",
+                    "failed"
                   ]
+                },
+                "supersedes_packet_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "superseded_by_packet_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "recent_trace_refs": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
                 }
               }
             }

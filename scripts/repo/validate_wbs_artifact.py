@@ -17,6 +17,7 @@ EXIT_SEMANTIC_VIOLATION = 63
 KIND_TO_SCHEMA = {
     "handoff-packet": "context/wbs/schemas/handoff-packet.schema.json",
     "trace-summary": "context/wbs/schemas/trace-summary.schema.json",
+    "operator-decision": "context/wbs/schemas/operator-decision.schema.json",
     "run-ledger": "context/wbs/schemas/run-ledger.schema.json",
 }
 
@@ -70,6 +71,11 @@ def validate_handoff_semantics(payload: object) -> None:
     data = ensure_object(payload)
     if data["handoff_from"] == data["handoff_to"]:
         raise WbsArtifactError("handoff_from 과 handoff_to 는 같을 수 없습니다.", EXIT_SEMANTIC_VIOLATION)
+    if data.get("supersedes_packet_id") == data["packet_id"]:
+        raise WbsArtifactError(
+            "supersedes_packet_id 는 packet_id 와 같을 수 없습니다.",
+            EXIT_SEMANTIC_VIOLATION,
+        )
 
 
 def validate_trace_semantics(payload: object) -> None:
@@ -88,8 +94,47 @@ def validate_trace_semantics(payload: object) -> None:
         )
 
 
+def validate_operator_decision_semantics(payload: object) -> None:
+    data = ensure_object(payload)
+    decision = data["decision"]
+    next_packet_id = data.get("next_packet_id")
+    disposition_after = data["packet_disposition_after"]
+    slice_state_after = data["slice_state_after"]
+
+    if decision in {"rework", "dispatch", "remediate"} and not next_packet_id:
+        raise WbsArtifactError(
+            f"decision 이 {decision} 이면 next_packet_id 가 필요합니다.",
+            EXIT_SEMANTIC_VIOLATION,
+        )
+
+    if decision in {"block", "cancel", "close"} and next_packet_id:
+        raise WbsArtifactError(
+            f"decision 이 {decision} 이면 next_packet_id 를 두지 않습니다.",
+            EXIT_SEMANTIC_VIOLATION,
+        )
+
+    if disposition_after == "superseded" and not next_packet_id:
+        raise WbsArtifactError(
+            "packet_disposition_after 가 superseded 이면 next_packet_id 가 필요합니다.",
+            EXIT_SEMANTIC_VIOLATION,
+        )
+
+    if slice_state_after == "done" and decision != "close":
+        raise WbsArtifactError(
+            "slice_state_after 가 done 이면 decision 은 close 여야 합니다.",
+            EXIT_SEMANTIC_VIOLATION,
+        )
+
+
 def validate_run_ledger_semantics(payload: object) -> None:
     data = ensure_object(payload)
+    if data["ledger_kind"] == "snapshot":
+        if "source_decision_id" not in data or "source_seq" not in data:
+            raise WbsArtifactError(
+                "snapshot ledger 는 source_decision_id 와 source_seq 가 필요합니다.",
+                EXIT_SEMANTIC_VIOLATION,
+            )
+
     seen_slice_ids: set[str] = set()
     for entry in data["slice_entries"]:
         slice_id = entry["slice_id"]
@@ -112,6 +157,15 @@ def validate_run_ledger_semantics(payload: object) -> None:
                 EXIT_SEMANTIC_VIOLATION,
             )
 
+        for packet_history in entry["packet_history"]:
+            recent_trace_refs = packet_history.get("recent_trace_refs", [])
+            trace_count = packet_history["trace_count"]
+            if trace_count < len(recent_trace_refs):
+                raise WbsArtifactError(
+                    f"trace_count 는 recent_trace_refs 길이보다 작을 수 없습니다: {slice_id}",
+                    EXIT_SEMANTIC_VIOLATION,
+                )
+
 
 def validate_semantics(kind: str, payload: object) -> None:
     if kind == "handoff-packet":
@@ -119,6 +173,9 @@ def validate_semantics(kind: str, payload: object) -> None:
         return
     if kind == "trace-summary":
         validate_trace_semantics(payload)
+        return
+    if kind == "operator-decision":
+        validate_operator_decision_semantics(payload)
         return
     if kind == "run-ledger":
         validate_run_ledger_semantics(payload)

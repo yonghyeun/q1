@@ -1,0 +1,38 @@
+{
+  "decision_id": "D-EX-2026-03-06-002",
+  "run_id": "RUN-EX-2026-03-06-A",
+  "seq": 6,
+  "slice_id": "EX-MVP-TS-INSERT",
+  "packet_id": "H-EX-2026-03-06-002",
+  "reviewed_trace_ids": [
+    "T-EX-2026-03-06-002"
+  ],
+  "made_at": "2026-03-06T11:05:00+09:00",
+  "operator_actor": "operator",
+  "decision": "accept",
+  "review_summary": "impl handoff 범위는 충족됐고 다음 단계는 integration actor dispatch다.",
+  "reason_code": "goal_met",
+  "reason_detail": "보강된 입력 기준으로 AC가 충족됐고 다음 actor가 판단 가능한 trace가 남았다.",
+  "slice_state_before": "active",
+  "slice_state_after": "integration_review",
+  "packet_disposition_before": "active",
+  "packet_disposition_after": "closed",
+  "updated_current_ledger_ref": "context/wbs/examples/runs/RUN-EX-2026-03-06-A/current.run-ledger.json",
+  "snapshot_ref": "context/wbs/examples/runs/RUN-EX-2026-03-06-A/snapshots/0006.accept.run-ledger.json",
+  "feedback_applied": [
+    {
+      "target": "orchestration",
+      "action": "packet 002를 impl handoff 완료로 닫고 다음 integration dispatch 준비 상태로 전이했다."
+    }
+  ],
+  "feedback_opened": [
+    {
+      "target": "wbs",
+      "severity": "should_fix",
+      "note": "timestamp-insert slice에 impl handoff와 integration handoff를 분리 명시하면 재작업이 줄어든다."
+    }
+  ],
+  "context_notes": [
+    "다음 seq에서는 integration actor용 새 packet이 발행될 수 있다."
+  ]
+}

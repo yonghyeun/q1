@@ -25,7 +25,7 @@
 - `pr_merge.sh`: PR merge + remote branch 삭제 + local cleanup 연계
 - `post_merge_cleanup.sh`: merge 후 로컬 브랜치 정리 (`pull --rebase origin main`)
 - `codex_wbs_emit.sh`: `codex exec --output-schema`로 WBS artifact 생성 + 검증
-- `validate_wbs_artifact.py`: WBS packet/trace/run ledger schema + semantic 검증
+- `validate_wbs_artifact.py`: WBS packet/trace/operator decision/run ledger schema + semantic 검증
 
 ## 테스트
 - 브랜치 검증 테스트:

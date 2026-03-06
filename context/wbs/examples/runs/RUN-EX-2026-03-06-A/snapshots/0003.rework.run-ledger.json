@@ -1,0 +1,46 @@
+{
+  "run_id": "RUN-EX-2026-03-06-A",
+  "ledger_kind": "snapshot",
+  "projection_seq": 3,
+  "source_decision_id": "D-EX-2026-03-06-001",
+  "source_seq": 3,
+  "parent_wbs": "example/mvp-wbs-v0",
+  "updated_at": "2026-03-06T10:29:00+09:00",
+  "slice_entries": [
+    {
+      "slice_id": "EX-MVP-TS-INSERT",
+      "slice_state": "active",
+      "current_owner": "operator",
+      "active_packet_id": "H-EX-2026-03-06-001",
+      "active_packet_disposition": "superseded",
+      "latest_trace_id": "T-EX-2026-03-06-001",
+      "latest_execution_state": "review_required",
+      "latest_result": "partial",
+      "recent_failure_type": "orchestration",
+      "latest_decision_id": "D-EX-2026-03-06-001",
+      "latest_decision": "rework",
+      "latest_decision_at": "2026-03-06T10:29:00+09:00",
+      "next_operator_decision": "dispatch",
+      "open_feedback": [
+        {
+          "target": "wbs",
+          "severity": "should_fix",
+          "note": "impl handoff와 integration handoff를 분리 명시하면 재작업이 줄어든다."
+        }
+      ],
+      "packet_history": [
+        {
+          "packet_id": "H-EX-2026-03-06-001",
+          "disposition": "superseded",
+          "trace_count": 1,
+          "latest_trace_id": "T-EX-2026-03-06-001",
+          "latest_result": "partial",
+          "recent_trace_refs": [
+            "T-EX-2026-03-06-001"
+          ]
+        }
+      ],
+      "updated_at": "2026-03-06T10:29:00+09:00"
+    }
+  ]
+}

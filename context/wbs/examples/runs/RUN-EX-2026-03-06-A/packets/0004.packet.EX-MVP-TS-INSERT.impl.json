@@ -1,34 +1,38 @@
 {
-  "packet_id": "H-EX-2026-03-06-001",
+  "packet_id": "H-EX-2026-03-06-002",
+  "run_id": "RUN-EX-2026-03-06-A",
+  "seq": 4,
   "slice_id": "EX-MVP-TS-INSERT",
   "parent_wbs": "example/mvp-wbs-v0",
   "owner_role": "impl",
   "handoff_from": "operator",
   "handoff_to": "impl",
-  "goal": "Player + Note 화면에서 버튼으로 현재 재생 시점을 노트에 Markdown 타임스탬프로 삽입한다.",
-  "why": "타임스탬프 삽입은 MVP 핵심 학습 루프를 닫는 기능이다.",
+  "supersedes_packet_id": "H-EX-2026-03-06-001",
+  "goal": "현재 재생 시점을 Markdown 타임스탬프로 변환하고 note editor insert command에 안전하게 전달한다.",
+  "why": "첫 handoff의 모호한 입력을 줄여 impl handoff를 완료 가능한 단위로 좁힌다.",
   "inputs": [
     "docs/product/mvp-spec.md:12",
     "docs/product/mvp-spec.md:61",
     "docs/product/contracts/domain.ts:38",
-    "docs/product/contracts/storage.ts:40"
+    "docs/product/contracts/storage.ts:40",
+    "context/wbs/examples/runs/RUN-EX-2026-03-06-A/support/editor-command-surface.md:1"
   ],
   "contracts": [
     "docs/product/contracts/domain.ts",
     "docs/product/contracts/storage.ts"
   ],
   "acceptance_criteria": [
-    "버튼 클릭 시 현재 정수 초가 HH:MM:SS Markdown 링크로 노트에 삽입된다.",
-    "삽입 링크는 외부 이동 없이 앱 내부 seek 처리와 호환되는 URL 포맷을 유지한다.",
-    "삽입 이후 note 저장 모델과 충돌하지 않는다."
+    "현재 정수 초가 HH:MM:SS Markdown 링크로 변환된다.",
+    "변환된 Markdown이 noteEditor.insertAtCursor에 전달된다.",
+    "이번 handoff 결과만으로 다음 integration actor가 UI wiring을 이어받을 수 있다."
   ],
   "owned_paths": [
     "apps/web/src/features/player-note/timestamp/**",
     "apps/web/src/features/player-note/editor/**"
   ],
   "non_goals": [
-    "단축키 삽입 구현",
-    "타임스탬프 클릭 seek 구현"
+    "analytics emission 구현",
+    "최종 UI wiring 검증"
   ],
   "dependencies": [
     "player time adapter",
@@ -64,6 +68,6 @@
     "trace_summary"
   ],
   "open_risks": [
-    "editor insert command 표면이 packet 입력에 충분히 명시되지 않았다."
+    "최종 analytics 연결은 다음 integration handoff로 넘겨진다."
   ]
 }
