@@ -206,31 +206,40 @@ contracts:
 - `[blocking] player current time read contract를 별도 SoT로 만들 것인가?`
 - `[later] 버튼과 단축키를 같은 slice로 둘 것인가?`
 
-### `workspace_binding`
+### `workspace_bindings`
 
-- branch, worktree, 할당된 agent/profile처럼 slice의 작업 위치와 담당 바인딩을 적는다.
+- branch, worktree, 용도처럼 slice의 작업 공간 계획 묶음을 적는다.
 - 이 필드는 planning-layer binding이며 runtime status가 아니다.
-- 값이 아직 없으면 `null`을 사용한다.
+- 한 task에 여러 workspace binding을 둘 수 있다.
+- 값이 아직 없으면 `[]`를 사용한다.
 - 현재 권장 하위 필드는 아래와 같다.
+  - `purpose`
   - `branch`
   - `worktree`
-  - `assigned_agent`
-  - `assigned_profile`
 
 예:
 
 ```yaml
-workspace_binding:
-  branch: feat/mvp-ts-insert
-  worktree: /home/yonghyeun/worktrees/q1-mvp-ts-insert
-  assigned_agent: null
-  assigned_profile: null
+workspace_bindings:
+  - purpose: 구현
+    branch: feat/mvp-ts-insert
+    worktree: /home/yonghyeun/worktrees/q1-mvp-ts-insert
+  - purpose: 버그 수정
+    branch: fix/mvp-ts-insert-follow-up
+    worktree: /home/yonghyeun/worktrees/q1-mvp-ts-insert-fix
 ```
+
+- `purpose`는 가능한 한 짧은 한국어 명사로 쓴다.
+- 권장 예:
+  - `구현`
+  - `버그 수정`
+  - `실험`
+  - `안정화`
 
 ### `refs`
 
 - slice와 연결된 planning/runtime artifact 참조를 적는다.
-- branch/worktree는 `refs`가 아니라 `workspace_binding`에 둔다.
+- branch/worktree는 `refs`가 아니라 `workspace_bindings`에 둔다.
 - 현재 권장 하위 필드는 아래와 같다.
   - `planned_flow`
   - `run_id`
@@ -282,9 +291,9 @@ refs:
 - WBS: `ready_for_flow`
 - Run ledger: `active`
 
-### `workspace_binding`과 `refs`를 섞지 않는다
+### `workspace_bindings`와 `refs`를 섞지 않는다
 
-- `workspace_binding`: branch/worktree/할당 정보
+- `workspace_bindings`: branch/worktree/용도 정보
 - `refs`: planned flow, run, 문서 참조
 
 ## 현재 단계의 실무 규칙
@@ -306,5 +315,5 @@ WBS를 저장하기 전에 아래를 확인한다.
 - `verification_requirements`가 검증 의무 수준으로 표현됐는가
 - `non_goals`가 scope 경계를 분명히 하는가
 - `risks`와 `open_questions`가 구분됐는가
-- `workspace_binding`과 `refs`가 역할에 맞게 분리됐는가
+- `workspace_bindings`와 `refs`가 역할에 맞게 분리됐는가
 - concrete path/test/route가 WBS에 섞이지 않았는가
