@@ -125,6 +125,56 @@ class ValidateWbsArtifactTests(unittest.TestCase):
             validate_wbs_artifact.validate_semantics("operator-decision", payload)
         self.assertEqual(ctx.exception.exit_code, validate_wbs_artifact.EXIT_SEMANTIC_VIOLATION)
 
+    def test_operator_decision_dispatch_allows_missing_snapshot_ref(self) -> None:
+        payload = {
+            "decision_id": "D-2026-03-06-002",
+            "run_id": "RUN-2026-03-06-A",
+            "seq": 4,
+            "slice_id": "MVP-TS-INSERT",
+            "packet_id": "H-2026-03-06-002",
+            "reviewed_trace_ids": ["T-2026-03-06-002"],
+            "made_at": "2026-03-06T10:35:00+09:00",
+            "operator_actor": "operator",
+            "decision": "dispatch",
+            "review_summary": "다음 actor로 넘길 준비가 됐다.",
+            "reason_code": "goal_met",
+            "reason_detail": "impl handoff가 닫혔고 integration packet을 발행한다.",
+            "slice_state_before": "integration_review",
+            "slice_state_after": "integration_review",
+            "packet_disposition_before": "closed",
+            "packet_disposition_after": "closed",
+            "next_packet_id": "H-2026-03-06-003",
+            "updated_current_ledger_ref": "context/wbs/runs/RUN-2026-03-06-A/current.run-ledger.json",
+        }
+
+        validate_wbs_artifact.validate_against_schema("operator-decision", payload)
+        validate_wbs_artifact.validate_semantics("operator-decision", payload)
+
+    def test_operator_decision_accept_requires_snapshot_ref(self) -> None:
+        payload = {
+            "decision_id": "D-2026-03-06-003",
+            "run_id": "RUN-2026-03-06-A",
+            "seq": 6,
+            "slice_id": "MVP-TS-INSERT",
+            "packet_id": "H-2026-03-06-002",
+            "reviewed_trace_ids": ["T-2026-03-06-002"],
+            "made_at": "2026-03-06T11:05:00+09:00",
+            "operator_actor": "operator",
+            "decision": "accept",
+            "review_summary": "handoff 범위는 충족됐다.",
+            "reason_code": "goal_met",
+            "reason_detail": "다음 actor가 판단 가능한 수준이다.",
+            "slice_state_before": "active",
+            "slice_state_after": "integration_review",
+            "packet_disposition_before": "active",
+            "packet_disposition_after": "closed",
+            "updated_current_ledger_ref": "context/wbs/runs/RUN-2026-03-06-A/current.run-ledger.json",
+        }
+
+        with self.assertRaises(validate_wbs_artifact.WbsArtifactError) as ctx:
+            validate_wbs_artifact.validate_semantics("operator-decision", payload)
+        self.assertEqual(ctx.exception.exit_code, validate_wbs_artifact.EXIT_SEMANTIC_VIOLATION)
+
     def test_run_ledger_rejects_snapshot_without_source_decision(self) -> None:
         payload = {
             "run_id": "RUN-2026-03-06-A",
@@ -137,8 +187,8 @@ class ValidateWbsArtifactTests(unittest.TestCase):
                     "slice_id": "MVP-TS-INSERT",
                     "slice_state": "active",
                     "current_owner": "operator",
-                    "active_packet_id": "H-2026-03-06-001",
-                    "active_packet_disposition": "superseded",
+                    "current_packet_id": "H-2026-03-06-001",
+                    "current_packet_disposition": "superseded",
                     "latest_trace_id": "T-2026-03-06-001",
                     "latest_execution_state": "review_required",
                     "latest_result": "partial",
@@ -178,8 +228,8 @@ class ValidateWbsArtifactTests(unittest.TestCase):
                     "slice_id": "MVP-TS-INSERT",
                     "slice_state": "active",
                     "current_owner": "operator",
-                    "active_packet_id": "H-2026-03-06-002",
-                    "active_packet_disposition": "active",
+                    "current_packet_id": "H-2026-03-06-002",
+                    "current_packet_disposition": "active",
                     "latest_trace_id": "T-2026-03-06-002",
                     "latest_execution_state": "review_required",
                     "latest_result": "success",

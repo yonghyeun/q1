@@ -100,6 +100,8 @@ def validate_operator_decision_semantics(payload: object) -> None:
     next_packet_id = data.get("next_packet_id")
     disposition_after = data["packet_disposition_after"]
     slice_state_after = data["slice_state_after"]
+    snapshot_ref = data.get("snapshot_ref")
+    checkpoint_decisions = {"accept", "rework", "block", "cancel", "remediate", "close"}
 
     if decision in {"rework", "dispatch", "remediate"} and not next_packet_id:
         raise WbsArtifactError(
@@ -122,6 +124,12 @@ def validate_operator_decision_semantics(payload: object) -> None:
     if slice_state_after == "done" and decision != "close":
         raise WbsArtifactError(
             "slice_state_after 가 done 이면 decision 은 close 여야 합니다.",
+            EXIT_SEMANTIC_VIOLATION,
+        )
+
+    if decision in checkpoint_decisions and not snapshot_ref:
+        raise WbsArtifactError(
+            f"decision 이 {decision} 이면 snapshot_ref 가 필요합니다.",
             EXIT_SEMANTIC_VIOLATION,
         )
 
@@ -151,9 +159,9 @@ def validate_run_ledger_semantics(payload: object) -> None:
                 EXIT_SEMANTIC_VIOLATION,
             )
 
-        if entry["active_packet_disposition"] == "active" and entry["latest_execution_state"] == "done":
+        if entry["current_packet_disposition"] == "active" and entry["latest_execution_state"] == "done":
             raise WbsArtifactError(
-                f"active packet 이면서 latest_execution_state 가 done 으로 끝나면 disposition 정리가 필요합니다: {slice_id}",
+                f"current packet 이 active 인데 latest_execution_state 가 done 이면 disposition 정리가 필요합니다: {slice_id}",
                 EXIT_SEMANTIC_VIOLATION,
             )
 

@@ -21,8 +21,7 @@
     "slice_state_after",
     "packet_disposition_before",
     "packet_disposition_after",
-    "updated_current_ledger_ref",
-    "snapshot_ref"
+    "updated_current_ledger_ref"
   ],
   "properties": {
     "decision_id": {
