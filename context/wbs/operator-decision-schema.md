@@ -28,6 +28,7 @@ reviewed_trace_ids:
 made_at: 2026-03-06T12:30:00+09:00
 operator_actor: operator
 decision: rework
+review_summary: 구현 방향은 맞지만 packet 입력이 부족해 다음 actor가 판단 가능한 수준에 도달하지 못했다.
 reason_code: bad_handoff
 reason_detail: editor command surface 입력이 빠져 integration 판단이 불가능했다.
 slice_state_before: active
@@ -38,11 +39,14 @@ next_packet_id: H-2026-03-06-002
 updated_current_ledger_ref: context/wbs/runs/RUN-2026-03-06-A/current.run-ledger.json
 snapshot_ref: context/wbs/runs/RUN-2026-03-06-A/snapshots/0003.rework.run-ledger.json
 feedback_applied:
-  - packet input 명세를 보강함
+  - target: packet
+    action: packet inputs에 editor command surface 명세를 추가했다.
 feedback_opened:
   - target: wbs
     severity: should_fix
     note: impl handoff와 integration handoff를 분리 검토한다.
+context_notes:
+  - 구현자 실패보다 handoff 품질 부족으로 분류했다.
 ```
 
 ## 필드 설명
@@ -56,15 +60,17 @@ feedback_opened:
 - `made_at`: decision 시각
 - `operator_actor`: 판정을 내린 actor
 - `decision`: 상태 전이 종류
+- `review_summary`: operator가 본 핵심 판정 요약
 - `reason_code`: 기계적 분류용 사유 코드
 - `reason_detail`: 사람이 읽는 판단 근거
 - `slice_state_before/after`: slice 상태 전이
 - `packet_disposition_before/after`: packet disposition 전이
 - `next_packet_id`: 후속 packet이 있으면 참조
 - `updated_current_ledger_ref`: 갱신된 current ledger 경로
-- `snapshot_ref`: 이 decision 시점 snapshot ledger 경로
+- `snapshot_ref`: snapshot checkpoint를 남긴 decision이면 그 snapshot ledger 경로
 - `feedback_applied`: 이번 decision에서 실제 반영한 피드백
 - `feedback_opened`: 남겨 둔 후속 피드백
+- `context_notes`: 후속 operator/automation이 알아야 할 맥락
 
 ## 권장 reason code
 
@@ -80,5 +86,6 @@ feedback_opened:
 ## 운영 규칙
 
 - operator decision은 `trace`를 대체하지 않는다. trace를 검토한 후 별도로 생성한다.
-- `snapshot ledger`는 decision 직후 생성하고 `decision_id`와 연결한다.
+- `rework`, `block`, `cancel`, `remediate`, `accept`, `close` decision은 `snapshot ledger`를 남기고 `snapshot_ref`를 연결한다.
+- `dispatch`는 기본적으로 current ledger만 갱신하고 `snapshot_ref`는 생략한다. 다만 운영상 checkpoint가 필요하면 예외적으로 남길 수 있다.
 - `current ledger` 갱신은 decision event 이후에만 일어나는 것을 기본값으로 둔다.

@@ -251,7 +251,7 @@ confidence: medium
 - `packet`: handoff 명세 자체를 담고, runtime 상태는 갖지 않는다
 - `trace.execution_state`: 개별 실행의 현재 상태를 나타낸다
 - `operator decision`: trace 검토 후 내려진 상태 전이 판단을 남긴다
-- `run ledger`: 현재 slice 상태, active packet, next decision의 SoT를 가진다
+- `run ledger`: 현재 slice 상태, current packet, next decision의 SoT를 가진다
 
 ## 평가 기준과 실패 분류
 

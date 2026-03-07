@@ -53,6 +53,7 @@
 
 - operator는 `accept` decision을 남기고 current ledger를 갱신한다.
 - current ledger는 최신 상태만 들고 있고, decision 시점 상태는 snapshot ledger에서 복원할 수 있다.
+- 이 예시는 여기서 멈춘다. `next_operator_decision: dispatch`는 다음 actor packet 발행이 아직 남아 있음을 뜻한다.
 
 ## 중요한 해석 규칙
 
@@ -60,6 +61,7 @@
 - 이 디렉터리는 "형태"와 "흐름"을 보여주기 위한 것이지, 현재 저장소에 이미 해당 slice WBS가 존재한다는 뜻은 아니다.
 - 실제 WBS를 만들기 시작하면 `parent_wbs`, `slice_id`, `owned_paths`를 실제 값으로 바꿔야 한다.
 - 예시 run은 `run-local seq`로 정렬된다. 시간값은 보조 정보다.
+- `current.run-ledger.json`의 `current_packet_id`는 최신 기준 packet을 뜻하며, `closed` 상태일 수 있다.
 
 ## 검증 방법
 

@@ -96,6 +96,7 @@ context/wbs/examples/runs/<run_id>/
 - 최신 상태 projection
 - 각 `run_id`당 1개
 - operator와 자동화가 기본적으로 읽는 문서
+- `current_packet_id`는 slice 기준 최신 packet이며, 반드시 `active` 상태 packet만 뜻하지는 않는다.
 
 ### Snapshot ledger
 
@@ -111,6 +112,7 @@ snapshot ledger는 최소한 아래 시점에 남기는 것을 권장한다.
 - operator가 `block` 또는 `cancel`을 결정한 직후
 - operator가 `accept` 또는 `close`를 결정한 직후
 - remediation packet을 발행하는 decision 직후
+- `dispatch`는 기본적으로 current ledger만 갱신하고 snapshot은 생략한다.
 
 ## Trade-offs
 

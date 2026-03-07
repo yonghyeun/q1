@@ -40,3 +40,4 @@ context_notes:
 
 - decision은 operator의 상태 전이 기록이다.
 - trace를 대체하지 않고, trace 검토 후 별도 artifact로 남긴다.
+- `snapshot_ref`는 checkpoint decision에서 사용한다. `dispatch`는 기본적으로 생략한다.

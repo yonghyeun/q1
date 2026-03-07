@@ -8,7 +8,7 @@ run ledger는 수동 오케스트레이션의 상태 projection이다.
 ## 목적
 
 - 지금 어떤 slice가 활성 상태인지 한 번에 보여준다.
-- active packet, 최신 trace, 다음 operator decision을 연결한다.
+- current packet, 최신 trace, 다음 operator decision을 연결한다.
 - 실패 유형과 미반영 feedback을 누적해 재작업과 구조 개선을 구분한다.
 - 추후 자동 오케스트레이션이 읽을 상태 정본을 마련한다.
 - current 상태와 snapshot checkpoint를 분리한다.
@@ -20,7 +20,7 @@ run ledger는 수동 오케스트레이션의 상태 projection이다.
 
 둘만으로는 아래 질문에 즉시 답하기 어렵다.
 
-- 지금 살아 있는 packet은 무엇인가
+- 지금 기준 packet은 무엇인가
 - 어떤 slice가 blocked 상태인가
 - 어떤 feedback이 아직 반영되지 않았는가
 - 다음 operator 판단이 무엇인가
@@ -37,6 +37,9 @@ run ledger는 수동 오케스트레이션의 상태 projection이다.
 
 중요한 원칙은, packet에 runtime 상태를 넣지 않고 ledger가 현재 상태를 소유하게 하는 것이다.
 
+현재 schema는 runtime artifact가 이미 발행된 slice를 주 대상으로 본다.
+packet 발행 전 `planned`/`ready` slice까지 ledger에 넣을지는 `open-questions.md`에서 별도 합의한다.
+
 ## 권장 스키마
 
 ```yaml
@@ -49,8 +52,8 @@ slice_entries:
   - slice_id: MVP-TS-INSERT
     slice_state: active
     current_owner: impl
-    active_packet_id: H-2026-03-06-001
-    active_packet_disposition: active
+    current_packet_id: H-2026-03-06-001
+    current_packet_disposition: active
     latest_trace_id: T-2026-03-06-014
     latest_execution_state: review_required
     latest_result: partial
@@ -88,8 +91,8 @@ slice_entries:
 - `slice_id`: WBS slice 식별자
 - `slice_state`: slice 전체 상태
 - `current_owner`: 현재 owner role 또는 actor
-- `active_packet_id`: 현재 살아 있는 packet
-- `active_packet_disposition`: active packet의 현재 disposition
+- `current_packet_id`: 현재 projection 기준 packet
+- `current_packet_disposition`: current packet의 disposition
 - `latest_trace_id`: 가장 최근 trace
 - `latest_execution_state`: 가장 최근 trace의 실행 상태
 - `latest_result`: 최신 자기 평가 결과
@@ -100,6 +103,9 @@ slice_entries:
 - `open_feedback`: 아직 반영되지 않은 feedback item
 - `packet_history`: packet lineage와 trace 요약을 함께 가진 참조 목록
 - `updated_at`: slice 엔트리 마지막 갱신 시각
+
+여기서 `current_packet`은 반드시 `active` 상태 packet만 뜻하지 않는다.
+가장 최근 operator 판단 기준이 된 packet을 가리키며, 따라서 `closed`나 `superseded`일 수도 있다.
 
 ## 상태 권장안
 
@@ -160,10 +166,10 @@ slice_entries:
 run ledger validator가 있다면 최소한 아래를 검사하는 것이 좋다.
 
 - `slice_id`가 WBS에 존재하는가
-- `active_packet_id`가 실제 packet 문서와 연결되는가
+- `current_packet_id`가 실제 packet 문서와 연결되는가
 - `latest_trace_id`가 실제 trace 문서와 연결되는가
 - `latest_decision_id`가 실제 decision 문서와 연결되는가
-- `latest_execution_state`와 `active_packet_disposition`이 모순되지 않는가
+- `latest_execution_state`와 `current_packet_disposition`이 모순되지 않는가
 - `slice_state: done`인데 `next_operator_decision`이 남아 있지 않은가
 
 ## 표준적 trade-off

@@ -46,7 +46,7 @@ artifact 종류는 `handoff-packet`, `trace-summary`, `operator-decision`, `run-
 
 ### 1. 사람 작성 경로
 
-- 사람이 직접 packet / trace / ledger를 만들거나 검토할 때는 `templates/`를 사용한다.
+- 사람이 직접 packet / trace / operator decision / current·snapshot ledger를 만들거나 검토할 때는 `templates/`를 사용한다.
 - 템플릿은 human-readable 문서의 기준 포맷이다.
 
 ### 2. 에이전트 생성 경로
@@ -58,6 +58,12 @@ artifact 종류는 `handoff-packet`, `trace-summary`, `operator-decision`, `run-
 
 - 생성된 JSON artifact는 validator script로 다시 검증한다.
 - 이 검증은 schema 위반뿐 아니라 일부 semantic rule도 체크한다.
+
+### 4. Machine field와 narrative field 분리
+
+- ID, path, command, enum, 상태값은 machine field로 분리한다.
+- `summary`, `reason_detail`, `decision_rationale`, `context_notes`는 narrative field에만 둔다.
+- 예를 들어 `tests_skipped`는 문자열 한 줄이 아니라 `{ command, reason_code, reason_detail }` 구조를 권장한다.
 
 ## 왜 config-only를 권장하지 않나
 

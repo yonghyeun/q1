@@ -73,7 +73,7 @@ handoff packet과 trace가 어떻게 생성·이동·축적되고
 - `trace.execution_state`: 개별 실행의 상태
 - `operator decision`: 상태 전이와 판정 사유
 - `run ledger.slice_state`: slice의 현재 상태
-- `run ledger.active_packet_id`: 지금 어떤 packet이 살아 있는지
+- `run ledger.current_packet_id`: slice 기준 최신 packet이 무엇인지
 
 이 분리를 하지 않으면 packet이 계획과 상태를 동시에 들고 다니게 되어 drift가 커진다.
 
@@ -243,7 +243,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 완료 시 operator는:
 
 - decision event를 남기고
-- run ledger에서 active packet을 `closed` 또는 `superseded`로 기록하고
+- run ledger에서 current packet을 `closed` 또는 `superseded`로 기록하고
 - current ledger를 갱신하며
 - 해당 decision 시점 snapshot ledger를 남기고
 - WBS slice를 완료 처리한다
@@ -335,7 +335,7 @@ run ledger는 다음 질문에 즉시 답할 수 있어야 한다.
 - blocked 이유는 무엇인가
 - 최근 실패 유형은 무엇인가
 - 아직 반영되지 않은 feedback item은 무엇인가
-- active packet의 disposition은 무엇인가
+- current packet의 disposition은 무엇인가
 
 즉, run ledger는 "현재 상황판"이며,
 operator 또는 향후 operator agent가 가장 먼저 보는 entry point다.
