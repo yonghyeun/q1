@@ -1,5 +1,7 @@
 # DEC: WBS task YAML, index projection, and workspace binding
 
+- Status: partially superseded by `2026-03-07_wbs-multiple-workspace-bindings-and-agent-removal.md`
+
 - Date: 2026-03-07
 - Context: WBS를 실제 운영 artifact로 쓰기 시작하면서 slice 정본을 어떤 단위로 저장할지, 사람이 backlog 전체를 어떻게 훑을지, 그리고 branch/worktree 같은 병렬 개발 바인딩 정보를 어디에 둘지가 필요해졌다. 특히 branch/worktree를 `planned flow`에 둘지, `refs`에 둘지, WBS task 자체에 둘지 명확하지 않았다. 동시에 runtime 상태는 이미 `run ledger`가 소유하도록 합의되어 있어, planning-layer 정보와 runtime 상태가 다시 섞이지 않게 해야 했다.
 - Decision: WBS는 `slice 1개 = task YAML 파일 1개`를 기본 저장 단위로 사용하고, backlog overview는 별도 `index.md` projection으로 제공한다. branch/worktree/agent assignment 같은 작업 바인딩 정보는 `refs`나 `planned flow`가 아니라 WBS task YAML의 `workspace_binding` 필드에 둔다.
