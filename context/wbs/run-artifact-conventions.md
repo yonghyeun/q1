@@ -2,6 +2,9 @@
 
 이 문서는 orchestration run 내부 artifact의 파일 구조, 정렬 규칙, lineage 규칙을 정의한다.
 
+`planned flow`는 run 내부 artifact가 아니라 planning-layer 문서이므로
+이 문서의 범위에 포함하지 않는다. 권장 위치는 `context/wbs/flows/`다.
+
 ## 목적
 
 - `packet`, `trace`, `operator decision`, `run ledger`의 저장 위치를 통일한다.

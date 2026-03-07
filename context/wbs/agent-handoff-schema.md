@@ -16,6 +16,18 @@
 - 원 요청은 자주 바꾸지 않고, 실행 결과는 append-only에 가깝게 남긴다.
 - `packet`은 가능한 한 불변(immutable)으로 유지하고, runtime 상태는 `trace`와 `run ledger`가 책임진다.
 
+## 용어 주의
+
+이 저장소에서 `trace`는 개별 packet의 **실행 기록**을 뜻한다.
+packet이 여러 node를 거쳐 이동하는 전체 경로는 `trace`가 아니라
+`planned flow`와 `packet lineage / decision history`로 해석한다.
+
+즉 아래처럼 분리한다.
+
+- `planned flow`: 어떤 경로가 허용되는가
+- `packet`: 이번 handoff에서 무엇을 맡기는가
+- `trace`: 이 packet 실행에서 실제 무슨 일이 있었는가
+
 이 구조는 아래의 표준적 운영 패턴을 섞어 가져온다.
 
 - Issue/Ticket 시스템의 작업 명세
@@ -61,22 +73,28 @@ runtime artifact는 모두 `run_id`와 `seq`를 가져야 한다.
 - 병렬 작업에 들어가기 전 `contracts`, `acceptance criteria`, `owned paths`를 먼저 고정한다.
 - 이 3개가 없으면 handoff-ready 상태로 보지 않는다.
 
-### 3. Explicit ownership
+### 3. Planned flow before packet emission
+
+- runtime packet을 발행하기 전에 허용 node, transition, 예외 loop를 먼저 정한다.
+- operator는 런타임에 경로를 새로 발명하기보다, 미리 정의된 transition 중 하나를 선택해야 한다.
+- 같은 actor가 여러 단계에 등장할 수 있으므로 "누가 처리하는가"만으로는 부족하고 "지금 어떤 node인가"도 구분해야 한다.
+
+### 4. Explicit ownership
 
 - 각 handoff는 책임 에이전트와 파일/모듈 ownership을 명시한다.
 - ownership이 겹치면 병렬성보다 통합 비용이 커지므로 재분할을 우선 검토한다.
 
-### 4. Append-only trace
+### 5. Append-only trace
 
 - trace는 이전 상태를 덮어쓰기보다, 결정/실패/검증 결과를 누적하는 방식이 좋다.
 - 자동화 시 retry, escalation, audit 근거로 재사용할 수 있다.
 
-### 5. Structured outputs
+### 6. Structured outputs
 
 - 완료 보고는 자유 서술보다 `changes`, `tests`, `risks`, `next_action` 같은 고정 필드를 우선한다.
 - 사람이 읽기 쉬우면서도 나중에 operator agent가 파싱하기 쉽다.
 
-### 6. Mandatory evaluation and feedback
+### 7. Mandatory evaluation and feedback
 
 - handoff는 "작업 전달"만이 아니라 "평가 가능한 결과 반환"까지 포함해야 한다.
 - 따라서 각 packet은 최소한의 pass/fail 기준과, 실패 시 어디에 피드백을 반영할지의 경로를 가져야 한다.

@@ -17,6 +17,7 @@ supersedes_packet_id: H-YYYY-MM-DD-000
 goal: 한 문장 목표
 why: 왜 이 handoff가 필요한가
 inputs:
+  - context/wbs/flows/SLICE-ID.flow.v1.md:1
   - path/to/input.md:1
 contracts:
   - docs/product/contracts/domain.ts
@@ -47,6 +48,7 @@ open_risks:
 ## Notes
 
 - `packet`은 불변 명세에 가깝게 유지한다.
+- 가능한 경우 `inputs`에 자신이 따르는 planned flow 문서 경로를 포함한다.
 - 재작업은 기존 packet 수정이 아니라 새 packet 발행 + `supersedes_packet_id` 연결로 표현한다.
 - 실행 상태는 `trace`와 `run ledger`가 책임진다.
 - 경로는 가능하면 링크 가능한 repo-relative path를 사용한다.

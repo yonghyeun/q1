@@ -5,10 +5,13 @@ handoff packet과 trace가 어떻게 생성·이동·축적되고
 오퍼레이터가 어떤 기준으로 판단하는지의 전체 흐름을 정의한다.
 
 이 문서는 `agent-handoff-schema.md`의 상위 운영 플로우 문서다.
+`trace`는 이 문서에서도 개별 packet 실행 기록을 뜻하며,
+packet route 자체는 `planned-flow.md`가 정의하는 node / transition 모델로 다룬다.
 
 ## 목적
 
 - WBS, handoff packet, trace, operator decision, run ledger의 역할을 구분한다.
+- packet 생성 전에 고정해야 하는 planned flow를 명시한다.
 - "누가 지금 무엇을 들고 있는가"를 한 번에 이해할 수 있게 한다.
 - 완료, 재작업, blocked, remediation(되돌림/수정) 흐름을 표준화한다.
 - 실패 조건, 평가 기준, 피드백 루프를 명시한다.
@@ -21,11 +24,12 @@ handoff packet과 trace가 어떻게 생성·이동·축적되고
 - handoff는 "한 actor가 다른 actor에게 ownership을 넘기는 행위"다.
 - actor는 사람(operator) 또는 에이전트(`spec`, `impl`, `test`, `integration`)일 수 있다.
 
-핵심은 "에이전트가 몇 개인가"보다 아래 3개가 안정적인가다.
+핵심은 "에이전트가 몇 개인가"보다 아래 4개가 안정적인가다.
 
 1. WBS가 안정적인가
-2. handoff packet이 명확한가
-3. trace가 판정 가능하게 누적되는가
+2. planned flow가 안정적인가
+3. handoff packet이 명확한가
+4. trace가 판정 가능하게 누적되는가
 
 ## 핵심 아티팩트
 
@@ -34,22 +38,28 @@ handoff packet과 trace가 어떻게 생성·이동·축적되고
 - 계획의 SoT
 - slice 정의, 선후관계, 기본 AC, 기본 ownership 경계를 가진다
 
-### 2. Handoff Packet
+### 2. Planned Flow
+
+- routing / transition 계획의 SoT
+- 어떤 node가 있고 어떤 경로가 허용되는지, 어떤 loop에서 상위 재설계로 승격할지를 가진다
+- 현재 단계에서는 node별 상세 실행 계획이 아니라 packet blueprint까지를 고정하는 문서다
+
+### 3. Handoff Packet
 
 - immutable runtime work order
 - 이번 ownership transfer에서 무엇을 맡길지 정의한다
 
-### 3. Trace
+### 4. Trace
 
 - append-only 실행 기록
 - 실제 변경, 테스트, 결정, blocker, risk와 실행 상태를 남긴다
 
-### 4. Run Ledger
+### 5. Run Ledger
 
 - orchestration control-plane
 - 현재 어떤 slice가 누구 손에 있고, 다음 판단이 무엇인지 보여준다
 
-### 5. Operator Decision
+### 6. Operator Decision
 
 - operator의 상태 전이 기록
 - 어떤 trace를 보고 어떤 판정을 내렸는지와, ledger 갱신의 근거를 남긴다
@@ -58,17 +68,20 @@ handoff packet과 trace가 어떻게 생성·이동·축적되고
 
 권장 관계는 아래와 같다.
 
-- `1 WBS slice -> N packets`
+- `1 WBS slice -> 1 planned flow`
+- `1 planned flow -> N packets`
 - `1 packet -> N trace entries`
 - `1 run ledger(current) -> N slices / packets / decisions`
 - `1 run ledger(snapshot) -> 1 decision checkpoint`
 
-즉, WBS는 오래 살고, packet은 handoff마다 생기며, trace는 packet 실행 중 누적된다.
+즉, WBS는 오래 살고, planned flow는 slice의 허용 경로를 고정하며,
+packet은 handoff마다 생기고, trace는 packet 실행 중 누적된다.
 
 ## 상태 소유권
 
 현재 상태는 아래처럼 나누는 것을 권장한다.
 
+- `planned flow`: 허용된 node / transition / exception loop
 - `packet`: handoff 명세를 담는 불변 문서
 - `trace.execution_state`: 개별 실행의 상태
 - `operator decision`: 상태 전이와 판정 사유
@@ -94,21 +107,52 @@ operator가 WBS에서 다음 slice를 고른다.
 
 이 기준이 충족되지 않으면 아직 orchestration-ready가 아니다.
 
+### 0.5. Planned flow 고정
+
+operator는 packet을 만들기 전에 slice의 planned flow를 먼저 고정한다.
+
+최소한 아래가 정의돼 있어야 한다.
+
+- 시작 node
+- terminal node
+- 허용된 node와 transition
+- node별 기본 owner / 목적
+- `rework`, `block`, `remediate`, `cancel` 같은 예외 경로
+- 반복 실패 시 WBS 또는 flow 재검토로 승격하는 기준
+
+이 단계가 없으면 packet은 만들어져도
+"원래 어떤 경로 위에서 움직여야 하는가"를 판정할 수 없다.
+
+기본 작성 책임은 operator에게 둔다.
+
+- 권장 저장 위치는 `context/wbs/flows/<slice_id>.flow.vN.md`다.
+- 사람이 초안을 만들 때는 `templates/planned-flow.template.md`를 사용한다.
+- 경로 규칙이 실질적으로 바뀌면 기존 문서를 덮어쓰기보다 새 버전을 발행한다.
+- 현재 기본값은 `compiled flow`가 아니라 `blueprint flow`다.
+
 ### 1. Packet 생성
 
-operator는 WBS slice에서 handoff packet을 만든다.
+operator는 WBS slice와 planned flow의 현재 node에서 handoff packet을 만든다.
 
 이 packet은 아래를 담는다.
 
 - 어떤 actor가 맡을지
+- 어떤 planned node의 실행인지
 - 이번 handoff에서 필요한 입력만 무엇인지
 - 이번 handoff의 비목표는 무엇인지
 - 어떤 결과 형식으로 되돌아와야 하는지
 
 즉, packet은 WBS 전체를 복제하는 것이 아니라,
-WBS의 일부를 실행 가능한 요청으로 얇게 투영(projection)한 것이다.
+WBS와 planned flow의 일부를 실행 가능한 요청으로 얇게 투영(projection)한 것이다.
 packet 자체는 발행 후 가능한 한 불변으로 유지하고,
 현재 실행 상태는 trace, operator decision, run ledger에서 관리한다.
+
+현재 schema에는 `planned_flow_id`나 `node_id`가 없으므로,
+packet `inputs`에 planned flow 문서 경로를 넣고
+`goal/why`에서 현재 node 목적을 드러내는 것을 기본 연결 방식으로 사용한다.
+
+operator는 이때 planned flow의 `packet blueprint`를 바탕으로
+이번 transition에 필요한 concrete packet을 만든다.
 
 ### 2. Packet 할당
 
@@ -128,6 +172,7 @@ packet은 특정 actor에게 전달된다.
 ### 3. 실행과 Trace 누적
 
 packet을 받은 actor는 작업을 수행하며 trace를 남긴다.
+세부 구현 순서와 작업 분해는 actor가 packet을 받은 뒤 local plan으로 세운다.
 
 trace는 최소한 아래를 포함한다.
 
@@ -159,6 +204,8 @@ actor는 작업 종료 시 단순히 결과만 반환하지 않고,
 
 operator는 trace, 결과물, 테스트 결과를 보고 아래 중 하나를 결정한다.
 이 판정은 `operator decision event`로 별도 기록한다.
+이때 operator는 자유 형식으로 다음 packet을 발행하는 것이 아니라,
+planned flow가 허용한 transition 중 하나를 선택해야 한다.
 
 operator는 최소한 아래 평가 기준을 체크해야 한다.
 
@@ -167,6 +214,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 3. required tests가 충족됐는가
 4. contracts / owned paths 위반이 없는가
 5. trace가 다음 판단에 충분한가
+6. 선택하려는 다음 transition이 planned flow에 존재하는가
 
 아래 중 하나라도 해당하면 `done`으로 넘기지 않는다.
 
@@ -174,6 +222,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 - contract violation이 열려 있다
 - owned paths 밖 변경이 정당화되지 않았다
 - acceptance criteria 충족 여부를 trace만으로 판단할 수 없다
+- planned flow에 없는 경로로만 다음 packet을 설명할 수 있다
 - 실패 원인이 WBS/harness/orchestration인데 packet rework로만 덮으려 한다
 
 #### A. Accept
@@ -194,6 +243,8 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 - operator는 새 packet을 만들고 별도 `dispatch` decision/event를 남긴다
 - operator UX에서 한 번에 처리하더라도 artifact는 `accept` 다음 `dispatch` 순서로 기록한다
 - `dispatch`는 기본적으로 current ledger만 갱신하고 snapshot은 생략한다
+- dispatch 대상은 planned flow가 허용한 다음 node여야 한다
+- operator는 review summary 또는 rationale에서 어떤 transition을 택했는지 설명하는 편이 좋다
 
 예:
 - impl handoff `accept` 직후 -> integration packet `dispatch`
@@ -204,6 +255,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 - 방향은 맞지만 미완성/불충분할 때
 - 기존 packet/trace는 유지하고 새 packet으로 재지시한다
 - `supersedes_packet_id`와 decision event로 lineage를 연결한다
+- 일반적으로 같은 planned node 안에서 새 packet을 다시 발행한다
 
 핵심은 "과거 기록 삭제"가 아니라 "새 시도 생성"이다.
 
@@ -217,6 +269,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 - 외부 결정, 누락된 계약, 미준비 의존성 때문에 더 진행할 수 없을 때
 - `trace.execution_state`와 `run ledger.slice_state`를 `blocked`로 반영한다
 - blocked decision 직후 snapshot ledger를 남긴다
+- blocked에서 빠져나오는 경로도 planned flow에 정의돼 있어야 한다
 
 권장 사용 사례:
 
@@ -229,6 +282,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 - 이 handoff 자체가 잘못 정의됐거나, slice 경계를 다시 쪼개야 할 때
 - run ledger에서 해당 packet을 `cancelled` disposition으로 기록하고 WBS를 수정하거나 재분할한다
 - cancel decision 자체도 별도 decision event로 남긴다
+- cancel이 반복된다면 packet 문제가 아니라 flow 또는 WBS 경계 문제가 먼저 의심된다
 
 권장 사용 사례:
 
@@ -240,6 +294,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 - 잘못된 변경이 이미 반영됐고, 되돌림 또는 수정이 필요할 때
 - trace를 지우지 않고 remediation packet을 새로 만든다
 - remediation packet 발행 전 decision event를 먼저 남긴다
+- remediation도 즉흥 분기가 아니라 별도 예외 node/transition으로 계획돼 있는 편이 좋다
 
 리버트는 기록 삭제가 아니라 "새로운 corrective action"으로 남기는 것이 원칙이다.
 
@@ -295,13 +350,15 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 
 ### 5. Orchestration failure
 
-- 증상: handoff packet 부족, ownership 불명확, routing 실수
+- 증상: handoff packet 부족, ownership 불명확, routing 실수, planned flow 밖 transition 선택
 - 기본 대응: packet schema 또는 operator 절차 피드백 반영
+- 주의: node 자체 수행이 맞았더라도 edge 선택이 틀리면 orchestration failure다
 
 ### 6. WBS failure
 
 - 증상: slice 경계가 잘못됐거나 AC 자체가 판정 불가능
 - 기본 대응: slice 재분할 또는 WBS 수정
+- planned flow를 계속 늘려도 설명이 안 되면 planning layer를 먼저 고친다
 - 주의: 이 경우 packet 수를 더 늘리기 전에 planning layer를 고친다
 
 ## 상태 모델
@@ -377,17 +434,18 @@ operator 또는 향후 operator agent가 가장 먼저 보는 entry point다.
 `S1: timestamp-insert` slice가 있다고 가정한다.
 
 1. operator가 WBS에서 `S1`을 선택한다
-2. `P1(operator -> impl)` 생성
-3. impl이 코드 작성 후 `T1` trace 기록
-4. operator 검토
-5. impl handoff를 `accept` decision으로 닫는다
-6. `P2(operator -> integration)`를 만들고 `dispatch` decision으로 발행한다
-7. integration이 wiring 확인 후 `T2` 기록
-8. operator 검토
-9. integration handoff를 `accept` decision으로 닫는다
-10. `P3(operator -> test)`를 만들고 `dispatch` decision으로 발행한다
-11. test/harness가 검증 후 `T3` 기록
-12. operator가 slice `S1`을 `done`으로 마감
+2. `F1(impl -> integration -> test -> done, rework/block loop 포함)` planned flow를 고정한다
+3. `P1(operator -> impl)` 생성
+4. impl이 코드 작성 후 `T1` trace 기록
+5. operator가 `F1`의 허용 transition과 비교해 검토한다
+6. impl handoff를 `accept` decision으로 닫는다
+7. `P2(operator -> integration)`를 만들고 `dispatch` decision으로 발행한다
+8. integration이 wiring 확인 후 `T2` 기록
+9. operator가 다시 `F1` 기준으로 다음 edge를 선택한다
+10. integration handoff를 `accept` decision으로 닫는다
+11. `P3(operator -> test)`를 만들고 `dispatch` decision으로 발행한다
+12. test/harness가 검증 후 `T3` 기록
+13. operator가 slice `S1`을 `done`으로 마감
 
 방향이 잘못됐으면:
 
@@ -420,6 +478,7 @@ harness가 불안정했다면:
 
 중요한 원칙은,
 "지금 operator가 하는 판단을 설명할 수 있을 때만 자동화한다"는 점이다.
+이 설명 가능성은 trace뿐 아니라 planned flow가 먼저 안정돼 있어야 확보된다.
 
 ## 실패 패턴
 
@@ -434,6 +493,9 @@ harness가 불안정했다면:
 ## 이 저장소 기준 권장안
 
 - `agent-handoff-schema.md`는 packet/trace 구조를 정의한다
+- `planned-flow.md`는 packet이 따라야 할 node / transition 모델을 정의한다
+- `templates/planned-flow.template.md`는 planned flow 산출물 형태를 고정한다
 - 이 문서는 end-to-end flow와 decision loop를 정의한다
-- 실제 운영 시에는 WBS, packet, trace, run ledger를 4층으로 분리한다
-- 자동 오케스트레이션은 run ledger와 trace schema가 충분히 안정화된 뒤에만 시도한다
+- 실제 운영 시에는 WBS, planned flow, packet, trace, run ledger를 5층으로 분리한다
+- node별 상세 pre-plan을 모두 연결한 `compiled flow`는 현재 기본 운영이 아니라 미래 옵션이다
+- 자동 오케스트레이션은 planned flow, run ledger, trace schema가 충분히 안정화된 뒤에만 시도한다
