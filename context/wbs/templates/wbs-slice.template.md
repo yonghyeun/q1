@@ -31,11 +31,10 @@ assumptions:
   - 현재 기대하는 가정
 open_questions:
   - "[blocking] planned flow 작성 전에 닫아야 하는 쟁점"
-workspace_binding:
-  branch: null
-  worktree: null
-  assigned_agent: null
-  assigned_profile: null
+workspace_bindings:
+  - purpose: 구현
+    branch: null
+    worktree: null
 refs:
   planned_flow: null
   run_id: null
@@ -52,4 +51,5 @@ notes:
 - `verification_requirements`는 concrete test command가 아니라 검증 의무 수준을 적는다.
 - 실제 `owned_paths`, `required_tests`는 packet 단계에서 node 목적에 맞게 구체화한다.
 - actor route, node, transition, exception loop는 WBS가 아니라 planned flow에서 정의한다.
+- `workspace_bindings`는 한 slice에 연결된 planning-layer branch/worktree 묶음을 표현한다.
 - runtime 상태는 WBS가 아니라 run ledger가 가진다.
