@@ -60,7 +60,8 @@
 
 - `parent_wbs` 값은 실제 WBS가 아니라 예시용 식별자다.
 - 이 디렉터리는 "형태"와 "흐름"을 보여주기 위한 것이지, 현재 저장소에 이미 해당 slice WBS가 존재한다는 뜻은 아니다.
-- 실제 WBS를 만들기 시작하면 `parent_wbs`, `slice_id`, `owned_paths`를 실제 값으로 바꿔야 한다.
+- 실제 WBS를 만들기 시작하면 `parent_wbs`, `slice_id`와 WBS의 `owned_scope`, `verification_requirements`를 실제 값으로 채워야 한다.
+- 예시 packet의 `owned_paths`, `required_tests`는 WBS 필드가 아니라 runtime handoff 단계에서 구체화된 값으로 읽어야 한다.
 - 예시 run은 `run-local seq`로 정렬된다. 시간값은 보조 정보다.
 - `current.run-ledger.json`의 `current_packet_id`는 최신 기준 packet을 뜻하며, `closed` 상태일 수 있다.
 
