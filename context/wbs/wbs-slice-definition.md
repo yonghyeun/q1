@@ -67,7 +67,7 @@ runtime에 가까워질수록 detail을 늦게 바인딩한다.
 - `risks`: 시작 시점에 이미 알려진 위험
 - `assumptions`: 현재 slice가 기대는 가정
 - `open_questions`: planned flow 작성 전에 닫아야 하는 쟁점
-- `workspace_binding`: branch, worktree, 할당된 에이전트/프로필 같은 planning-layer 실행 바인딩
+- `workspace_bindings`: branch, worktree, 용도를 담는 planning-layer 작업 공간 바인딩 목록
 - `refs`: planned flow, run, 관련 문서 참조
 - `notes`: 운영 메모
 
@@ -155,16 +155,22 @@ slice 준비 단계를 나타낸다.
 - `active`, `blocked`, `done` 같은 runtime 상태와 섞이지 않는다
 - operator가 다음 planning action을 정하는 데 도움이 된다
 
-### `workspace_binding`
+### `workspace_bindings`
 
-`workspace_binding`은 branch / worktree / agent assignment처럼
-slice를 실제 어디서 다룰지에 대한 planning-layer binding이다.
+`workspace_bindings`는 한 slice를 실제 어디서 다룰지에 대한
+planning-layer 작업 공간 바인딩 목록이다.
+
+한 slice는 구현, 버그 수정, 실험 같은 이유로
+여러 branch/worktree를 가질 수 있다.
 
 예:
 
+- `purpose: 구현`
 - `branch: feat/mvp-ts-insert`
 - `worktree: /worktrees/q1-mvp-ts-insert`
-- `assigned_agent: agent-impl-01`
+- `purpose: 버그 수정`
+- `branch: fix/mvp-ts-insert-follow-up`
+- `worktree: /worktrees/q1-mvp-ts-insert-fix`
 
 이 정보는 route 문서인 `planned flow`에 두지 않는다.
 같은 flow를 여러 branch/worktree/run에서 재사용할 수 있어야 하기 때문이다.
@@ -183,7 +189,7 @@ slice를 실제 어디서 다룰지에 대한 planning-layer binding이다.
 - `related_docs`
 
 `refs`는 연결 포인터를 담고,
-`workspace_binding`은 실제 작업 위치와 할당 정보를 담는다.
+`workspace_bindings`는 실제 작업 위치 계획을 담는다.
 
 ## 레이어 간 매핑
 
@@ -196,7 +202,7 @@ planned flow는 그 slice를 어떤 route로 완료시킬지 설계한다.
 - `owned_scope`는 node별 packet blueprint를 나누는 기준이 된다
 - `verification_requirements`는 어떤 node에서 어떤 증거가 필요한지 정하는 기준이 된다
 - `planning_status`는 flow를 만들 수 있는 준비 정도를 보여준다
-- `workspace_binding`은 flow와 별개로 어떤 branch/worktree에서 작업할지 알려준다
+- `workspace_bindings`는 flow와 별개로 어떤 branch/worktree 묶음을 준비해 둘지 알려준다
 
 ### Planned Flow -> Packet
 
@@ -256,11 +262,10 @@ dependencies:
 non_goals:
   - timestamp click-to-seek
   - keyboard shortcut
-workspace_binding:
-  branch: feat/note-timestamp-insert
-  worktree: /worktrees/q1-note-timestamp-insert
-  assigned_agent: null
-  assigned_profile: null
+workspace_bindings:
+  - purpose: 구현
+    branch: feat/note-timestamp-insert
+    worktree: /worktrees/q1-note-timestamp-insert
 refs:
   planned_flow: context/wbs/flows/NOTE-TIMESTAMP-INSERT.flow.v1.md
   run_id: null
