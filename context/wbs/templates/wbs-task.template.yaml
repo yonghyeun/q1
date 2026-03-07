@@ -16,11 +16,10 @@ non_goals: []
 risks: []
 assumptions: []
 open_questions: []
-workspace_binding:
-  branch: null
-  worktree: null
-  assigned_agent: null
-  assigned_profile: null
+workspace_bindings:
+  - purpose: 구현
+    branch: null
+    worktree: null
 refs:
   planned_flow: null
   run_id: null
