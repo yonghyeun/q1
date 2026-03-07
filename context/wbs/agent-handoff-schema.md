@@ -70,8 +70,9 @@ runtime artifact는 모두 `run_id`와 `seq`를 가져야 한다.
 
 ### 2. Contract before implementation
 
-- 병렬 작업에 들어가기 전 `contracts`, `acceptance criteria`, `owned paths`를 먼저 고정한다.
-- 이 3개가 없으면 handoff-ready 상태로 보지 않는다.
+- WBS 단계에서는 `contracts`, `acceptance criteria`, `owned_scope` 같은 추상 경계를 먼저 고정한다.
+- packet 단계에서는 그 경계를 concrete `owned_paths`, `required_tests`로 내려 handoff를 발행한다.
+- 이 경계가 없으면 handoff-ready 상태로 보지 않는다.
 
 ### 3. Planned flow before packet emission
 
@@ -178,7 +179,7 @@ open_risks:
 - `owned_paths`: 수정 책임이 있는 파일 경계
 - `non_goals`: 이번 handoff에서 하지 않을 것
 - `dependencies`: 선행 의존성
-- `required_tests`: 최소 테스트 레벨
+- `required_tests`: 이번 handoff에서 요구하는 concrete 테스트/검증 목록
 - `validator_rules`: 기계가 검증할 수 있는 최소 규칙
 - `review_rubric`: operator가 증거를 보고 판단해야 하는 평가 기준
 - `escalation_policy`: 실패 유형별 기본 escalation 경로
@@ -379,5 +380,6 @@ trace의 피드백은 최소한 아래 5개 대상으로 되돌아갈 수 있어
 
 - handoff packet은 `context/wbs/` 아래 문서로 관리한다.
 - 제품/계약 SoT는 `docs/`와 `context/core/`를 참조하고 복제하지 않는다.
-- 각 vertical slice는 최소한 `goal`, `contracts`, `acceptance_criteria`, `owned_paths`, `required_tests`가 채워진 뒤에만 병렬로 분기한다.
+- WBS slice는 최소한 `goal`, `contracts`, `acceptance_criteria`, `owned_scope`, `verification_requirements`가 채워진 뒤에만 orchestration-ready로 본다.
+- concrete handoff packet은 WBS와 planned flow를 바탕으로 `owned_paths`, `required_tests`를 채운 뒤에 발행한다.
 - 자동 오케스트레이션은 지금 당장 기본값으로 두지 않고, 수동 운영에서 검증된 반복 패턴만 승격한다.

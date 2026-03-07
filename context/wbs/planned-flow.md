@@ -25,7 +25,7 @@
 
 따라서 권장 레이어는 아래와 같다.
 
-- `WBS`: 목표, AC, ownership, 선후관계의 SoT
+- `WBS`: 목표, AC, abstract ownership boundary, verification requirement, 선후관계의 SoT
 - `planned flow`: 허용 node/transition과 packet blueprint의 SoT
 - `packet`: planned flow의 특정 node를 런타임 handoff로 투영한 work order
 - `trace`: 개별 packet 실행 기록
@@ -39,6 +39,9 @@
 - `node`는 orchestration 상의 단계다. 보통 `impl`, `integration`, `test`, `blocked`, `done` 같은 상태/역할 단위를 뜻한다.
 - `transition`은 한 node에서 다른 node로 넘어가는 허용 경로다.
 - `packet blueprint`는 각 node packet이 최소한 어떤 입력/출력/경계 조건을 가져야 하는지 정의하는 얇은 명세다.
+
+여기서 WBS는 `owned_scope`, `verification_requirements` 같은 추상 경계를 주고,
+planned flow는 그것을 node 기준 packet blueprint로 분해한다.
 
 ## 현재 채택하는 방식
 
@@ -129,6 +132,18 @@ planned flow는 최소한 아래 질문에 답해야 한다.
 5. 어떤 증거가 있어야 다음 transition이 가능한가
 6. 어떤 반복 패턴이 나오면 node 문제가 아니라 WBS/flow 재설계로 승격해야 하는가
 
+## WBS 추상 경계와 packet 구체화
+
+planned flow는 WBS를 그대로 복제하지 않고,
+slice 수준의 추상 경계를 node별 packet blueprint로 번역한다.
+
+- WBS `owned_scope`는 node별 `owned_paths` 후보 범위로 내려간다
+- WBS `verification_requirements`는 node별 `required_tests` 또는 검증 증거 요구로 내려간다
+- WBS `acceptance_criteria`는 node purpose와 transition condition, exit evidence의 기반이 된다
+
+즉, WBS가 "어느 경계 안에서 어떤 증거가 필요한가"를 말하면,
+planned flow는 "어느 node에서 어떤 packet shape로 그 경계를 실행할 것인가"를 정한다.
+
 ## 권장 구조
 
 아래는 사람이 작성하고 검토하기 위한 최소 권장 구조다.
@@ -151,13 +166,17 @@ nodes:
       required_inputs:
         - contracts
         - acceptance_criteria
-        - owned_paths
+        - owned_scope
+        - verification_requirements
       required_outputs:
         - code_changes
         - tests
         - trace_summary
     packet_blueprint:
       goal_hint: timestamp 기능 구현과 unit evidence 확보
+      concretization_rules:
+        - owned_scope를 현재 node 목적에 맞는 owned_paths로 내린다
+        - verification_requirements를 현재 node에서 요구할 required_tests로 내린다
       non_goals:
         - integration wiring closure
       autonomy_boundary:
@@ -229,6 +248,7 @@ revisit_rules:
 - operator는 packet 생성 전에 "이 packet이 어떤 node의 실행인가"를 먼저 명시적으로 판단해야 한다.
 - 동일 actor가 여러 node를 맡을 수 있으면 actor 이름만으로 충분하지 않으므로 node 목적을 packet goal/why에 분명히 써야 한다.
 - operator는 packet을 만들 때 node의 `packet_blueprint`를 concrete packet으로 구체화한다.
+- 이 구체화 과정에서 WBS의 `owned_scope`, `verification_requirements`를 packet의 `owned_paths`, `required_tests`로 내린다.
 - 현재 schema에는 `node_id` 필드가 없으므로, packet `inputs`에 planned flow 문서 경로를 넣고 `goal/why`에서 현재 node 목적을 드러내는 것을 기본 연결 방식으로 둔다.
 
 ### 2. Actor는 packet 안에서 local plan을 세운다
