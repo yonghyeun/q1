@@ -109,7 +109,7 @@ def validate_operator_decision_semantics(payload: object) -> None:
             EXIT_SEMANTIC_VIOLATION,
         )
 
-    if decision in {"block", "cancel", "close"} and next_packet_id:
+    if decision in {"accept", "block", "cancel", "close"} and next_packet_id:
         raise WbsArtifactError(
             f"decision 이 {decision} 이면 next_packet_id 를 두지 않습니다.",
             EXIT_SEMANTIC_VIOLATION,

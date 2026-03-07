@@ -65,7 +65,7 @@ context_notes:
 - `reason_detail`: 사람이 읽는 판단 근거
 - `slice_state_before/after`: slice 상태 전이
 - `packet_disposition_before/after`: packet disposition 전이
-- `next_packet_id`: 후속 packet이 있으면 참조
+- `next_packet_id`: 후속 packet이 있으면 참조. 기본적으로 `dispatch`, `rework`, `remediate`에서만 사용한다.
 - `updated_current_ledger_ref`: 갱신된 current ledger 경로
 - `snapshot_ref`: snapshot checkpoint를 남긴 decision이면 그 snapshot ledger 경로
 - `feedback_applied`: 이번 decision에서 실제 반영한 피드백
@@ -86,6 +86,8 @@ context_notes:
 ## 운영 규칙
 
 - operator decision은 `trace`를 대체하지 않는다. trace를 검토한 후 별도로 생성한다.
+- `accept`와 `dispatch`는 항상 별도 event로 남긴다. operator가 한 번에 처리해도 artifact는 `accept` 다음 `dispatch` 순서로 분리한다.
+- `accept`는 현재 packet의 종료 승인만 기록하고 `next_packet_id`를 갖지 않는다.
 - `rework`, `block`, `cancel`, `remediate`, `accept`, `close` decision은 `snapshot ledger`를 남기고 `snapshot_ref`를 연결한다.
 - `dispatch`는 기본적으로 current ledger만 갱신하고 `snapshot_ref`는 생략한다. 다만 운영상 checkpoint가 필요하면 예외적으로 남길 수 있다.
 - `current ledger` 갱신은 decision event 이후에만 일어나는 것을 기본값으로 둔다.

@@ -37,8 +37,8 @@ run ledger는 수동 오케스트레이션의 상태 projection이다.
 
 중요한 원칙은, packet에 runtime 상태를 넣지 않고 ledger가 현재 상태를 소유하게 하는 것이다.
 
-현재 schema는 runtime artifact가 이미 발행된 slice를 주 대상으로 본다.
-packet 발행 전 `planned`/`ready` slice까지 ledger에 넣을지는 `open-questions.md`에서 별도 합의한다.
+이 저장소에서는 run ledger를 runtime artifact가 이미 발행된 slice만 담는 projection으로 고정한다.
+packet 발행 전 `planned`/`ready` backlog는 WBS가 관리하고, ledger entry는 첫 packet 발행 시점부터 생성한다.
 
 ## 권장 스키마
 
@@ -109,10 +109,8 @@ slice_entries:
 
 ## 상태 권장안
 
-### Slice 상태
+### Run ledger slice 상태
 
-- `planned`
-- `ready`
 - `active`
 - `blocked`
 - `integration_review`
@@ -143,6 +141,7 @@ slice_entries:
 
 - 현재 누가 무엇을 들고 있는지 판단할 때는 packet이나 trace가 아니라 ledger를 먼저 본다.
 - packet과 trace는 ledger가 가리키는 참조 대상이다.
+- WBS의 `planned`/`ready` backlog는 ledger에 복제하지 않는다.
 
 ### 2. Packet은 불변, ledger는 갱신
 
@@ -160,6 +159,11 @@ slice_entries:
 
 - `feedback`이 trace에만 있으면 현재 미반영 항목을 놓치기 쉽다.
 - 미반영 feedback은 ledger의 `open_feedback`으로 끌어올려 추적한다.
+
+### 5. Run ledger 진입은 runtime 시작 시점이다
+
+- slice는 첫 packet 발행 또는 첫 dispatch로 runtime에 진입할 때 ledger entry를 가진다.
+- backlog overview가 필요하더라도 `current_packet_id` 같은 runtime 참조를 optional로 풀어 ledger 역할을 넓히지 않는다.
 
 ## 최소 검증 규칙
 
@@ -189,5 +193,6 @@ run ledger validator가 있다면 최소한 아래를 검사하는 것이 좋다
 
 - current ledger와 snapshot ledger를 구분한다
 - packet/trace/decision 문서와 분리해 현재 상태 projection만 담는다
+- run ledger는 runtime 진입 slice만 포함하고 `planned`/`ready`는 WBS에 남긴다
 - active slice 수가 적더라도 early stage부터 ledger를 두는 편이 낫다
 - 자동 오케스트레이션은 ledger가 stale하지 않게 유지될 때만 시도한다

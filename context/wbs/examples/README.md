@@ -54,6 +54,7 @@
 - operator는 `accept` decision을 남기고 current ledger를 갱신한다.
 - current ledger는 최신 상태만 들고 있고, decision 시점 상태는 snapshot ledger에서 복원할 수 있다.
 - 이 예시는 여기서 멈춘다. `next_operator_decision: dispatch`는 다음 actor packet 발행이 아직 남아 있음을 뜻한다.
+- 실제 운영에서 operator가 한 번에 accept-and-forward를 처리해도 artifact는 `accept`와 `dispatch` 두 event로 분리해 남긴다.
 
 ## 중요한 해석 규칙
 

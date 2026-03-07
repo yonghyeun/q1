@@ -88,6 +88,7 @@ context/wbs/examples/runs/<run_id>/
 
 - operator decision은 reviewed trace 집합을 기준으로 만들어진다.
 - snapshot ledger는 해당 `decision_id`를 가리켜야 한다.
+- `accept`와 `dispatch`를 함께 처리하더라도 하나의 decision으로 합치지 않고, 연속된 `seq`를 가진 두 artifact로 남긴다.
 
 ## Current vs Snapshot
 

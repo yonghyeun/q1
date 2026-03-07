@@ -40,4 +40,6 @@ context_notes:
 
 - decision은 operator의 상태 전이 기록이다.
 - trace를 대체하지 않고, trace 검토 후 별도 artifact로 남긴다.
+- `accept`와 `dispatch`는 항상 별도 artifact로 남긴다. 함께 처리해도 두 개의 decision event를 쓴다.
+- `accept`는 현재 packet 종료 승인만 기록하고 `next_packet_id`를 두지 않는다.
 - `snapshot_ref`는 checkpoint decision에서 사용한다. `dispatch`는 기본적으로 생략한다.

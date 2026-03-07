@@ -76,8 +76,6 @@
           "slice_state": {
             "type": "string",
             "enum": [
-              "planned",
-              "ready",
               "active",
               "blocked",
               "integration_review",

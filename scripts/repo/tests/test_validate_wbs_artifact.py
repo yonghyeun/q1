@@ -175,6 +175,33 @@ class ValidateWbsArtifactTests(unittest.TestCase):
             validate_wbs_artifact.validate_semantics("operator-decision", payload)
         self.assertEqual(ctx.exception.exit_code, validate_wbs_artifact.EXIT_SEMANTIC_VIOLATION)
 
+    def test_operator_decision_accept_rejects_next_packet_id(self) -> None:
+        payload = {
+            "decision_id": "D-2026-03-06-004",
+            "run_id": "RUN-2026-03-06-A",
+            "seq": 7,
+            "slice_id": "MVP-TS-INSERT",
+            "packet_id": "H-2026-03-06-002",
+            "reviewed_trace_ids": ["T-2026-03-06-002"],
+            "made_at": "2026-03-06T11:05:00+09:00",
+            "operator_actor": "operator",
+            "decision": "accept",
+            "review_summary": "handoff 범위는 충족됐다.",
+            "reason_code": "goal_met",
+            "reason_detail": "다음 actor packet 발행은 dispatch event에서 분리 기록한다.",
+            "slice_state_before": "active",
+            "slice_state_after": "integration_review",
+            "packet_disposition_before": "active",
+            "packet_disposition_after": "closed",
+            "next_packet_id": "H-2026-03-06-003",
+            "updated_current_ledger_ref": "context/wbs/runs/RUN-2026-03-06-A/current.run-ledger.json",
+            "snapshot_ref": "context/wbs/runs/RUN-2026-03-06-A/snapshots/0006.accept.run-ledger.json",
+        }
+
+        with self.assertRaises(validate_wbs_artifact.WbsArtifactError) as ctx:
+            validate_wbs_artifact.validate_semantics("operator-decision", payload)
+        self.assertEqual(ctx.exception.exit_code, validate_wbs_artifact.EXIT_SEMANTIC_VIOLATION)
+
     def test_run_ledger_rejects_snapshot_without_source_decision(self) -> None:
         payload = {
             "run_id": "RUN-2026-03-06-A",
@@ -215,6 +242,47 @@ class ValidateWbsArtifactTests(unittest.TestCase):
         with self.assertRaises(validate_wbs_artifact.WbsArtifactError) as ctx:
             validate_wbs_artifact.validate_semantics("run-ledger", payload)
         self.assertEqual(ctx.exception.exit_code, validate_wbs_artifact.EXIT_SEMANTIC_VIOLATION)
+
+    def test_run_ledger_schema_rejects_ready_slice_state(self) -> None:
+        payload = {
+            "run_id": "RUN-2026-03-06-A",
+            "ledger_kind": "current",
+            "projection_seq": 1,
+            "parent_wbs": "mvp-wbs/v1",
+            "updated_at": "2026-03-06T12:30:00+09:00",
+            "slice_entries": [
+                {
+                    "slice_id": "MVP-TS-INSERT",
+                    "slice_state": "ready",
+                    "current_owner": "operator",
+                    "current_packet_id": "H-2026-03-06-001",
+                    "current_packet_disposition": "issued",
+                    "latest_trace_id": "T-2026-03-06-001",
+                    "latest_execution_state": "review_required",
+                    "latest_result": "partial",
+                    "recent_failure_type": "orchestration",
+                    "latest_decision_id": "D-2026-03-06-001",
+                    "latest_decision": "dispatch",
+                    "latest_decision_at": "2026-03-06T12:20:00+09:00",
+                    "next_operator_decision": "accept",
+                    "open_feedback": [],
+                    "packet_history": [
+                        {
+                            "packet_id": "H-2026-03-06-001",
+                            "disposition": "issued",
+                            "trace_count": 0,
+                            "latest_trace_id": "T-2026-03-06-001",
+                            "latest_result": "partial"
+                        }
+                    ],
+                    "updated_at": "2026-03-06T12:30:00+09:00"
+                }
+            ]
+        }
+
+        with self.assertRaises(validate_wbs_artifact.WbsArtifactError) as ctx:
+            validate_wbs_artifact.validate_against_schema("run-ledger", payload)
+        self.assertEqual(ctx.exception.exit_code, validate_wbs_artifact.EXIT_SCHEMA_VIOLATION)
 
     def test_run_ledger_rejects_recent_trace_refs_longer_than_trace_count(self) -> None:
         payload = {

@@ -176,18 +176,30 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 - acceptance criteria 충족 여부를 trace만으로 판단할 수 없다
 - 실패 원인이 WBS/harness/orchestration인데 packet rework로만 덮으려 한다
 
-#### A. Accept and forward
+#### A. Accept
 
 - 현 handoff 목적을 충족했고
-- 다음 actor에게 넘길 준비가 되었을 때
-- 새 packet을 생성해 다음 actor에게 넘긴다
+- 현재 packet을 닫아도 될 때
+- operator는 `accept` decision을 남기고 현재 handoff 종료를 승인한다
 - decision 직후 snapshot ledger를 남긴다
+- 다음 actor handoff가 필요하면 ledger에는 `next_operator_decision: dispatch`를 남긴다
 
 예:
-- impl 완료 -> integration 검토 packet 생성
-- integration 완료 -> test/harness 검증 packet 생성
+- impl handoff 완료 -> current packet을 `accept`
+- integration handoff 완료 -> current packet을 `accept`
 
-#### B. Rework
+#### B. Dispatch
+
+- 다음 actor packet이 준비됐을 때
+- operator는 새 packet을 만들고 별도 `dispatch` decision/event를 남긴다
+- operator UX에서 한 번에 처리하더라도 artifact는 `accept` 다음 `dispatch` 순서로 기록한다
+- `dispatch`는 기본적으로 current ledger만 갱신하고 snapshot은 생략한다
+
+예:
+- impl handoff `accept` 직후 -> integration packet `dispatch`
+- integration handoff `accept` 직후 -> test/harness packet `dispatch`
+
+#### C. Rework
 
 - 방향은 맞지만 미완성/불충분할 때
 - 기존 packet/trace는 유지하고 새 packet으로 재지시한다
@@ -200,7 +212,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 - 구현은 맞지만 required tests가 부족함
 - packet 설명이 불충분해서 같은 slice 내 재시도가 필요함
 
-#### C. Block
+#### D. Block
 
 - 외부 결정, 누락된 계약, 미준비 의존성 때문에 더 진행할 수 없을 때
 - `trace.execution_state`와 `run ledger.slice_state`를 `blocked`로 반영한다
@@ -212,7 +224,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 - 상위 slice 완료 없이는 판정 불가
 - operator 또는 사람 승인 없이는 더 진행하면 위험함
 
-#### D. Cancel
+#### E. Cancel
 
 - 이 handoff 자체가 잘못 정의됐거나, slice 경계를 다시 쪼개야 할 때
 - run ledger에서 해당 packet을 `cancelled` disposition으로 기록하고 WBS를 수정하거나 재분할한다
@@ -223,7 +235,7 @@ operator는 최소한 아래 평가 기준을 체크해야 한다.
 - slice가 너무 크거나 여러 ownership이 얽힘
 - AC 자체가 모순되거나 handoff 대상이 잘못 지정됨
 
-#### E. Remediate / Revert
+#### F. Remediate / Revert
 
 - 잘못된 변경이 이미 반영됐고, 되돌림 또는 수정이 필요할 때
 - trace를 지우지 않고 remediation packet을 새로 만든다
@@ -368,12 +380,14 @@ operator 또는 향후 operator agent가 가장 먼저 보는 entry point다.
 2. `P1(operator -> impl)` 생성
 3. impl이 코드 작성 후 `T1` trace 기록
 4. operator 검토
-5. 통과 시 `P2(operator -> integration)` 생성
-6. integration이 wiring 확인 후 `T2` 기록
-7. operator 검토
-8. 통과 시 `P3(operator -> test)` 생성
-9. test/harness가 검증 후 `T3` 기록
-10. operator가 slice `S1`을 `done`으로 마감
+5. impl handoff를 `accept` decision으로 닫는다
+6. `P2(operator -> integration)`를 만들고 `dispatch` decision으로 발행한다
+7. integration이 wiring 확인 후 `T2` 기록
+8. operator 검토
+9. integration handoff를 `accept` decision으로 닫는다
+10. `P3(operator -> test)`를 만들고 `dispatch` decision으로 발행한다
+11. test/harness가 검증 후 `T3` 기록
+12. operator가 slice `S1`을 `done`으로 마감
 
 방향이 잘못됐으면:
 
