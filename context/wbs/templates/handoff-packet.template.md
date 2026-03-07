@@ -49,6 +49,7 @@ open_risks:
 
 - `packet`은 불변 명세에 가깝게 유지한다.
 - 가능한 경우 `inputs`에 자신이 따르는 planned flow 문서 경로를 포함한다.
+- `owned_paths`, `required_tests`는 WBS의 추상 경계와 planned flow의 node blueprint를 현재 handoff 기준으로 구체화한 값이다.
 - 재작업은 기존 packet 수정이 아니라 새 packet 발행 + `supersedes_packet_id` 연결로 표현한다.
 - 실행 상태는 `trace`와 `run ledger`가 책임진다.
 - 경로는 가능하면 링크 가능한 repo-relative path를 사용한다.

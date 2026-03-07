@@ -29,12 +29,17 @@ nodes:
       required_inputs:
         - contracts
         - acceptance_criteria
+        - owned_scope
+        - verification_requirements
       required_outputs:
         - code_changes
         - tests
         - trace_summary
     packet_blueprint:
       goal_hint: 이 node packet이 지향해야 할 목표
+      concretization_rules:
+        - owned_scope를 현재 node 목적에 맞는 owned_paths로 내린다
+        - verification_requirements를 현재 node에서 요구할 required_tests로 내린다
       non_goals:
         - 이 node packet에서 하지 않을 것
       autonomy_boundary:
@@ -92,6 +97,7 @@ notes:
 ## Notes
 
 - 이 템플릿은 node별 상세 구현 계획을 미리 쓰는 용도가 아니다.
+- WBS의 `owned_scope`, `verification_requirements`는 이 문서에서 node별 packet blueprint로 번역된다.
 - 현재 문서는 route와 packet blueprint를 고정하고, actor 상세 계획은 packet 수신 후 local plan으로 남기는 방식을 기본값으로 둔다.
 - 작성 책임 기본값은 `operator`다.
 - packet이 이미 발행된 뒤 route가 바뀌면 새 버전을 만들어 이후 packet이 참조하게 한다.
