@@ -13,7 +13,7 @@
 ## 포함 범위
 
 - **Domain**: `Source`, `ChannelSource`, `Video`, `Note`, `Marker` 등
-- **API**: `/api/youtube/*` request/response shape (프록시 기준)
+- **Integration**: YouTube 연동 경계의 request/response shape
 - **Analytics**: 이벤트 이름/props 스키마
 - **Storage**: LocalStorage 키/저장 스키마(버전 포함)
 
@@ -28,12 +28,23 @@
 - `domain.ts`: 제품 도메인 모델(Glossary와 정렬)
 - `analytics.ts`: 이벤트 계약(`context/analytics/events.md`와 정렬)
 - `storage.ts`: LocalStorage 키/스키마(YouTube API Data는 TTL 권장)
-- `api-youtube.ts`: YouTube 프록시 API 계약
+- `api-youtube.ts`: YouTube integration contract
 - `index.ts`: 배럴 export
+
+## Integration Contract란?
+
+여기서 integration contract는 "외부 시스템과 만날 때 앱이 필요로 하는 입력/출력 의미"를
+고정하는 문서다.
+
+- 예: `resolve channel`, `list channel videos`, `get videos by id`, `parse video url`
+- 이 계약은 "무엇을 받아 무엇을 돌려주고, 실패를 어떻게 해석할지"를 정의한다.
+- 반면 route 경로, server action, BFF, proxy 같은 것은 구현 선택이다.
+
+즉 product/contracts에서는 외부 연동의 의미를 먼저 고정하고, 실제 런타임 배치는
+프로젝트 코드베이스 단계에서 결정한다.
 
 ## 변경 원칙(간단)
 
 - Glossary의 용어를 우선한다(이름 충돌 시 glossary를 먼저 수정).
 - 이벤트/스토리지 키는 바꾸기 어렵다(바꿀 땐 버전/마이그레이션까지 같이 설계).
 - YouTube API Data(타이틀/썸네일 등)는 장기 저장 대신 **TTL 캐시**를 기본으로 한다.
-

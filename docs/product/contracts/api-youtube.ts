@@ -2,14 +2,20 @@ import type { ISODateTimeString, UrlString, YouTubeChannelId, YouTubeVideoId } f
 import type { ChannelMetadata, VideoMetadata, VideoSummary } from "./domain";
 
 /**
- * `/api/youtube/*` 라우트용 API 계약(contracts, SoT).
+ * YouTube integration contract (contracts, SoT).
  *
  * 배경:
  * - 재생은 YouTube Embedded Player(IFrame)로 제공한다.
- * - YouTube Data API 호출은 Next.js API route로 프록시하여
- *   API 키를 서버에만 두고, 응답 형태를 정규화한다.
+ * - 메타데이터 조회와 URL 해석은 YouTube Data API 또는 그에 준하는
+ *   서버 측 integration boundary를 통해 수행한다.
+ * - 이 문서는 "어떤 입력/출력이 필요한가"를 고정하고,
+ *   특정 구현체(예: Next.js route, server action, 별도 proxy)는 고정하지 않는다.
+ * - 현재 MVP 구현 바인딩은 `apps/web`의 Next.js route handler와
+ *   `/api/youtube/*` route family를 우선 가정한다.
  *
- * 이 파일은 request/response "형태"만 정의한다(아직 런타임 validation 없음).
+ * 주의:
+ * - 파일명 `api-youtube.ts`는 임시 명명이다.
+ * - 이 파일은 request/response "형태"만 정의한다(아직 런타임 validation 없음).
  */
 export interface ApiError {
   /** 머신 리더블 error code (예: `bad_request`, `upstream_error`). */
@@ -30,7 +36,7 @@ export interface ApiErr {
   error: ApiError;
 }
 
-/** Next.js API routes에서 사용하는 표준 응답 엔벨로프. */
+/** YouTube integration boundary에서 사용하는 표준 응답 엔벨로프. */
 export type ApiResponse<T> = ApiOk<T> | ApiErr;
 
 /**
@@ -50,14 +56,14 @@ export interface YouTubeResolveChannelData {
   canonical_channel_url?: UrlString;
 }
 
-/** `POST /api/youtube/resolve-channel` 응답. */
+/** `resolve channel` integration 응답. */
 export type YouTubeResolveChannelResponse = ApiResponse<YouTubeResolveChannelData>;
 
 /** 특정 채널의 영상 목록을 조회한다(페이지네이션). */
 export interface YouTubeListChannelVideosRequest {
   channel_id: YouTubeChannelId;
   page_token?: string;
-  /** 서버에서 페이지 사이즈 힌트로 사용할 수 있음(MVP 기본: 30). */
+  /** integration 구현체에서 페이지 사이즈 힌트로 사용할 수 있음(MVP 기본: 30). */
   page_size?: number;
 }
 
@@ -67,7 +73,7 @@ export interface YouTubeListChannelVideosData {
   prev_page_token?: string;
 }
 
-/** `GET/POST /api/youtube/list-channel-videos` 응답. */
+/** `list channel videos` integration 응답. */
 export type YouTubeListChannelVideosResponse = ApiResponse<YouTubeListChannelVideosData>;
 
 /** video id 배열로 메타데이터를 배치 조회한다. */
@@ -79,7 +85,7 @@ export interface YouTubeGetVideosByIdData {
   items: VideoMetadata[];
 }
 
-/** `POST /api/youtube/get-videos-by-id` 응답. */
+/** `get videos by id` integration 응답. */
 export type YouTubeGetVideosByIdResponse = ApiResponse<YouTubeGetVideosByIdData>;
 
 /** "Video URL Open"을 위해 YouTube video URL을 `(video_id, t)`로 파싱한다. */
@@ -99,5 +105,5 @@ export interface YouTubeParseVideoUrlData {
   published_at?: ISODateTimeString;
 }
 
-/** `POST /api/youtube/parse-video-url` 응답. */
+/** `parse video url` integration 응답. */
 export type YouTubeParseVideoUrlResponse = ApiResponse<YouTubeParseVideoUrlData>;
