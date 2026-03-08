@@ -1,0 +1,44 @@
+slice_id: MVP-VIDEO-FEED-CHANNEL-FILTER
+parent_wbs: mvp-wbs/v1
+planning_status: ready_for_flow
+goal: 사용자가 영상 피드 범위를 `All` 또는 특정 채널 1개로 좁힐 수 있다.
+why: 등록 채널이 늘어날수록 원하는 소스만 빠르게 좁혀 보는 경로가 있어야 학습 세션 보호 목적이 유지된다.
+contracts:
+  - docs/product/mvp-spec.md
+  - docs/product/contracts/domain.ts
+  - docs/product/contracts/analytics.ts
+acceptance_criteria:
+  - 피드 기본값은 `All`이고 사용자가 특정 채널 1개를 선택할 수 있다.
+  - 특정 채널을 선택하면 피드 범위가 해당 채널 영상으로만 좁혀진다.
+  - `All`로 다시 전환하면 통합 피드 맥락으로 복귀한다.
+  - 현재 필터 상태는 피드에서 영상 열기와 `Load older` 동작에 전달할 수 있다.
+owned_scope:
+  - 피드 필터 상태 관리 경계
+  - 채널 단일 선택 전환 경계
+  - 현재 필터 컨텍스트 전달 경계
+verification_requirements:
+  - 단위 검증 증거 필요
+  - 통합 검증 증거 필요
+  - 수동 UX 검증 필요
+  - 계약 호환성 검증 필요
+dependencies:
+  - MVP-VIDEO-FEED-LATEST-LIST
+non_goals:
+  - 다중 채널 동시 선택
+  - 검색 조건과 결합된 복합 필터
+  - 마지막 필터 상태 영속화
+risks:
+  - 필터 전환 시 목록 상태와 선택 상태를 함께 바꾸면 잘못된 video context가 남을 수 있다.
+assumptions:
+  - MVP 필터 값은 `All` 또는 특정 `ChannelSource` 1개다.
+open_questions: []
+workspace_bindings: []
+refs:
+  planned_flow: null
+  run_id: null
+  related_docs:
+    - docs/product/mvp-spec.md
+    - docs/product/sitemap.md
+    - docs/product/screen-spec.md
+notes:
+  - 필터 자체의 상태 경계를 먼저 분리해 두면 페이지네이션과 열기 흐름이 이 컨텍스트를 재사용할 수 있다.

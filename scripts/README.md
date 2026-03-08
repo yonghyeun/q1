@@ -24,6 +24,9 @@
 - `pr_title_guard.sh`: PR 제목 컨벤션 생성/검증 (`[scope] 요약`)
 - `pr_merge.sh`: PR merge + remote branch 삭제 + local cleanup 연계
 - `post_merge_cleanup.sh`: merge 후 로컬 브랜치 정리 (`pull --rebase origin main`)
+- `codex_wbs_emit.sh`: `codex exec --output-schema`로 WBS artifact 생성 + 검증
+- `validate_wbs_artifact.py`: WBS packet/trace/operator decision/run ledger schema + semantic 검증
+- `wbs_task_index.py`: WBS task YAML에서 `context/wbs/tasks/index.md` summary projection 생성/검사
 
 ## 테스트
 - 브랜치 검증 테스트:
@@ -34,3 +37,19 @@
   - `python3 -m unittest scripts.repo.tests.test_pr_title_guard -v`
 - PR merge dry-run 동작 테스트:
   - `python3 -m unittest scripts.repo.tests.test_pr_merge_dry_run -v`
+- WBS artifact validator 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_validate_wbs_artifact -v`
+- WBS task index projection 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_wbs_task_index -v`
+- pre-commit dispatcher 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_pre_commit_dispatcher -v`
+
+## WBS task index
+- 정본은 `context/wbs/tasks/*.yaml`이고, `context/wbs/tasks/index.md`는 generated projection이다.
+- `index.md`는 `<!-- wbs-task-summary:start -->` / `<!-- wbs-task-summary:end -->` marker 사이만 자동 갱신한다.
+- 생성:
+  - `python3 scripts/repo/wbs_task_index.py generate --source working-tree --write`
+- 최신성 검사:
+  - `python3 scripts/repo/wbs_task_index.py check --source working-tree`
+- 훅 실행:
+  - `.githooks/pre-commit.d/30-wbs-task-index`가 `pre-commit` dispatcher에서 독립적으로 실행된다.

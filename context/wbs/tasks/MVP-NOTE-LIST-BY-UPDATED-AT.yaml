@@ -1,0 +1,45 @@
+slice_id: MVP-NOTE-LIST-BY-UPDATED-AT
+parent_wbs: mvp-wbs/v1
+planning_status: ready_for_flow
+goal: 사용자가 작성한 노트가 있는 영상을 `updated_at` 기준 목록으로 볼 수 있다.
+why: 작성한 노트를 다시 찾아 복습하거나 이어서 편집하는 재진입 경로가 있어야 노트가 누적 자산으로 남는다.
+contracts:
+  - docs/product/mvp-spec.md
+  - docs/product/contracts/domain.ts
+  - docs/product/contracts/storage.ts
+acceptance_criteria:
+  - 사용자는 `/notes` route에서 note가 존재하는 `video_id` 항목 목록을 볼 수 있다.
+  - 목록 순서는 note `updated_at` 최신순이다.
+  - 각 항목은 메타데이터가 없더라도 `video_id`와 마지막 수정 시점으로 식별할 수 있다.
+  - 저장된 note가 하나도 없으면 empty state와 `/feed`로 이동하는 CTA를 보여 준다.
+owned_scope:
+  - local note index derivation 경계
+  - note `updated_at` 정렬 경계
+  - note list empty/ready state 경계
+verification_requirements:
+  - 단위 검증 증거 필요
+  - 통합 검증 증거 필요
+  - 수동 UX 검증 필요
+  - 계약 호환성 검증 필요
+dependencies:
+  - MVP-NOTE-LOCAL-PERSISTENCE
+non_goals:
+  - 제목/썸네일 메타데이터 enrichment
+  - note 목록 검색, 폴더링, 정렬 옵션
+  - note list에서 video workspace로 여는 상호작용
+risks:
+  - 메타데이터 없이 시작하면 목록이 지나치게 기계적으로 느껴질 수 있다.
+assumptions:
+  - note list의 정본은 LocalStorage의 `notes_by_video_id`다.
+  - note 존재 여부는 최근 열어본 영상이 아니라 저장된 note record로 판단한다.
+open_questions: []
+workspace_bindings: []
+refs:
+  planned_flow: null
+  run_id: null
+  related_docs:
+    - docs/product/problem-brief.md
+    - docs/product/sitemap.md
+    - docs/product/screen-spec.md
+notes:
+  - 제목/썸네일 enrichment와 row 선택 후 화면 열기는 별도 slice에서 다룬다.

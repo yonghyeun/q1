@@ -1,0 +1,46 @@
+slice_id: MVP-VIDEO-FEED-LATEST-LIST
+parent_wbs: mvp-wbs/v1
+planning_status: ready_for_flow
+goal: 사용자가 등록한 채널들의 최신 영상을 앱 내부 피드에서 기본 목록으로 볼 수 있다.
+why: 앱 내부 피드의 첫 화면이 성립해야 유튜브 홈 대신 학습 소스만 탐색하는 기본 진입 경로가 만들어진다.
+contracts:
+  - docs/product/mvp-spec.md
+  - docs/product/contracts/domain.ts
+  - docs/product/contracts/storage.ts
+  - docs/product/contracts/api-youtube.ts
+acceptance_criteria:
+  - 등록된 채널들의 최신 영상이 앱 내부 피드에 기본 30개 단위로 보인다.
+  - 기본 피드 범위는 `All`이며 등록 채널 영상이 `published_at` 기준으로 정렬되어 보인다.
+  - 피드 항목에는 영상 선택에 필요한 최소 메타데이터가 포함된다.
+  - 등록된 source가 없을 때와 있을 때의 피드 상태가 구분된다.
+owned_scope:
+  - 등록 source 기반 영상 수집 경계
+  - `All` 피드 초기 머지 경계
+  - 피드 초기 목록 표현 경계
+verification_requirements:
+  - 단위 검증 증거 필요
+  - 통합 검증 증거 필요
+  - 수동 UX 검증 필요
+  - 계약 호환성 검증 필요
+dependencies:
+  - MVP-SOURCE-ADD-CHANNEL
+non_goals:
+  - 채널별 단일 필터 전환
+  - `Load older` 페이지네이션
+  - 피드 항목 선택 후 화면 열기
+  - 검색 기능
+risks:
+  - 여러 채널의 최신 영상을 한 번에 머지할 때 응답 지연이나 부분 실패 처리 기준이 흔들릴 수 있다.
+assumptions:
+  - MVP 피드는 등록된 `ChannelSource`만 대상으로 한다.
+  - 기본 페이지 단위는 30개다.
+open_questions: []
+workspace_bindings: []
+refs:
+  planned_flow: null
+  run_id: null
+  related_docs:
+    - docs/product/one-pager.md
+    - docs/product/api-behavior-spec.md
+notes:
+  - 이 slice는 피드 첫 페이지를 닫는 데 집중하고, 추가 탐색과 화면 열기는 별도 slice에서 다룬다.

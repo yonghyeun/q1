@@ -1,0 +1,39 @@
+{
+  "decision_id": "D-EX-2026-03-06-001",
+  "run_id": "RUN-EX-2026-03-06-A",
+  "seq": 3,
+  "slice_id": "EX-MVP-TS-INSERT",
+  "packet_id": "H-EX-2026-03-06-001",
+  "reviewed_trace_ids": [
+    "T-EX-2026-03-06-001"
+  ],
+  "made_at": "2026-03-06T10:29:00+09:00",
+  "operator_actor": "operator",
+  "decision": "rework",
+  "review_summary": "구현 방향은 맞지만 packet 입력이 부족해 다음 actor가 판단 가능한 수준에 도달하지 못했다.",
+  "reason_code": "bad_handoff",
+  "reason_detail": "editor command surface 입력이 빠져 integration 판단이 불가능했다.",
+  "slice_state_before": "active",
+  "slice_state_after": "active",
+  "packet_disposition_before": "active",
+  "packet_disposition_after": "superseded",
+  "next_packet_id": "H-EX-2026-03-06-002",
+  "updated_current_ledger_ref": "context/wbs/examples/runs/RUN-EX-2026-03-06-A/current.run-ledger.json",
+  "snapshot_ref": "context/wbs/examples/runs/RUN-EX-2026-03-06-A/snapshots/0003.rework.run-ledger.json",
+  "feedback_applied": [
+    {
+      "target": "packet",
+      "action": "editor command surface 입력 문서를 packet inputs에 추가했다."
+    }
+  ],
+  "feedback_opened": [
+    {
+      "target": "wbs",
+      "severity": "should_fix",
+      "note": "impl handoff와 integration handoff를 분리 명시하면 재작업이 줄어든다."
+    }
+  ],
+  "context_notes": [
+    "구현자 실패가 아니라 handoff 품질 부족으로 분류했다."
+  ]
+}

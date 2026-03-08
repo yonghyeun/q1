@@ -1,0 +1,47 @@
+slice_id: MVP-VIDEO-OPEN-FROM-FEED
+parent_wbs: mvp-wbs/v1
+planning_status: ready_for_flow
+goal: 사용자가 피드에서 선택한 영상을 Video Write 화면으로 열 수 있다.
+why: 피드 탐색이 실제 학습 행동으로 이어지려면 선택한 영상이 기본 write mode의 video workspace로 바로 연결되어야 한다.
+contracts:
+  - docs/product/mvp-spec.md
+  - docs/product/contracts/domain.ts
+  - docs/product/contracts/analytics.ts
+acceptance_criteria:
+  - 사용자가 피드 항목을 선택하면 해당 `video_id` 기준 `/videos/[video_id]/write`로 진입한다.
+  - 현재 피드 컨텍스트(`feed_filter`, `source_id` 또는 `filter_source_id`)를 영상 열기 맥락으로 전달할 수 있다.
+  - `video_opened` 이벤트를 `open_method=feed` 기준으로 남길 수 있다.
+owned_scope:
+  - 피드 항목 선택 경계
+  - `video_id` 기반 화면 전환 경계
+  - 피드 컨텍스트 전달 경계
+  - 영상 열기 분석 이벤트 연결 경계
+verification_requirements:
+  - 단위 검증 증거 필요
+  - 통합 검증 증거 필요
+  - 수동 UX 검증 필요
+  - 계약 호환성 검증 필요
+dependencies:
+  - MVP-PLAYER-NOTE-WORKSPACE
+  - MVP-VIDEO-FEED-LATEST-LIST
+  - MVP-VIDEO-FEED-CHANNEL-FILTER
+non_goals:
+  - 영상 URL 직접 열기
+  - 최근 열어본 영상 히스토리 UI
+  - 다음 영상 자동 재생
+risks:
+  - 피드 선택 상태와 video workspace 진입 상태가 분리되면 잘못된 `video_id` 또는 분석 맥락이 전달될 수 있다.
+assumptions:
+  - Video Write 화면은 전달받은 `video_id`만으로 진입 가능하다.
+open_questions:
+  - "[later] Video Write에서 피드로 돌아왔을 때 이전 스크롤 위치를 복원할지?"
+workspace_bindings: []
+refs:
+  planned_flow: null
+  run_id: null
+  related_docs:
+    - docs/product/one-pager.md
+    - docs/product/sitemap.md
+    - docs/product/screen-spec.md
+notes:
+  - 노트 재연결 자체는 `MVP-NOTE-LOCAL-PERSISTENCE`가 책임진다.

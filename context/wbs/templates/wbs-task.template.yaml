@@ -1,0 +1,27 @@
+slice_id: SLICE-ID
+parent_wbs: mvp-wbs/v1
+planning_status: draft
+goal: 사용자가 ... 할 수 있다.
+why: 왜 이 slice가 필요한가.
+contracts:
+  - docs/product/contracts/example.ts
+acceptance_criteria:
+  - 관찰 가능한 완료 조건 1
+owned_scope:
+  - 기능/모듈/경계 수준의 소유 경계
+verification_requirements:
+  - 단위 검증 증거 필요
+dependencies: []
+non_goals: []
+risks: []
+assumptions: []
+open_questions: []
+workspace_bindings:
+  - purpose: 구현
+    branch: null
+    worktree: null
+refs:
+  planned_flow: null
+  run_id: null
+  related_docs: []
+notes: []

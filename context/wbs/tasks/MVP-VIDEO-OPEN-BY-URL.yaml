@@ -1,0 +1,49 @@
+slice_id: MVP-VIDEO-OPEN-BY-URL
+parent_wbs: mvp-wbs/v1
+planning_status: ready_for_flow
+goal: 사용자가 유튜브 영상 URL을 붙여넣어 Video Write 화면으로 바로 진입할 수 있다.
+why: 피드를 거치지 않고 바로 학습을 시작할 수 있어야 초기 진입 장벽이 낮아지고, 기본 write mode로 들어가는 escape hatch가 성립한다.
+contracts:
+  - docs/product/mvp-spec.md
+  - docs/product/contracts/domain.ts
+  - docs/product/contracts/storage.ts
+  - docs/product/contracts/analytics.ts
+  - docs/product/contracts/api-youtube.ts
+acceptance_criteria:
+  - 사용자가 영상 URL을 붙여넣고 열 수 있다.
+  - 열기 성공 시 해당 video_id 기준 `/videos/[video_id]/write`로 진입한다.
+  - 이미 존재하는 노트가 있으면 같은 video_id 기준으로 다시 연결된다.
+  - 잘못된 URL은 열기 전에 구분된다.
+  - `video_opened` 이벤트를 남길 수 있다.
+owned_scope:
+  - 영상 URL 파싱 경계
+  - video_id 기반 화면 진입 경계
+  - 노트 재연결 경계
+  - 영상 열기 분석 이벤트 연결 경계
+verification_requirements:
+  - 단위 검증 증거 필요
+  - 통합 검증 증거 필요
+  - 수동 UX 검증 필요
+dependencies:
+  - MVP-PLAYER-NOTE-WORKSPACE
+  - MVP-NOTE-LOCAL-PERSISTENCE
+non_goals:
+  - 채널 URL을 통한 직접 열기
+  - 재생 목록 URL 열기
+  - 최근 열어본 영상 히스토리 UI
+risks:
+  - 유튜브 URL 형태가 다양해 파싱 규칙을 먼저 좁혀야 한다.
+assumptions:
+  - MVP에서는 video_id만 확보되면 노트 연결이 가능하다.
+open_questions: []
+workspace_bindings: []
+refs:
+  planned_flow: null
+  run_id: null
+  related_docs:
+    - docs/product/problem-brief.md
+    - docs/product/sitemap.md
+    - docs/product/screen-spec.md
+    - docs/product/api-behavior-spec.md
+notes:
+  - MVP 지원 URL 패턴은 `docs/product/api-behavior-spec.md`에서 고정한다.

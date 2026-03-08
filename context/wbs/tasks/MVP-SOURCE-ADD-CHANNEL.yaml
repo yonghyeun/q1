@@ -1,0 +1,54 @@
+slice_id: MVP-SOURCE-ADD-CHANNEL
+parent_wbs: mvp-wbs/v1
+planning_status: ready_for_flow
+goal: 사용자가 학습할 채널 URL을 등록해 소스 목록에 추가할 수 있다.
+why: 앱 내부 피드와 학습 세션은 등록된 채널을 기준으로 시작되므로, 채널 등록은 전체 경험의 시작점이다.
+contracts:
+  - docs/product/mvp-spec.md
+  - docs/product/contracts/domain.ts
+  - docs/product/contracts/storage.ts
+  - docs/product/contracts/analytics.ts
+  - docs/product/contracts/api-youtube.ts
+acceptance_criteria:
+  - 사용자가 채널 URL을 입력하고 등록할 수 있다.
+  - 등록된 채널은 이후 소스 목록에서 다시 확인할 수 있다.
+  - 유효하지 않은 입력은 등록 전에 구분된다.
+  - 중복 등록을 처리하는 기준이 정해져 있다.
+  - `source_added` 이벤트를 남길 수 있다.
+owned_scope:
+  - 채널 URL 입력 및 검증 경계
+  - 채널 소스 생성 경계
+  - 소스 저장 경계
+  - 채널 등록 분석 이벤트 연결 경계
+verification_requirements:
+  - 단위 검증 증거 필요
+  - 통합 검증 증거 필요
+  - 수동 UX 검증 필요
+  - 계약 호환성 검증 필요
+dependencies: []
+non_goals:
+  - 플레이리스트 URL 등록
+  - 다중 채널 일괄 등록
+  - 계정 기반 동기화
+risks:
+  - 채널 URL에서 channel_id를 추출하는 규칙이 구현 방식에 따라 갈릴 수 있다.
+assumptions:
+  - MVP에서는 채널만 source로 지원한다.
+  - 등록한 source는 브라우저 로컬 저장으로 유지한다.
+open_questions:
+  - "[later] 중복 등록 시 무시할지 갱신으로 처리할지?"
+workspace_bindings:
+  - purpose: 구현
+    branch: feat/mvp-source-add-channel
+    worktree: /worktrees/q1-mvp-source-add-channel
+  - purpose: 버그 수정
+    branch: fix/mvp-source-add-channel-validation
+    worktree: /worktrees/q1-mvp-source-add-channel-validation
+refs:
+  planned_flow: null
+  run_id: null
+  related_docs:
+    - docs/product/one-pager.md
+notes:
+  - branch와 worktree는 예시 값이다.
+  - 한 slice에 여러 workspace를 둘 수 있다는 예시를 포함한다.
