@@ -12,5 +12,6 @@
 - `mvp-spec.md`
 - `sitemap.md`
 - `screen-spec.md`
+- `frontend-routing-and-state.md`
 - `glossary.md` (도메인 용어 SoT)
 - `contracts/README.md` (interfaces SoT, WBS/병렬 개발용)

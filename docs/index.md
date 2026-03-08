@@ -14,6 +14,7 @@
 7. 외부 제약(YouTube 정책 체크): [product/youtube-api-policy-notes.md](product/youtube-api-policy-notes.md)
 8. 계측 이벤트 SoT: [../context/analytics/events.md](../context/analytics/events.md)
 9. 기술 방향(코어): [../context/core/technical-context.md](../context/core/technical-context.md)
+10. 프런트엔드 라우팅/상태: [product/frontend-routing-and-state.md](product/frontend-routing-and-state.md)
 
 ## 제품(Product)
 
@@ -22,6 +23,7 @@
 - MVP spec(SoT): [product/mvp-spec.md](product/mvp-spec.md)
 - Sitemap(MVP): [product/sitemap.md](product/sitemap.md)
 - Screen spec(MVP): [product/screen-spec.md](product/screen-spec.md)
+- Frontend routing/state(MVP): [product/frontend-routing-and-state.md](product/frontend-routing-and-state.md)
 - Glossary(SoT): [product/glossary.md](product/glossary.md)
 - YouTube 정책 체크(노트): [product/youtube-api-policy-notes.md](product/youtube-api-policy-notes.md)
 - Contracts(interfaces SoT, temp): [product/contracts/README.md](product/contracts/README.md)
@@ -61,6 +63,10 @@
 ## 개발(코드)
 
 - Web app(Next.js): [../apps/web/README.md](../apps/web/README.md)
+
+## 아키텍처(Architecture)
+
+- Git branch governance: [architecture/git-branch-governance.md](architecture/git-branch-governance.md)
 
 ## 저장소 운영(루트 문서)
 
