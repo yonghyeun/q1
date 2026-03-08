@@ -1,0 +1,47 @@
+slice_id: MVP-VIDEO-OPEN-FROM-NOTE-LIST
+parent_wbs: mvp-wbs/v1
+planning_status: ready_for_flow
+goal: 사용자가 Note List에서 선택한 영상을 Video Read 화면으로 열 수 있다.
+why: note list가 실제 복습 경로가 되려면 항목 선택이 read mode의 video workspace로 바로 이어져야 한다.
+contracts:
+  - docs/product/mvp-spec.md
+  - docs/product/contracts/domain.ts
+  - docs/product/contracts/analytics.ts
+acceptance_criteria:
+  - 사용자가 note list 항목을 선택하면 해당 `video_id` 기준 `/videos/[video_id]/read`로 진입한다.
+  - metadata degraded 상태의 항목도 같은 방식으로 열 수 있다.
+  - 같은 `video_id`의 note 정본으로 다시 연결된다.
+  - `video_opened` 이벤트를 `open_method=note_list` 기준으로 남길 수 있다.
+owned_scope:
+  - note list row 선택 경계
+  - `video_id` 기반 read route 전환 경계
+  - note list 기반 영상 열기 분석 이벤트 연결 경계
+verification_requirements:
+  - 단위 검증 증거 필요
+  - 통합 검증 증거 필요
+  - 수동 UX 검증 필요
+  - 계약 호환성 검증 필요
+dependencies:
+  - MVP-NOTE-LIST-BY-UPDATED-AT
+  - MVP-NOTE-LOCAL-PERSISTENCE
+  - MVP-PLAYER-NOTE-WORKSPACE
+non_goals:
+  - note list에서 곧바로 `write` mode로 여는 secondary shortcut
+  - 최근 열어본 영상 히스토리 UI
+  - note list 전용 추천/정렬 개선
+risks:
+  - note list 재진입 의도와 read route semantics가 어긋나면 사용자가 수정 경로를 찾기 어렵다고 느낄 수 있다.
+assumptions:
+  - note list의 기본 재진입 의도는 `write`보다 `read`에 가깝다.
+open_questions:
+  - "[later] note list row에 `write`로 바로 가는 secondary action을 둘지?"
+workspace_bindings: []
+refs:
+  planned_flow: null
+  run_id: null
+  related_docs:
+    - docs/product/problem-brief.md
+    - docs/product/sitemap.md
+    - docs/product/screen-spec.md
+notes:
+  - 수정은 Video Read에서 mode switch를 통해 Video Write로 이동하는 것을 기본값으로 둔다.

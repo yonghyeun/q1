@@ -25,7 +25,7 @@ Terminology SoT: [`docs/product/glossary.md`](../../docs/product/glossary.md)
 
 - `video_opened`
   - 언제: 유저가 특정 영상을 열고 재생 화면에 진입했을 때
-  - props: `video_id`, `open_method` (`feed|url`), `source_id`(선택), `feed_filter` (`all|channel`), `filter_source_id`(선택)
+  - props: `video_id`, `open_method` (`feed|url|note_list`), `source_id`(선택), `feed_filter` (`all|channel`, feed 진입인 경우), `filter_source_id`(선택)
 
 - `video_feed_load_older_clicked`
   - 언제: Video Feed에서 `Load older`를 클릭했을 때

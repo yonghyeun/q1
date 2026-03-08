@@ -26,7 +26,7 @@ export type NoteId = `note:${string}`;
 export type MarkerId = `marker:${string}`;
 
 /** 유저가 영상을 여는 진입 방식. analytics의 `open_method`와 정렬한다. */
-export const OPEN_METHODS = ["feed", "url"] as const;
+export const OPEN_METHODS = ["feed", "url", "note_list"] as const;
 /** 지원하는 open method 유니온. */
 export type OpenMethod = (typeof OPEN_METHODS)[number];
 

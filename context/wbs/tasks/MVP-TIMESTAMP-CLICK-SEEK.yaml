@@ -1,16 +1,16 @@
 slice_id: MVP-TIMESTAMP-CLICK-SEEK
 parent_wbs: mvp-wbs/v1
 planning_status: planning_blocked
-goal: 사용자가 노트 안의 타임스탬프를 클릭하면 현재 플레이어가 해당 시점으로 이동한다.
-why: 타임스탬프 삽입만으로는 학습 회고 루프가 닫히지 않고, 클릭 seek까지 있어야 노트와 영상이 실제로 연결된다.
+goal: 사용자가 Video Read 화면의 타임스탬프를 클릭하면 현재 플레이어가 해당 시점으로 이동한다.
+why: 타임스탬프 삽입만으로는 학습 회고 루프가 닫히지 않고, 읽기 중심의 read mode에서 클릭 seek까지 있어야 노트와 영상이 실제로 연결된다.
 contracts:
   - docs/product/mvp-spec.md
   - docs/product/contracts/domain.ts
   - docs/product/contracts/analytics.ts
 acceptance_criteria:
-  - 노트 안의 타임스탬프를 클릭하면 외부 이동이 아니라 플레이어 seek으로 동작한다.
+  - Video Read 화면에서 노트 안의 타임스탬프를 클릭하면 외부 이동이 아니라 플레이어 seek으로 동작한다.
   - 클릭한 타임스탬프는 현재 열린 video_id 맥락 안에서 해석된다.
-  - 클릭 후 재생 흐름이 끊기지 않는다.
+  - 클릭 후 read 흐름이 끊기지 않는다.
   - `timestamp_clicked` 이벤트를 남길 수 있다.
 owned_scope:
   - 타임스탬프 파싱 경계
@@ -23,6 +23,8 @@ verification_requirements:
   - 수동 UX 검증 필요
   - 계약 호환성 검증 필요
 dependencies:
+  - MVP-PLAYER-NOTE-WORKSPACE
+  - MVP-NOTE-LOCAL-PERSISTENCE
   - MVP-TS-INSERT
 non_goals:
   - 클릭 가능한 타임스탬프 자동 하이라이트
@@ -45,5 +47,7 @@ refs:
   run_id: null
   related_docs:
     - docs/product/mvp-spec.md
+    - docs/product/sitemap.md
+    - docs/product/screen-spec.md
 notes:
   - 형식 contract가 닫히기 전까지는 planning_blocked로 유지한다.

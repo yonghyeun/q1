@@ -44,7 +44,8 @@ export interface VideoOpenedProps {
   video_id: YouTubeVideoId;
   open_method: OpenMethod;
   source_id?: SourceId;
-  feed_filter: FeedFilter;
+  /** feed surface에서 열린 경우에만 채운다. */
+  feed_filter?: FeedFilter;
   filter_source_id?: SourceId;
 }
 

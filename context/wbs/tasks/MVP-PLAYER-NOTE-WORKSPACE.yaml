@@ -1,0 +1,51 @@
+slice_id: MVP-PLAYER-NOTE-WORKSPACE
+parent_wbs: mvp-wbs/v1
+planning_status: ready_for_flow
+goal: 사용자가 선택한 영상의 플레이어와 노트를 같은 작업 공간에서 write/read 모드로 사용할 수 있다.
+why: video workspace는 제품의 코어 경험이며, 피드 열기·URL 열기·타임스탬프 상호작용이 같은 `video_id` 맥락에서 write/read로 나뉘어 닫혀야 한다.
+contracts:
+  - docs/product/mvp-spec.md
+  - docs/product/youtube-api-policy-notes.md
+  - docs/product/contracts/domain.ts
+acceptance_criteria:
+  - `video_id`가 정해지면 해당 영상 기준 video workspace route family로 진입할 수 있다.
+  - `/videos/[video_id]/write`와 `/videos/[video_id]/read`는 같은 `video_id` 맥락을 공유한다.
+  - 각 모드에서 유튜브 임베드 플레이어와 노트 영역을 함께 볼 수 있다.
+  - 플레이어 위 오버레이 없이 분할 레이아웃으로 화면이 구성된다.
+  - 다른 영상을 열거나 모드를 전환할 때 화면 맥락이 올바른 `video_id`로 유지된다.
+owned_scope:
+  - `video_id` 기준 화면 진입 경계
+  - 임베드 플레이어 호스트 경계
+  - video workspace shell 구성 경계
+  - write/read mode 전환 경계
+  - 플레이어-노트 레이아웃 정책 경계
+verification_requirements:
+  - 단위 검증 증거 필요
+  - 통합 검증 증거 필요
+  - 수동 UX 검증 필요
+  - 계약 호환성 검증 필요
+dependencies: []
+non_goals:
+  - 노트 자동저장 규칙
+  - 타임스탬프 삽입 및 클릭 seek 동작
+  - 채널 피드 또는 영상 URL 파싱
+risks:
+  - 플레이어 위 오버레이를 피하면서도 좁은 화면에서 사용 가능한 레이아웃을 유지해야 한다.
+  - `video_id` 전달 계약이 흔들리면 URL 열기와 피드 열기 흐름이 서로 다른 화면 상태를 만들 수 있다.
+  - mode 전환 시 플레이어가 재초기화되면 write/read 분리의 이점이 줄어든다.
+assumptions:
+  - MVP 재생은 YouTube Embedded Player(IFrame) 기준으로 제공한다.
+  - 노트 영역은 플레이어와 같은 화면에 머물고 별도 팝업으로 분리하지 않는다.
+open_questions:
+  - "[later] Player + Note 상단 컨텍스트 바에 어떤 최소 메타데이터를 노출할지?"
+  - "[later] write/read mode 전환 시 재생 상태를 어디까지 유지할지?"
+workspace_bindings: []
+refs:
+  planned_flow: null
+  run_id: null
+  related_docs:
+    - docs/product/one-pager.md
+    - docs/product/sitemap.md
+    - docs/product/screen-spec.md
+notes:
+  - 이 slice는 shared video workspace shell을 고정하며, 노트 지속성과 피드 탐색은 별도 slice에서 다룬다.

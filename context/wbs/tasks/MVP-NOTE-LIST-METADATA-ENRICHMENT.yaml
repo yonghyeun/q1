@@ -1,0 +1,47 @@
+slice_id: MVP-NOTE-LIST-METADATA-ENRICHMENT
+parent_wbs: mvp-wbs/v1
+planning_status: planned
+goal: 사용자가 Note List에서 영상 제목과 썸네일을 우선 보고 항목을 빠르게 식별할 수 있다.
+why: "`video_id`만으로는 작성했던 영상을 빠르게 떠올리기 어려워 note list의 재방문 효율이 떨어진다."
+contracts:
+  - docs/product/mvp-spec.md
+  - docs/product/contracts/domain.ts
+  - docs/product/contracts/storage.ts
+  - docs/product/contracts/api-youtube.ts
+acceptance_criteria:
+  - Note List 항목은 가능하면 영상 제목과 썸네일을 보여 준다.
+  - 메타데이터가 없거나 조회에 실패해도 row 자체는 유지되고 `video_id`, `updated_at`, placeholder 썸네일로 fallback 된다.
+  - 메타데이터 hydrate 실패는 비치명 상태로 표현되고 note 열기 행동을 막지 않는다.
+  - 메타데이터는 note list의 정본이 아니라 표시용 enrichment로 취급된다.
+owned_scope:
+  - note list row metadata 표시 경계
+  - metadata hydrate/fallback 경계
+  - metadata degraded UI 경계
+verification_requirements:
+  - 단위 검증 증거 필요
+  - 통합 검증 증거 필요
+  - 수동 UX 검증 필요
+  - 계약 호환성 검증 필요
+dependencies:
+  - MVP-NOTE-LIST-BY-UPDATED-AT
+non_goals:
+  - 메타데이터의 완전한 최신성 보장
+  - note list 정렬 기준을 제목/채널 기준으로 확장
+  - 검색 결과나 추천 랭킹 구성
+risks:
+  - 항목별 메타데이터 hydrate가 느리면 note list의 첫 인상이 흔들릴 수 있다.
+  - unavailable/private 영상의 라벨링 기준이 불명확하면 fallback copy가 일관되지 않을 수 있다.
+assumptions:
+  - note list는 메타데이터가 없어도 성립해야 한다.
+  - YouTube 메타데이터는 유저 note와 달리 보조 표시 데이터로 취급한다.
+open_questions: []
+workspace_bindings: []
+refs:
+  planned_flow: null
+  run_id: null
+  related_docs:
+    - docs/product/youtube-api-policy-notes.md
+    - docs/product/sitemap.md
+    - docs/product/screen-spec.md
+notes:
+  - MVP에서는 TTL 캐시를 강제하지 않고 best-effort hydrate + degraded behavior를 우선 고정한다.
