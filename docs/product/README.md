@@ -10,5 +10,7 @@
 - `one-pager.md`
 - `problem-brief.md`
 - `mvp-spec.md`
+- `sitemap.md`
+- `screen-spec.md`
 - `glossary.md` (도메인 용어 SoT)
 - `contracts/README.md` (interfaces SoT, WBS/병렬 개발용)

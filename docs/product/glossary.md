@@ -66,10 +66,27 @@
 - 정의: 유저가 유튜브 "영상 URL"을 붙여넣어 특정 Video를 바로 여는 진입 경로.
 - 목적: 목록 탐색 없이도 Player + Note의 코어 가치를 즉시 경험하게 한다.
 
+### Note List
+
+- 정의: 유저가 이미 작성한 Note가 있는 Video를 다시 찾는 재진입 목록 화면/경험.
+- 정렬: 기본값은 note `updated_at` 최신순이다.
+- 표시 원칙: 제목/썸네일은 enrichment이고, 없더라도 `video_id`와 수정 시점으로 row가 유지돼야 한다.
+
 ### Player + Note
 
-- 정의: 임베드 플레이어와 마크다운 Note 편집기를 같은 화면에서 제공하는 코어 화면.
+- 정의: 임베드 플레이어와 Note를 같은 `video_id` 기준으로 제공하는 코어 작업 공간.
+- 구성: `Video Write`와 `Video Read` 두 mode가 같은 note SoT를 공유한다.
 - 코어 행동: `timestamp_inserted`(Marker 삽입)과 `timestamp_clicked`(seek 점프).
+
+### Video Write
+
+- 정의: `Player + Note`의 write mode route.
+- 목적: 노트 작성/수정과 timestamp 삽입을 수행한다.
+
+### Video Read
+
+- 정의: `Player + Note`의 read mode route.
+- 목적: 저장된 note를 읽고 timestamp click seek으로 복습한다.
 
 ## Metrics (Product)
 
