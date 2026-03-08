@@ -12,6 +12,7 @@
 - `mvp-spec.md`
 - `sitemap.md`
 - `screen-spec.md`
+- `ui-conventions.md`
 - `frontend-routing-and-state.md`
 - `api-behavior-spec.md`
 - `glossary.md` (도메인 용어 SoT)
