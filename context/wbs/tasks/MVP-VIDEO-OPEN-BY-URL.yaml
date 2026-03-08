@@ -1,6 +1,6 @@
 slice_id: MVP-VIDEO-OPEN-BY-URL
 parent_wbs: mvp-wbs/v1
-planning_status: draft
+planning_status: ready_for_flow
 goal: 사용자가 유튜브 영상 URL을 붙여넣어 Video Write 화면으로 바로 진입할 수 있다.
 why: 피드를 거치지 않고 바로 학습을 시작할 수 있어야 초기 진입 장벽이 낮아지고, 기본 write mode로 들어가는 escape hatch가 성립한다.
 contracts:
@@ -35,8 +35,7 @@ risks:
   - 유튜브 URL 형태가 다양해 파싱 규칙을 먼저 좁혀야 한다.
 assumptions:
   - MVP에서는 video_id만 확보되면 노트 연결이 가능하다.
-open_questions:
-  - "[blocking] 지원할 유튜브 URL 패턴 범위를 어디까지로 제한할지?"
+open_questions: []
 workspace_bindings: []
 refs:
   planned_flow: null
@@ -45,5 +44,6 @@ refs:
     - docs/product/problem-brief.md
     - docs/product/sitemap.md
     - docs/product/screen-spec.md
+    - docs/product/api-behavior-spec.md
 notes:
-  - 입력 형태가 아직 넓어 draft 상태로 둔다.
+  - MVP 지원 URL 패턴은 `docs/product/api-behavior-spec.md`에서 고정한다.

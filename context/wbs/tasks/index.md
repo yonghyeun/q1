@@ -29,9 +29,9 @@
 | [MVP-TIMESTAMP-CLICK-SEEK](./MVP-TIMESTAMP-CLICK-SEEK.yaml) | 사용자가 Video Read 화면의 타임스탬프를 클릭하면 현재 플레이어가 해당 시점으로 이동한다. | planning_blocked | - | 구현: `feat/mvp-timestamp-click-seek` | - |
 | [MVP-TS-INSERT](./MVP-TS-INSERT.yaml) | 사용자가 Video Write 화면에서 현재 재생 시점을 노트에 삽입할 수 있다. | planned | - | - | - |
 | [MVP-VIDEO-FEED-CHANNEL-FILTER](./MVP-VIDEO-FEED-CHANNEL-FILTER.yaml) | 사용자가 영상 피드 범위를 `All` 또는 특정 채널 1개로 좁힐 수 있다. | ready_for_flow | - | - | - |
-| [MVP-VIDEO-FEED-LATEST-LIST](./MVP-VIDEO-FEED-LATEST-LIST.yaml) | 사용자가 등록한 채널들의 최신 영상을 앱 내부 피드에서 기본 목록으로 볼 수 있다. | planned | - | - | - |
+| [MVP-VIDEO-FEED-LATEST-LIST](./MVP-VIDEO-FEED-LATEST-LIST.yaml) | 사용자가 등록한 채널들의 최신 영상을 앱 내부 피드에서 기본 목록으로 볼 수 있다. | ready_for_flow | - | - | - |
 | [MVP-VIDEO-FEED-LOAD-OLDER](./MVP-VIDEO-FEED-LOAD-OLDER.yaml) | 사용자가 현재 선택한 피드 범위 기준으로 더 오래된 영상을 추가로 불러올 수 있다. | draft | - | - | - |
-| [MVP-VIDEO-OPEN-BY-URL](./MVP-VIDEO-OPEN-BY-URL.yaml) | 사용자가 유튜브 영상 URL을 붙여넣어 Video Write 화면으로 바로 진입할 수 있다. | draft | - | - | - |
+| [MVP-VIDEO-OPEN-BY-URL](./MVP-VIDEO-OPEN-BY-URL.yaml) | 사용자가 유튜브 영상 URL을 붙여넣어 Video Write 화면으로 바로 진입할 수 있다. | ready_for_flow | - | - | - |
 | [MVP-VIDEO-OPEN-FROM-FEED](./MVP-VIDEO-OPEN-FROM-FEED.yaml) | 사용자가 피드에서 선택한 영상을 Video Write 화면으로 열 수 있다. | ready_for_flow | - | - | - |
 | [MVP-VIDEO-OPEN-FROM-NOTE-LIST](./MVP-VIDEO-OPEN-FROM-NOTE-LIST.yaml) | 사용자가 Note List에서 선택한 영상을 Video Read 화면으로 열 수 있다. | ready_for_flow | - | - | - |
 <!-- wbs-task-summary:end -->
