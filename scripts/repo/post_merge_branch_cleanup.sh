@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="${REPO_ROOT_OVERRIDE:-$(cd "$(dirname "$0")/../.." && pwd)}"
+SCRIPT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT_DIR="${REPO_ROOT_OVERRIDE:-${SCRIPT_ROOT}}"
 cd "${ROOT_DIR}"
 
 usage() {
@@ -60,7 +61,7 @@ if [[ -z "${BASE_BRANCH}" ]]; then
   fail "--base 값이 비어 있습니다." "--base <branch> 를 지정하거나 기본값 main 을 사용하세요."
 fi
 
-python3 scripts/repo/dirty_worktree_guard.py validate-clean
+python3 "${SCRIPT_ROOT}/scripts/repo/dirty_worktree_guard.py" validate-clean
 
 if ! git remote get-url origin >/dev/null 2>&1; then
   fail "origin remote가 없습니다." "git remote add origin <github-repo-url> 후 다시 실행하세요."

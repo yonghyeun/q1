@@ -10,9 +10,11 @@ cleanup_helpers() {
 }
 trap cleanup_helpers EXIT
 
-cp "${ROOT_DIR}/scripts/repo/worktree_cleanup.sh" "${HELPER_TMP_DIR}/worktree_cleanup.sh"
-cp "${ROOT_DIR}/scripts/repo/post_merge_branch_cleanup.sh" "${HELPER_TMP_DIR}/post_merge_branch_cleanup.sh"
-chmod +x "${HELPER_TMP_DIR}/worktree_cleanup.sh" "${HELPER_TMP_DIR}/post_merge_branch_cleanup.sh"
+mkdir -p "${HELPER_TMP_DIR}/scripts/repo"
+cp "${ROOT_DIR}/scripts/repo/worktree_cleanup.sh" "${HELPER_TMP_DIR}/scripts/repo/worktree_cleanup.sh"
+cp "${ROOT_DIR}/scripts/repo/post_merge_branch_cleanup.sh" "${HELPER_TMP_DIR}/scripts/repo/post_merge_branch_cleanup.sh"
+cp "${ROOT_DIR}/scripts/repo/dirty_worktree_guard.py" "${HELPER_TMP_DIR}/scripts/repo/dirty_worktree_guard.py"
+chmod +x "${HELPER_TMP_DIR}/scripts/repo/worktree_cleanup.sh" "${HELPER_TMP_DIR}/scripts/repo/post_merge_branch_cleanup.sh"
 
 usage() {
   cat <<'EOF'
@@ -41,7 +43,7 @@ run_worktree_cleanup() {
     (
       cd "${PRIMARY_WORKTREE}" &&
       REPO_ROOT_OVERRIDE="${PRIMARY_WORKTREE}" \
-      "${HELPER_TMP_DIR}/worktree_cleanup.sh" "$@"
+      "${HELPER_TMP_DIR}/scripts/repo/worktree_cleanup.sh" "$@"
     )
     return
   fi
@@ -54,7 +56,7 @@ run_branch_cleanup() {
     (
       cd "${PRIMARY_WORKTREE}" &&
       REPO_ROOT_OVERRIDE="${PRIMARY_WORKTREE}" \
-      "${HELPER_TMP_DIR}/post_merge_branch_cleanup.sh" "$@"
+      "${HELPER_TMP_DIR}/scripts/repo/post_merge_branch_cleanup.sh" "$@"
     )
     return
   fi
