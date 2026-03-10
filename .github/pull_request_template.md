@@ -1,5 +1,5 @@
 ## Summary
-<!-- 이 PR의 목적과 결과를 2~4줄로 요약 -->
+<!-- 이 PR이 왜 필요한지, 어떤 운영 문제를 줄이려는지, merge 후 무엇이 좋아지는지 2~4줄로 요약 -->
 
 ## Primary Issue
 <!-- 현재 PR이 직접 닫는 issue. 아래 형식 중 하나 필수 -->
@@ -10,16 +10,19 @@ Closes #<issue-number>
 - Related: #
 
 ## Context
-<!-- 왜 이 작업이 필요한지. 배경, 제약, 작업 중 확인한 사실, 범위 판단에 영향을 준 전제 -->
+<!-- 왜 이 작업이 필요한지. 배경, 제약, 기존 흐름의 문제, 범위 판단에 영향을 준 전제 -->
 
 ## Changes
-<!-- 실제 변경 사항. 코드, 문서, 스크립트, 정책 변경 구분 권장 -->
+<!-- 파일 목록 나열보다 이 변경으로 기대하는 효과, 운영 흐름 변화, 새로 가능해진 점을 우선 설명. 세부 구현은 필요할 때만 supporting detail로 기입 -->
 - 
 - 
 
 ## Decisions Made
-<!-- 작업 중 새로 확정한 판단. 장기 SoT가 필요하면 여기서 decision 문서 링크 추가 -->
+<!-- 결정만 쓰지 말고, 그 결정을 하게 된 맥락, 선택한 방향, 버린 대안, rationale을 함께 기록. 장기 SoT가 필요하면 decision 문서 링크 추가 -->
 - Decision:
+  - Context:
+  - Chosen:
+  - Rejected alternative:
   - Rationale:
   - Reference:
 

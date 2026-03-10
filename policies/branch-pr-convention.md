@@ -26,8 +26,10 @@
 - 현재 PR이 직접 닫는 primary issue를 명시.
 - 현재 작업과 연관된 related issue도 별도 섹션에서 링크.
 - 작업 목적 명시 필요.
-- 변경 범위 명시 필요.
+- 변경 범위만이 아니라 merge 후 기대되는 운영 효과와 workflow 변화가 드러나야 함.
+- `Changes` 섹션은 파일 목록보다 기대 효과, 동작 변화, 새로 가능해진 경로를 우선 설명.
 - 작업 중 확정한 결정 사항 요약 필요.
+- `Decisions Made`에는 결론뿐 아니라 그 결정을 하게 된 배경, 버린 대안, 선택 근거를 함께 남김.
 - 검증 방법 명시 필요.
 
 ## 권장 본문 구조
@@ -40,6 +42,12 @@
 - Deferred / Not Included
 - Validation Notes
 - Risks
+
+## 섹션 작성 원칙
+- `Summary`: 리뷰어가 이 PR의 존재 이유를 30초 안에 이해할 수 있어야 함.
+- `Context`: 기존 운영 흐름의 문제, 제약, 이번 정리의 필요 조건을 설명.
+- `Changes`: 구현 목록보다 기대 효과와 운영 모델 변화를 먼저 설명.
+- `Decisions Made`: decision 자체보다 decision을 유발한 맥락과 대안 비교를 먼저 설명.
 
 ## PR 템플릿
 - 기본 PR 템플릿은 `.github/pull_request_template.md`를 따른다.
