@@ -1,0 +1,3 @@
+interface:
+  display_name: "Git Task Start"
+  short_description: "Start a new task with branch and worktree setup"

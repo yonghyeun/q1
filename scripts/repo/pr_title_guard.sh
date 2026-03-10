@@ -61,11 +61,13 @@ case "${MODE}" in
 
     if [[ -z "${SCOPE}" || -z "${SUMMARY}" ]]; then
       echo "❌ generate에는 --scope, --summary가 필요합니다." >&2
+      echo "   다음 행동: 허용 scope와 한 줄 summary를 함께 전달." >&2
       exit "${EXIT_INVALID_INPUT}"
     fi
 
     if ! is_valid_scope "${SCOPE}"; then
       echo "❌ scope 형식이 잘못되었습니다: ${SCOPE}" >&2
+      echo "   다음 행동: feature|fix|docs|config|chore|refactor|hotfix 중 하나로 수정." >&2
       exit "${EXIT_INVALID_INPUT}"
     fi
 
@@ -99,18 +101,21 @@ case "${MODE}" in
 
     if [[ -z "${TITLE}" ]]; then
       echo "❌ validate에는 --title이 필요합니다." >&2
+      echo "   다음 행동: [scope] 요약 형식의 PR 제목을 전달." >&2
       exit "${EXIT_INVALID_INPUT}"
     fi
 
     if ! [[ "${TITLE}" =~ ^\[([a-z]+)\][[:space:]]+.+$ ]]; then
       echo "❌ PR 제목 형식이 정책과 다릅니다: ${TITLE}" >&2
       echo "   허용 형식: [scope] 요약" >&2
+      echo "   다음 행동: branch-pr-convention.md 형식에 맞춰 [scope] 요약으로 수정." >&2
       exit "${EXIT_INVALID_TITLE}"
     fi
 
     TITLE_SCOPE="${BASH_REMATCH[1]}"
     if ! is_valid_scope "${TITLE_SCOPE}"; then
       echo "❌ PR 제목 scope 허용값이 아닙니다: ${TITLE_SCOPE}" >&2
+      echo "   다음 행동: title scope를 허용 scope 목록 중 하나로 수정." >&2
       exit "${EXIT_INVALID_TITLE}"
     fi
 
@@ -119,11 +124,13 @@ case "${MODE}" in
         BRANCH_SCOPE="${BASH_REMATCH[1]}"
       else
         echo "❌ 브랜치에서 scope를 찾을 수 없습니다: ${BRANCH}" >&2
+        echo "   다음 행동: <scope>/<slug> 형식 브랜치에서 다시 실행." >&2
         exit "${EXIT_BRANCH_PARSE_FAIL}"
       fi
 
       if [[ "${TITLE_SCOPE}" != "${BRANCH_SCOPE}" ]]; then
         echo "❌ PR 제목 scope와 브랜치 scope가 다릅니다: title=${TITLE_SCOPE}, branch=${BRANCH_SCOPE}" >&2
+        echo "   다음 행동: 제목 scope 또는 브랜치 scope를 일치시킨 뒤 다시 실행." >&2
         exit "${EXIT_SCOPE_MISMATCH}"
       fi
     fi

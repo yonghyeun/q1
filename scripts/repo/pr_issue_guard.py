@@ -6,6 +6,8 @@ import re
 import sys
 from pathlib import Path
 
+from body_guard_common import iter_sections  # type: ignore
+
 EXIT_LINK_MISSING = 4
 
 
@@ -15,19 +17,21 @@ class PrIssueGuardError(Exception):
         self.exit_code = exit_code
 
 
-def parse_issue_numbers_from_pr_body(body: str) -> list[str]:
+def parse_issue_numbers_from_primary_issue_section(body: str) -> list[str]:
+    primary_issue = iter_sections(body).get("## Primary Issue", "")
     pattern = re.compile(
         r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)\b",
         re.IGNORECASE,
     )
-    return pattern.findall(body)
+    return pattern.findall(primary_issue)
 
 
 def validate_pr_issue_link(pr_body: str) -> list[str]:
-    linked_issue_numbers = parse_issue_numbers_from_pr_body(pr_body)
+    linked_issue_numbers = parse_issue_numbers_from_primary_issue_section(pr_body)
     if not linked_issue_numbers:
         raise PrIssueGuardError(
-            "PR 본문에 이슈 자동 종료 키워드가 없습니다. 예: `Closes #1234`",
+            "Primary Issue 섹션에 이슈 자동 종료 키워드가 없습니다. 예: `Closes #1234`\n"
+            "다음 행동: Primary Issue 섹션에 닫아야 할 대표 이슈를 close keyword와 함께 추가하고 다시 실행.",
             EXIT_LINK_MISSING,
         )
 

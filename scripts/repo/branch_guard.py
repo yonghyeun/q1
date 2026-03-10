@@ -3,16 +3,13 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
-import json
 import re
 import subprocess
 import sys
-from pathlib import Path
-from typing import Any
 
 EXIT_INVALID_NAME = 1
-EXIT_CONTEXT_MISSING = 2
-EXIT_ARTIFACT_MISSING = 3
+BRANCH_REGEX = r"^(feature|fix|docs|config|chore|refactor|hotfix)/[a-z0-9]+(?:-[a-z0-9]+)*$"
+RESERVED_BRANCHES = {"main"}
 
 
 class BranchPolicyError(Exception):
@@ -25,31 +22,6 @@ class BranchPolicyError(Exception):
 class BranchMeta:
     branch: str
     scope: str
-
-
-def repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]
-
-
-def default_rules_path() -> Path:
-    return repo_root() / "policies/branch-policy.rules.json"
-
-
-def load_rules(path: Path) -> dict[str, Any]:
-    data = json.loads(path.read_text(encoding="utf-8"))
-    required_keys = [
-        "branch_regex",
-        "reserved_branches",
-        "required_context_for_push",
-        "required_artifacts_for_pr",
-    ]
-    missing = [key for key in required_keys if key not in data]
-    if missing:
-        raise BranchPolicyError(
-            f"branch 정책 파일에 필수 키가 없습니다: {', '.join(missing)}",
-            EXIT_INVALID_NAME,
-        )
-    return data
 
 
 def current_branch() -> str:
@@ -81,79 +53,47 @@ def current_branch() -> str:
 def parse_scope(branch: str) -> str:
     if "/" not in branch:
         raise BranchPolicyError(
-            f"브랜치 scope를 찾을 수 없습니다: {branch}",
+            f"브랜치 scope를 찾을 수 없습니다: {branch}\n"
+            "다음 행동: `<scope>/<slug>` 형식의 정책 브랜치로 전환하거나 새 브랜치를 생성.",
             EXIT_INVALID_NAME,
         )
     return branch.split("/", 1)[0]
 
 
-def parse_branch_meta(branch: str, rules: dict[str, Any]) -> BranchMeta:
-    reserved = set(rules["reserved_branches"])
-    if branch in reserved:
+def parse_branch_meta(branch: str) -> BranchMeta:
+    if branch in RESERVED_BRANCHES:
         raise BranchPolicyError(
-            f"보호 브랜치({branch})에서 직접 작업할 수 없습니다.",
+            f"보호 브랜치({branch})에서 직접 작업할 수 없습니다.\n"
+            "다음 행동: feature/fix/docs/config/chore/refactor/hotfix 중 하나의 작업 브랜치를 생성해 진행.",
             EXIT_INVALID_NAME,
         )
 
-    branch_regex = rules["branch_regex"]
-    if not re.fullmatch(branch_regex, branch):
+    if not re.fullmatch(BRANCH_REGEX, branch):
         raise BranchPolicyError(
-            f"브랜치 이름이 정책과 다릅니다: {branch}\n허용 형식: {branch_regex}",
+            f"브랜치 이름이 정책과 다릅니다: {branch}\n허용 형식: {BRANCH_REGEX}",
             EXIT_INVALID_NAME,
         )
 
     return BranchMeta(branch=branch, scope=parse_scope(branch))
 
 
-def validate_branch_name(branch: str, rules: dict[str, Any]) -> BranchMeta:
-    return parse_branch_meta(branch, rules)
-
-
-def validate_context(rules: dict[str, Any]) -> None:
-    missing: list[str] = []
-    root = repo_root()
-    required_paths: list[str] = rules["required_context_for_push"]
-
-    for rel_path in required_paths:
-        target = root / rel_path
-        if not target.exists():
-            missing.append(rel_path)
-
-    if missing:
-        raise BranchPolicyError(
-            "푸시 전 필수 컨텍스트가 누락되었습니다:\n- " + "\n- ".join(missing),
-            EXIT_CONTEXT_MISSING,
-        )
-
-
-def validate_pr_artifacts(rules: dict[str, Any]) -> None:
-    root = repo_root()
-    required: list[str] = rules["required_artifacts_for_pr"]
-    missing: list[str] = []
-
-    for rel_path in required:
-        target = root / rel_path
-        if not target.exists():
-            missing.append(rel_path)
-
-    if missing:
-        raise BranchPolicyError(
-            "PR 필수 파일이 누락되었습니다:\n- " + "\n- ".join(missing),
-            EXIT_ARTIFACT_MISSING,
-        )
+def validate_branch_name(branch: str) -> BranchMeta:
+    try:
+        return parse_branch_meta(branch)
+    except BranchPolicyError as exc:
+        if "허용 형식" in str(exc):
+            raise BranchPolicyError(
+                f"{exc}\n다음 행동: policies/branch-naming.md 규칙에 맞는 `<scope>/<slug>` 브랜치로 rename 또는 재생성.",
+                EXIT_INVALID_NAME,
+            ) from exc
+        raise
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Validate branch policy")
-    parser.add_argument(
-        "--rules",
-        default=str(default_rules_path()),
-        help="branch policy JSON path",
-    )
-
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    for name in ["validate-name", "validate-context", "validate-pr"]:
+    for name in ["validate-name"]:
         sub = subparsers.add_parser(name)
         sub.add_argument("--branch", help="branch name (default: current branch)")
 
@@ -163,29 +103,16 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
-    rules_path = Path(args.rules)
 
     try:
-        rules = load_rules(rules_path)
         branch = args.branch or current_branch()
 
         if args.command == "validate-name":
-            meta = validate_branch_name(branch, rules)
+            meta = validate_branch_name(branch)
             print(f"✅ branch name valid: {meta.branch} (scope={meta.scope})")
             return 0
 
-        meta = validate_branch_name(branch, rules)
-        if args.command == "validate-context":
-            validate_context(rules)
-            print(f"✅ branch context valid: {meta.branch}")
-            return 0
-
-        if args.command == "validate-pr":
-            validate_context(rules)
-            validate_pr_artifacts(rules)
-            print(f"✅ PR gate artifacts valid: {meta.branch}")
-            return 0
-
+        meta = validate_branch_name(branch)
         parser.error(f"unknown command: {args.command}")
         return EXIT_INVALID_NAME
     except BranchPolicyError as exc:

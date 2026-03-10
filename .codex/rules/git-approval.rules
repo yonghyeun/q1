@@ -1,0 +1,276 @@
+# Project-local Codex execution approval rules for Git operations.
+#
+# Notes:
+# - Prefix rules control approval behavior only.
+# - Branch-aware constraints such as "do not write on main" remain in AGENTS.md
+#   and wrapper/gate logic because rules cannot inspect repository state.
+
+# Routine Git writes.
+prefix_rule(
+    pattern = ["git", "add"],
+    decision = "allow",
+    justification = "Allow routine staging on the current task branch.",
+    match = [
+        "git add README.md",
+        "git add -- scripts/repo/task_end.sh",
+    ],
+    not_match = [
+        "git status",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "commit"],
+    decision = "allow",
+    justification = "Allow routine commits on the current task branch.",
+    match = [
+        "git commit -m test",
+        "git commit --amend -m test",
+    ],
+    not_match = [
+        "git status",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "allow",
+    justification = "Allow routine pushes from the current task branch.",
+    match = [
+        "git push",
+        "git push -u origin feature/test-branch",
+    ],
+    not_match = [
+        "git pull",
+        "git push --force",
+        "git push -f",
+        "git push --force-with-lease",
+    ],
+)
+
+# Routine read-only Git inspection.
+prefix_rule(
+    pattern = ["git", "status"],
+    decision = "allow",
+    justification = "Allow routine repository status inspection.",
+    match = [
+        "git status",
+        "git status --short --branch",
+        "git status --porcelain",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "diff"],
+    decision = "allow",
+    justification = "Allow routine diff inspection.",
+    match = [
+        "git diff",
+        "git diff --stat",
+        "git diff --cached",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "log"],
+    decision = "allow",
+    justification = "Allow routine commit history inspection.",
+    match = [
+        "git log --oneline -5",
+        "git log --decorate --graph --oneline",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "show"],
+    decision = "allow",
+    justification = "Allow routine commit and object inspection.",
+    match = [
+        "git show HEAD",
+        "git show 8a3ef01",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "branch", "--show-current"],
+    decision = "allow",
+    justification = "Allow routine current-branch inspection.",
+    match = [
+        "git branch --show-current",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "worktree", "list"],
+    decision = "allow",
+    justification = "Allow routine worktree inspection.",
+    match = [
+        "git worktree list",
+        "git worktree list --porcelain",
+    ],
+)
+
+# High-risk branch, worktree, and history operations.
+prefix_rule(
+    pattern = ["git", ["switch", "checkout"]],
+    decision = "prompt",
+    justification = "Branch changes require confirmation.",
+    match = [
+        "git switch main",
+        "git checkout feature/test-branch",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "worktree"],
+    decision = "prompt",
+    justification = "Worktree creation and removal require confirmation.",
+    match = [
+        "git worktree add ../tmp feature/test-branch",
+        "git worktree remove ../tmp",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", ["merge", "rebase", "cherry-pick", "stash"]],
+    decision = "prompt",
+    justification = "History-changing Git operations require confirmation.",
+    match = [
+        "git merge feature/test-branch",
+        "git rebase main",
+        "git cherry-pick abc1234",
+        "git stash",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "branch", ["-d", "-D"]],
+    decision = "prompt",
+    justification = "Branch deletion requires confirmation.",
+    match = [
+        "git branch -d feature/test-branch",
+        "git branch -D feature/test-branch",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "merge"],
+    decision = "prompt",
+    justification = "PR merge requires confirmation.",
+    match = [
+        "gh pr merge 9 --squash",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "view"],
+    decision = "allow",
+    justification = "Allow routine PR inspection during branch work.",
+    match = [
+        "gh pr view",
+        "gh pr view 9 --json title,body,url",
+    ],
+    not_match = [
+        "gh pr create",
+        "gh pr edit",
+        "gh pr merge",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "diff"],
+    decision = "allow",
+    justification = "Allow routine PR diff inspection.",
+    match = [
+        "gh pr diff",
+        "gh pr diff 9",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "checks"],
+    decision = "allow",
+    justification = "Allow routine PR checks inspection.",
+    match = [
+        "gh pr checks",
+        "gh pr checks 9",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "status"],
+    decision = "allow",
+    justification = "Allow routine PR status inspection.",
+    match = [
+        "gh pr status",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "view"],
+    decision = "allow",
+    justification = "Allow routine issue inspection.",
+    match = [
+        "gh issue view 8",
+        "gh issue view 8 --json title,body,url",
+    ],
+)
+
+# Explicitly blocked destructive cleanup flows.
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Hard reset is forbidden. Inspect state and ask the user before cleanup.",
+    match = [
+        "git reset --hard",
+        "git reset --hard HEAD~1",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "clean", "-fd"],
+    decision = "forbidden",
+    justification = "git clean -fd is forbidden. Review untracked files before cleanup.",
+    match = [
+        "git clean -fd",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "checkout", "--"],
+    decision = "forbidden",
+    justification = "Discarding file changes is forbidden. Ask the user before removing edits.",
+    match = [
+        "git checkout -- README.md",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "--force"],
+    decision = "forbidden",
+    justification = "Force push is forbidden. Use a non-destructive push flow instead.",
+    match = [
+        "git push --force",
+        "git push --force origin feature/test-branch",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "-f"],
+    decision = "forbidden",
+    justification = "Force push is forbidden. Use a non-destructive push flow instead.",
+    match = [
+        "git push -f",
+        "git push -f origin feature/test-branch",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "--force-with-lease"],
+    decision = "forbidden",
+    justification = "Force-with-lease push is forbidden. Use a non-destructive push flow instead.",
+    match = [
+        "git push --force-with-lease",
+        "git push --force-with-lease origin feature/test-branch",
+    ],
+)

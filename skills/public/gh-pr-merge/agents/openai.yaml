@@ -1,3 +1,0 @@
-interface:
-  display_name: "GH PR Merge"
-  short_description: "Merge PR and delete remote head branch"

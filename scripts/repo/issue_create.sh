@@ -59,16 +59,14 @@ case "${TYPE}" in
 esac
 
 ./scripts/repo/gh_preflight.sh
+./scripts/repo/issue_title_guard.sh validate --type "${TYPE}" --title "${TITLE}"
 
 if [[ ! -f "${BODY_FILE}" ]]; then
   echo "❌ --body-file 파일을 찾을 수 없습니다: ${BODY_FILE}" >&2
   exit 1
 fi
 
-python3 scripts/repo/body_quality_guard.py \
-  --kind issue \
-  --issue-type "${TYPE}" \
-  --body-file "${BODY_FILE}"
+python3 scripts/repo/issue_body_quality_guard.py --issue-type "${TYPE}" --body-file "${BODY_FILE}"
 
 ISSUE_URL="$(gh issue create -t "${TITLE}" -F "${BODY_FILE}")"
 ISSUE_NUMBER="$(printf '%s' "${ISSUE_URL}" | grep -Eo '[0-9]+$' || true)"
