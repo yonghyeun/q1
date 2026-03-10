@@ -67,23 +67,24 @@ if [[ -z "${BRANCH}" ]]; then
   exit 1
 fi
 
-./scripts/repo/pr_title_guard.sh validate --title "${TITLE}" --branch "${BRANCH}"
-
-if [[ ${DRY_RUN} -eq 0 ]]; then
-  ./scripts/repo/gh_preflight.sh
-fi
-
+python3 scripts/repo/detached_head_guard.py validate-write
+python3 scripts/repo/protected_branch_write_guard.py validate-write --branch "${BRANCH}"
 python3 scripts/repo/branch_guard.py validate-name --branch "${BRANCH}"
-python3 scripts/repo/branch_guard.py validate-context --branch "${BRANCH}"
-python3 scripts/repo/branch_guard.py validate-pr --branch "${BRANCH}"
+python3 scripts/repo/dirty_worktree_guard.py validate-clean
+
+./scripts/repo/pr_title_guard.sh validate --title "${TITLE}" --branch "${BRANCH}"
 
 if [[ ! -f "${BODY_FILE}" ]]; then
   echo "❌ --body-file 파일을 찾을 수 없습니다: ${BODY_FILE}" >&2
   exit 1
 fi
 
-python3 scripts/repo/body_quality_guard.py --kind pr --body-file "${BODY_FILE}"
+python3 scripts/repo/pr_body_quality_guard.py --body-file "${BODY_FILE}"
 python3 scripts/repo/pr_issue_guard.py --pr-body-file "${BODY_FILE}"
+
+if [[ ${DRY_RUN} -eq 0 ]]; then
+  ./scripts/repo/gh_preflight.sh
+fi
 
 if [[ ${DRY_RUN} -eq 1 ]]; then
   echo "✅ dry-run: PR 생성 명령"
