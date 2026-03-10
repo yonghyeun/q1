@@ -1,3 +1,0 @@
-interface:
-  display_name: "GH PR Create"
-  short_description: "Create PR with Closes linkage and policy checks"

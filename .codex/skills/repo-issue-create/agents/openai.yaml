@@ -1,0 +1,3 @@
+interface:
+  display_name: "Repo Issue Create"
+  short_description: "Create issues in this repo with local template and gates / 이슈 생성"

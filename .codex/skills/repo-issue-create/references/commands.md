@@ -1,0 +1,26 @@
+# Repo Issue Create Commands
+
+## Required
+- `./.codex/skills/repo-issue-create/scripts/run.sh --type <feature|bug|chore> --title "<title>" --body-file <path>`
+
+## Type selection
+- `feature`: 기능 추가, 기능 개선, 구조 개선.
+- `bug`: 재현 가능한 오류, 회귀, 잘못된 동작.
+- `chore`: 운영, 정책, 자동화, 설정, 문서 정리.
+
+## Suggested authoring flow
+1. 해당 type의 `.github/ISSUE_TEMPLATE/<type>.md` 읽기.
+2. 제목을 `[type] 요약` 형식으로 작성.
+3. body 초안 작성.
+4. wrapper 실행.
+5. 실패 시 gate 메시지의 `다음 행동:` 반영 후 재시도.
+
+## Self-check helpers
+- 제목 검증:
+  - `./scripts/repo/issue_title_guard.sh validate --type <type> --title "[type] 요약"`
+- 본문 검증:
+  - `python3 ./scripts/repo/issue_body_quality_guard.py --issue-type <type> --body-file <path>`
+
+## Gates reached through the wrapper
+- `issue-title`
+- `issue-body`

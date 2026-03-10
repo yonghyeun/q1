@@ -1,0 +1,3 @@
+interface:
+  display_name: "Repo PR Create"
+  short_description: "Create PRs in this repo with local wrapper and gates / PR 생성"

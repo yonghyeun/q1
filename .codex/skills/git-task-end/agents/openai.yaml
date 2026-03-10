@@ -1,0 +1,3 @@
+interface:
+  display_name: "Git Task End"
+  short_description: "Task finalization wrapper with dry-run first / 작업 종료 dry-run 후 실행"
