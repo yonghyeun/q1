@@ -4,7 +4,6 @@ import shutil
 import subprocess
 import tempfile
 import unittest
-import os
 from pathlib import Path
 
 
@@ -45,22 +44,6 @@ class TaskStartIntegrationTests(unittest.TestCase):
         subprocess.run(["git", "commit", "-m", "base commit"], cwd=root, check=True, capture_output=True)
         return root, scripts_dir / "task_start.sh", scripts_dir / "task_start_interactive.sh"
 
-    def make_codex_stub(self, root: Path) -> tuple[Path, Path]:
-        bin_dir = root.parent / "bin"
-        bin_dir.mkdir()
-        log_path = root.parent / "codex.log"
-        script_path = bin_dir / "codex"
-        script_path.write_text(
-            """#!/usr/bin/env bash
-set -euo pipefail
-printf '%s\\n' "$*" > "${FAKE_CODEX_LOG}"
-exit 0
-""",
-            encoding="utf-8",
-        )
-        script_path.chmod(0o755)
-        return bin_dir, log_path
-
     def run_script(
         self,
         cwd: Path,
@@ -81,16 +64,13 @@ exit 0
 
     def test_default_is_dry_run(self) -> None:
         root, script, _interactive = self.make_repo()
-        env = dict(os.environ)
-        env["CODEX_THREAD_ID"] = "thread-123"
-        result = self.run_script(root, script, "--branch", "feature/signup-flow", env=env)
+        result = self.run_script(root, script, "--branch", "feature/signup-flow")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("[git-task-start] Dry run", result.stdout)
         self.assertIn("브랜치: feature/signup-flow", result.stdout)
         self.assertIn("생성 예정 경로: ../signup-flow--impl", result.stdout)
         self.assertIn("세션 운영 메모", result.stdout)
-        self.assertIn("codex resume -C", result.stdout)
-        self.assertIn("thread-123", result.stdout)
+        self.assertIn("현재 shell cwd는 자동으로 바뀌지 않습니다", result.stdout)
         self.assertFalse((root.parent / "signup-flow--impl").exists())
 
     def test_apply_requires_yes(self) -> None:
@@ -101,11 +81,14 @@ exit 0
 
     def test_apply_yes_creates_branch_and_worktree(self) -> None:
         root, script, _interactive = self.make_repo()
-        result = self.run_script(root, script, "--branch", "feature/signup-flow", "--codex", "none", "--apply", "--yes")
+        result = self.run_script(root, script, "--branch", "feature/signup-flow", "--apply", "--yes")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue((root.parent / "signup-flow--impl").exists())
-        self.assertIn("세션 메모: 병렬 작업이면 새 terminal에서 이동 후 새 세션 시작 권장", result.stdout)
-        self.assertIn("Codex follow-up: disabled", result.stdout)
+        self.assertIn("세션 메모: 현재 shell cwd는 자동으로 바뀌지 않습니다.", result.stdout)
+        self.assertIn(
+            "세션 메모: 필요하면 새 terminal 또는 현재 세션에서 대상 worktree 기준으로 후속 작업을 진행하세요.",
+            result.stdout,
+        )
 
         refs = subprocess.run(
             ["git", "show-ref", "--verify", "refs/heads/feature/signup-flow"],
@@ -121,28 +104,6 @@ exit 0
         result = self.run_script(root, script, "--branch", "task/signup-flow")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("브랜치 이름이 정책과 다릅니다", result.stderr)
-
-    def test_prints_manual_guidance_when_thread_id_missing(self) -> None:
-        root, script, _interactive = self.make_repo()
-        env = dict(os.environ)
-        env.pop("CODEX_THREAD_ID", None)
-        result = self.run_script(root, script, "--branch", "feature/signup-flow", env=env)
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("CODEX_THREAD_ID를 찾지 못했습니다", result.stdout)
-        self.assertIn("--codex none", result.stdout)
-
-    def test_apply_execs_codex_resume_by_default(self) -> None:
-        root, script, _interactive = self.make_repo()
-        bin_dir, log_path = self.make_codex_stub(root)
-        env = dict(os.environ)
-        env["CODEX_THREAD_ID"] = "thread-123"
-        env["PATH"] = f"{bin_dir}:{env['PATH']}"
-        env["FAKE_CODEX_LOG"] = str(log_path)
-        result = self.run_script(root, script, "--branch", "feature/signup-flow", "--apply", "--yes", env=env)
-        self.assertEqual(result.returncode, 0, result.stderr)
-        logged = log_path.read_text(encoding="utf-8")
-        self.assertIn("resume -C", logged)
-        self.assertIn("thread-123", logged)
 
     def test_existing_branch_reuse_is_shown_in_plan(self) -> None:
         root, script, _interactive = self.make_repo()
@@ -172,7 +133,7 @@ exit 0
 
     def test_interactive_wrapper_prompts_and_applies(self) -> None:
         root, _script, interactive = self.make_repo()
-        result = self.run_script(root, interactive, "--branch", "feature/signup-flow", "--codex", "none", input_text="y\n")
+        result = self.run_script(root, interactive, "--branch", "feature/signup-flow", input_text="y\n")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("Proceed? [y/N]", result.stdout)
         self.assertIn("task start 완료", result.stdout)
@@ -180,7 +141,7 @@ exit 0
 
     def test_interactive_wrapper_cancels_on_no(self) -> None:
         root, _script, interactive = self.make_repo()
-        result = self.run_script(root, interactive, "--branch", "feature/signup-flow", "--codex", "none", input_text="n\n")
+        result = self.run_script(root, interactive, "--branch", "feature/signup-flow", input_text="n\n")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("취소", result.stdout)
         self.assertFalse((root.parent / "signup-flow--impl").exists())

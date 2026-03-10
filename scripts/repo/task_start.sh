@@ -7,11 +7,10 @@ cd "${ROOT_DIR}"
 usage() {
   cat <<'EOF'
 사용법:
-  ./scripts/repo/task_start.sh --branch <type/slug> [--purpose <purpose>] [--base <ref>] [--path-root <dir>] [--codex <resume|fork|none>] [--apply --yes]
+  ./scripts/repo/task_start.sh --branch <type/slug> [--purpose <purpose>] [--base <ref>] [--path-root <dir>] [--apply --yes]
 
 예시:
   ./scripts/repo/task_start.sh --branch feature/signup-flow
-  ./scripts/repo/task_start.sh --branch feature/signup-flow --codex none
   ./scripts/repo/task_start.sh --branch fix/token-refresh-race --purpose fix
   ./scripts/repo/task_start.sh --branch feature/signup-flow --apply --yes
 EOF
@@ -30,64 +29,10 @@ realpath_py() {
   python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$1"
 }
 
-format_codex_followup() {
-  local mode="$1"
-  local absolute_target_path="$2"
-  local thread_id="${CODEX_THREAD_ID:-}"
-
-  if [[ "${mode}" == "none" ]]; then
-    echo "- Codex follow-up: disabled (--codex none)"
-    return
-  fi
-
-  if [[ -z "${thread_id}" ]]; then
-    echo "- 현재 환경에서 CODEX_THREAD_ID를 찾지 못했습니다."
-    echo "- 자동 재개를 원하면 Codex 안에서 다시 실행하거나 --codex none 으로 비활성화하세요."
-    return
-  fi
-
-  if [[ "${mode}" == "resume" ]]; then
-    echo "- 현재 대화를 같은 세션으로 새 worktree에서 재개:"
-  else
-    echo "- 현재 대화를 보존하고 새 병렬 세션으로 분기:"
-  fi
-  echo "  codex ${mode} -C ${absolute_target_path} ${thread_id}"
-}
-
-exec_codex_followup() {
-  local mode="$1"
-  local absolute_target_path="$2"
-  local thread_id="${CODEX_THREAD_ID:-}"
-
-  if [[ "${mode}" == "none" ]]; then
-    return
-  fi
-
-  if [[ -z "${thread_id}" ]]; then
-    fail "자동 Codex ${mode} 실행에 필요한 CODEX_THREAD_ID를 찾을 수 없습니다." "Codex 안에서 다시 실행하거나 --codex none 으로 비활성화하세요."
-  fi
-
-  if ! command -v codex >/dev/null 2>&1; then
-    fail "\`codex\` 명령을 찾을 수 없습니다." "Codex CLI를 설치했는지 확인하거나 --codex none 으로 비활성화하세요."
-  fi
-
-  cd "${absolute_target_path}"
-  exec codex "${mode}" -C "${absolute_target_path}" "${thread_id}"
-}
-
-print_codex_followup() {
-  local mode="$1"
-  local absolute_target_path="$2"
-
-  echo "Codex 세션 이어가기"
-  format_codex_followup "${mode}" "${absolute_target_path}"
-}
-
 BRANCH=""
 PURPOSE="impl"
 BASE="main"
 PATH_ROOT=".."
-CODEX_MODE="resume"
 APPLY=0
 ASSUME_YES=0
 
@@ -107,10 +52,6 @@ while [[ $# -gt 0 ]]; do
       ;;
     --path-root)
       PATH_ROOT="${2:-}"
-      shift 2
-      ;;
-    --codex)
-      CODEX_MODE="${2:-}"
       shift 2
       ;;
     --apply)
@@ -143,13 +84,6 @@ case "${PURPOSE}" in
   impl|review|fix|verify|docs|ops) ;;
   *)
     fail "--purpose 는 impl|review|fix|verify|docs|ops 중 하나여야 합니다." "--purpose 값을 허용된 값 중 하나로 수정해서 다시 실행하세요."
-    ;;
-esac
-
-case "${CODEX_MODE}" in
-  resume|fork|none) ;;
-  *)
-    fail "--codex 는 resume|fork|none 중 하나여야 합니다." "--codex 값을 허용된 값 중 하나로 수정해서 다시 실행하세요."
     ;;
 esac
 
@@ -264,10 +198,9 @@ print_plan() {
   echo "- cd ${TARGET_PATH}"
   echo
   echo "세션 운영 메모"
+  echo "- 사용자의 현재 shell cwd는 자동으로 바뀌지 않습니다."
   echo "- 같은 worktree를 여러 terminal/세션에서 공유하면 branch와 working tree 상태가 공유됩니다."
-  echo "- 병렬 작업이면 새 terminal에서 cd ${TARGET_PATH} 후 새 세션 시작을 권장합니다."
-  print_codex_followup "${CODEX_MODE}" "${ABS_TARGET_PATH}"
-  echo "- 새 세션이 handoff 없이 자동으로 작업 의도를 이해한다고 가정하지 마세요."
+  echo "- 필요하면 새 terminal에서 cd ${TARGET_PATH} 후 원하는 방식으로 후속 작업을 시작하세요."
 }
 
 print_plan
@@ -287,8 +220,5 @@ echo "✅ task start 완료"
 echo "- 브랜치: ${BRANCH}"
 echo "- 워크트리: ${TARGET_PATH}"
 echo "- 다음 이동: cd ${TARGET_PATH}"
-echo "- 세션 메모: 병렬 작업이면 새 terminal에서 이동 후 새 세션 시작 권장"
-print_codex_followup "${CODEX_MODE}" "${ABS_TARGET_PATH}"
-echo "- handoff 메모: 새 세션이 handoff 없이 자동으로 작업 의도를 이해한다고 가정하지 마세요"
-
-exec_codex_followup "${CODEX_MODE}" "${ABS_TARGET_PATH}"
+echo "- 세션 메모: 현재 shell cwd는 자동으로 바뀌지 않습니다."
+echo "- 세션 메모: 필요하면 새 terminal 또는 현재 세션에서 대상 worktree 기준으로 후속 작업을 진행하세요."
