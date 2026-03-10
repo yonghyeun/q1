@@ -33,19 +33,13 @@ chmod +x .githooks/pre-push
 - 예시: `config/wbs-governance-reset`
 - `main` 브랜치 직접 커밋/푸시 금지
 - 공통 검증 스크립트: `scripts/repo/branch_guard.py`
-- PR 본문에는 `Closes #<issue>` 또는 동등한 close keyword가 필요
+- PR 본문 close keyword 검증은 hook이 아니라 PR 생성 스크립트 경로에서 수행한다.
 
 ## pre-commit hooklet
 - `.githooks/pre-commit`은 `.githooks/pre-commit.d/` 아래 실행 파일을 이름순으로 실행한다.
+- `.githooks/pre-commit.d/05-detached-head-write`: detached HEAD 직접 write 차단
 - `.githooks/pre-commit.d/10-branch-name`: 브랜치 이름 검증
-- `.githooks/pre-commit.d/30-wbs-task-index`: WBS task index regeneration
-- WBS hooklet은 다른 hooklet의 존재나 실행 결과에 의존하지 않는다.
-
-## WBS task index
-- `context/wbs/tasks/index.md`는 generated projection이다.
-- `<!-- wbs-task-summary:start -->` / `<!-- wbs-task-summary:end -->` marker 사이만 자동 재작성한다.
-- task YAML 또는 `index.md`가 staged 되었을 때만 WBS hooklet이 동작한다.
-- 관련 파일에 unstaged 변경이 남아 있으면 staged 기준 projection을 보호하기 위해 commit을 막는다.
+- `.githooks/pre-commit.d/15-protected-branch-write`: 보호 브랜치 직접 write 차단
 
 ## 예시
 ```bash

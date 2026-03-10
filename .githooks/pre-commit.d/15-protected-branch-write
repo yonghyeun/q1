@@ -4,6 +4,4 @@ set -euo pipefail
 ROOT_DIR="$(git rev-parse --show-toplevel)"
 cd "${ROOT_DIR}"
 
-python3 scripts/repo/detached_head_guard.py validate-write
 python3 scripts/repo/protected_branch_write_guard.py validate-write
-python3 scripts/repo/branch_guard.py validate-name
