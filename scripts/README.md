@@ -14,16 +14,29 @@
 ## 주요 스크립트 (`repo/`)
 - `check-all.sh`: 저장소 기본 구조 점검
 - `install-hooks.sh`: `.githooks` 설치/권한 설정
-- `branch_guard.py`: 브랜치/컨텍스트/PR 필수 파일 정책 검증
-- `body_quality_guard.py`: issue/PR 본문 품질 검증
-- `ci-branch-gate.sh`: CI에서 브랜치 정책 차단 게이트 실행
+- `branch_guard.py`: 브랜치 이름 정책 검증
+- `detached_head_guard.py`: detached HEAD 상태 차단
+- `protected_branch_write_guard.py`: 보호 브랜치 직접 write 차단
+- `dirty_worktree_guard.py`: dirty worktree 상태 차단
+- `issue_title_guard.sh`: 이슈 제목 컨벤션 생성/검증 (`[type] 요약`)
+- `issue_body_quality_guard.py`: issue 본문 품질 검증
+- `pr_body_quality_guard.py`: PR 본문 품질 검증
 - `pr_issue_guard.py`: PR 본문 close 키워드 존재 검증
 - `gh_preflight.sh`: `origin` remote/`gh auth` 사전 점검
 - `issue_create.sh`: gh CLI로 issue 생성 (`--body-file` 필수)
 - `pr_create.sh`: 정책/본문 검증 후 PR 생성 (`--body-file` 필수)
 - `pr_title_guard.sh`: PR 제목 컨벤션 생성/검증 (`[scope] 요약`)
-- `pr_merge.sh`: PR merge + remote branch 삭제 + local cleanup 연계
-- `post_merge_cleanup.sh`: merge 후 로컬 브랜치 정리 (`pull --rebase origin main`)
+- `pr_merge.sh`: PR merge leaf (`gh pr merge` wrapper)
+- `task_start.sh`: 새 작업용 branch/worktree 준비 core wrapper. 기본 dry-run, 실제 실행은 `--apply --yes`
+- `task_start_interactive.sh`: 사람용 interactive wrapper. dry-run 후 `y/N` 확인, 승인 시 `task_start.sh --apply --yes`
+- `task_end.sh`: task 종료 core wrapper. 기본 dry-run, 실제 실행은 `--apply --yes`
+- `task_end_interactive.sh`: 사람용 interactive wrapper. dry-run 후 `y/N` 확인, 승인 시 `task_end.sh --apply --yes`
+- `pr_finalize.sh`: legacy compatibility wrapper → `task_end.sh`
+- `post_merge_branch_cleanup.sh`: merge 후 base branch sync + merged local branch 정리
+- `post_merge_cleanup.sh`: legacy compatibility wrapper → `post_merge_branch_cleanup.sh`
+- `worktree_name_guard.py`: worktree 이름 정책 검증
+- `worktree_add.sh`: worktree 생성 전 이름 정책 검증 wrapper
+- `worktree_cleanup.sh`: removable linked worktree 검증 후 안전한 제거
 - `codex_wbs_emit.sh`: `codex exec --output-schema`로 WBS artifact 생성 + 검증
 - `validate_wbs_artifact.py`: WBS packet/trace/operator decision/run ledger schema + semantic 검증
 - `wbs_task_index.py`: WBS task YAML에서 `context/wbs/tasks/index.md` summary projection 생성/검사
@@ -31,25 +44,37 @@
 ## 테스트
 - 브랜치 검증 테스트:
   - `python3 -m unittest scripts.repo.tests.test_branch_guard -v`
+- detached HEAD 검증 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_detached_head_guard -v`
+- 보호 브랜치 write 검증 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_protected_branch_write_guard -v`
+- dirty worktree 검증 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_dirty_worktree_guard -v`
+- 이슈 제목 컨벤션 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_issue_title_guard -v`
+- 이슈 본문 품질 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_issue_body_quality_guard -v`
+- PR 본문 품질 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_pr_body_quality_guard -v`
 - PR issue 링크 검증 테스트:
   - `python3 -m unittest scripts.repo.tests.test_pr_issue_guard -v`
 - PR 제목 컨벤션 테스트:
   - `python3 -m unittest scripts.repo.tests.test_pr_title_guard -v`
 - PR merge dry-run 동작 테스트:
   - `python3 -m unittest scripts.repo.tests.test_pr_merge_dry_run -v`
+- post-merge branch cleanup 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_post_merge_branch_cleanup -v`
+- worktree cleanup 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_worktree_cleanup -v`
+- task end 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_task_end -v`
+- task start 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_task_start_integration -v`
+- worktree 이름 검증 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_worktree_name_guard -v`
 - WBS artifact validator 테스트:
   - `python3 -m unittest scripts.repo.tests.test_validate_wbs_artifact -v`
 - WBS task index projection 테스트:
   - `python3 -m unittest scripts.repo.tests.test_wbs_task_index -v`
 - pre-commit dispatcher 테스트:
   - `python3 -m unittest scripts.repo.tests.test_pre_commit_dispatcher -v`
-
-## WBS task index
-- 정본은 `context/wbs/tasks/*.yaml`이고, `context/wbs/tasks/index.md`는 generated projection이다.
-- `index.md`는 `<!-- wbs-task-summary:start -->` / `<!-- wbs-task-summary:end -->` marker 사이만 자동 갱신한다.
-- 생성:
-  - `python3 scripts/repo/wbs_task_index.py generate --source working-tree --write`
-- 최신성 검사:
-  - `python3 scripts/repo/wbs_task_index.py check --source working-tree`
-- 훅 실행:
-  - `.githooks/pre-commit.d/30-wbs-task-index`가 `pre-commit` dispatcher에서 독립적으로 실행된다.

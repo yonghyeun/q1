@@ -36,6 +36,7 @@
 ## 컨텍스트(Context, 실행 입력)
 
 > `context/`는 에이전트/개발 운영의 입력값이다. 변경 시 영향도를 고려한다.
+> 규칙, convention, quality gate 같은 운영 제약은 `policies/`에서 관리한다.
 
 - Context 개요: [../context/README.md](../context/README.md)
 - Deploy-first 루프: [../context/core/deploy-first.md](../context/core/deploy-first.md)
@@ -58,7 +59,13 @@
 
 ## 정책(Policies, 저장소 운영)
 
+> `policies/`는 저장소 운영 규칙, naming, workflow, 검증 기준의 정본이다.
+
 - Policies 안내: [../policies/README.md](../policies/README.md)
+- Git workspace policy: [../policies/git-workspace-policy.md](../policies/git-workspace-policy.md)
+- Branch naming: [../policies/branch-naming.md](../policies/branch-naming.md)
+- Worktree naming: [../policies/worktree-naming.md](../policies/worktree-naming.md)
+- Branch/PR convention: [../policies/branch-pr-convention.md](../policies/branch-pr-convention.md)
 - Commit convention: [../policies/commit-convention.md](../policies/commit-convention.md)
 - Quality gates: [../policies/quality-gates.md](../policies/quality-gates.md)
 - Security/secrets: [../policies/security-secrets.md](../policies/security-secrets.md)
@@ -67,10 +74,6 @@
 ## 개발(코드)
 
 - Web app(Next.js): [../apps/web/README.md](../apps/web/README.md)
-
-## 아키텍처(Architecture)
-
-- Git branch governance: [architecture/git-branch-governance.md](architecture/git-branch-governance.md)
 
 ## 저장소 운영(루트 문서)
 

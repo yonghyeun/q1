@@ -9,6 +9,8 @@
 운영 "규칙/게이트"의 정본(single source of truth)은 `policies/`에 둔다.
 
 - 커밋 규칙/훅: `policies/commit-convention.md`, `.githooks/README.md`
+- Git workspace 규칙: `policies/git-workspace-policy.md`
+- 브랜치/워크트리 이름 규칙: `policies/branch-naming.md`, `policies/worktree-naming.md`
 - 품질 게이트: `policies/quality-gates.md`
 - 보안/시크릿: `policies/security-secrets.md`
 - 보관 정책: `policies/retention-policy.md`
