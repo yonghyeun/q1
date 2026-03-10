@@ -177,6 +177,31 @@ exit 1
         self.assertIn("--squash", logged)
         self.assertIn("[config] task end test", logged)
 
+    def test_task_end_uses_branch_helper_scripts_when_primary_lacks_them(self) -> None:
+        root, worktree, gh_log, env = self.make_repo()
+        subprocess.run(["git", "switch", "main"], cwd=root, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "rm", "scripts/repo/post_merge_branch_cleanup.sh", "scripts/repo/worktree_cleanup.sh"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", "remove helper scripts from primary"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        )
+
+        result = self.run_script(worktree, "task_end.sh", env)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("task end 계획", result.stdout)
+
+        apply_result = self.run_script(worktree, "task_end.sh", env, "--apply", "--yes")
+        self.assertEqual(apply_result.returncode, 0, apply_result.stderr)
+        self.assertFalse(worktree.exists())
+        self.assertIn("pr merge", gh_log.read_text(encoding="utf-8"))
+
     def test_interactive_wrapper_prompts_and_applies(self) -> None:
         root, worktree, gh_log, env = self.make_repo()
         result = self.run_script(worktree, "task_end_interactive.sh", env, input_text="y\n")

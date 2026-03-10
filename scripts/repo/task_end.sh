@@ -4,6 +4,16 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "${ROOT_DIR}"
 
+HELPER_TMP_DIR="$(mktemp -d)"
+cleanup_helpers() {
+  rm -rf "${HELPER_TMP_DIR}"
+}
+trap cleanup_helpers EXIT
+
+cp "${ROOT_DIR}/scripts/repo/worktree_cleanup.sh" "${HELPER_TMP_DIR}/worktree_cleanup.sh"
+cp "${ROOT_DIR}/scripts/repo/post_merge_branch_cleanup.sh" "${HELPER_TMP_DIR}/post_merge_branch_cleanup.sh"
+chmod +x "${HELPER_TMP_DIR}/worktree_cleanup.sh" "${HELPER_TMP_DIR}/post_merge_branch_cleanup.sh"
+
 usage() {
   cat <<'EOF'
 사용법:
@@ -28,7 +38,11 @@ fail() {
 
 run_worktree_cleanup() {
   if [[ "${WORKTREE}" == "${CURRENT_WORKTREE}" && "${WORKTREE}" != "${PRIMARY_WORKTREE}" ]]; then
-    (cd "${PRIMARY_WORKTREE}" && ./scripts/repo/worktree_cleanup.sh "$@")
+    (
+      cd "${PRIMARY_WORKTREE}" &&
+      REPO_ROOT_OVERRIDE="${PRIMARY_WORKTREE}" \
+      "${HELPER_TMP_DIR}/worktree_cleanup.sh" "$@"
+    )
     return
   fi
 
@@ -37,7 +51,11 @@ run_worktree_cleanup() {
 
 run_branch_cleanup() {
   if [[ "${PRIMARY_WORKTREE}" != "${CURRENT_WORKTREE}" ]]; then
-    (cd "${PRIMARY_WORKTREE}" && ./scripts/repo/post_merge_branch_cleanup.sh "$@")
+    (
+      cd "${PRIMARY_WORKTREE}" &&
+      REPO_ROOT_OVERRIDE="${PRIMARY_WORKTREE}" \
+      "${HELPER_TMP_DIR}/post_merge_branch_cleanup.sh" "$@"
+    )
     return
   fi
 
