@@ -100,6 +100,21 @@ prefix_rule(
     ],
 )
 
+prefix_rule(
+    pattern = ["gh", "pr", "view"],
+    decision = "allow",
+    justification = "Allow routine PR inspection during branch work.",
+    match = [
+        "gh pr view",
+        "gh pr view 9 --json title,body,url",
+    ],
+    not_match = [
+        "gh pr create",
+        "gh pr edit",
+        "gh pr merge",
+    ],
+)
+
 # Explicitly blocked destructive cleanup flows.
 prefix_rule(
     pattern = ["git", "reset", "--hard"],
