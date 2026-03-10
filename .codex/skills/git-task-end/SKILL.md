@@ -20,9 +20,7 @@ Trigger when the user asks to finish the current task, end a PR-backed task, fin
 3. Summarize the plan for the user. Highlight PR, branch, worktree, merge method, and planned cleanup.
 4. Ask for explicit approval in chat before any side effect.
 5. After approval, run the same wrapper path with `--apply --yes`.
-6. If the user wants Codex to continue in another worktree after task end, use `--codex resume|fork|none`. Default is `resume`.
-7. If restart requires human context transfer beyond chat history, emit a concise follow-up handoff that includes merge result, target worktree, next task goal, open risks, and next recommended action.
-8. If a gate fails, follow the error message's `다음 행동:` and retry the same wrapper path.
+6. If a gate fails, follow the error message's `다음 행동:` and retry the same wrapper path.
 
 ## Guardrails
 - Raw `gh pr merge` 직접 호출 지양.
@@ -31,9 +29,6 @@ Trigger when the user asks to finish the current task, end a PR-backed task, fin
 - merge subject는 기본적으로 PR title 사용.
 - skill은 interactive shell wrapper를 호출하지 않음. 항상 core wrapper만 사용.
 - 실제 실행은 사용자 승인 후 `--apply --yes` 경로로만 진행.
-- `--codex` 기본값은 `resume`.
-- 기본 Codex target worktree는 primary worktree다.
 
 ## References
 - Command options and examples: `references/commands.md`
-- Session follow-up: `references/session-followup.md`

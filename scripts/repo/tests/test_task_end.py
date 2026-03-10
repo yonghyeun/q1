@@ -115,22 +115,6 @@ exit 1
 
         return root, worktree, gh_log, env
 
-    def make_codex_stub(self, root: Path) -> tuple[Path, Path]:
-        bin_dir = root.parent / "codex-bin"
-        bin_dir.mkdir()
-        log_path = root.parent / "codex.log"
-        codex_script = bin_dir / "codex"
-        codex_script.write_text(
-            """#!/usr/bin/env bash
-set -euo pipefail
-printf '%s\\n' "$*" > "${FAKE_CODEX_LOG}"
-exit 0
-""",
-            encoding="utf-8",
-        )
-        codex_script.chmod(0o755)
-        return bin_dir, log_path
-
     def run_script(
         self,
         cwd: Path,
@@ -153,12 +137,10 @@ exit 0
         _root, worktree, _gh_log, env = self.make_repo()
         env = dict(env)
         env["PATH"] = env["PATH"].split(":", 1)[1]
-        env["CODEX_THREAD_ID"] = "thread-123"
         result = self.run_script(worktree, "task_end.sh", env)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("task end 계획", result.stdout)
         self.assertIn("<PR_TITLE_FROM_GH>", result.stdout)
-        self.assertIn("codex resume -C", result.stdout)
 
     def test_apply_requires_yes(self) -> None:
         _root, worktree, _gh_log, env = self.make_repo()
@@ -168,7 +150,7 @@ exit 0
 
     def test_apply_yes_flow_merges_and_cleans_up(self) -> None:
         root, worktree, gh_log, env = self.make_repo()
-        result = self.run_script(worktree, "task_end.sh", env, "--codex", "none", "--apply", "--yes")
+        result = self.run_script(worktree, "task_end.sh", env, "--apply", "--yes")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertFalse(worktree.exists())
 
@@ -195,22 +177,9 @@ exit 0
         self.assertIn("--squash", logged)
         self.assertIn("[config] task end test", logged)
 
-    def test_apply_execs_codex_resume_by_default(self) -> None:
-        root, worktree, _gh_log, env = self.make_repo()
-        codex_bin, codex_log = self.make_codex_stub(root)
-        env = dict(env)
-        env["CODEX_THREAD_ID"] = "thread-123"
-        env["PATH"] = f"{codex_bin}:{env['PATH']}"
-        env["FAKE_CODEX_LOG"] = str(codex_log)
-        result = self.run_script(worktree, "task_end.sh", env, "--apply", "--yes")
-        self.assertEqual(result.returncode, 0, result.stderr)
-        logged = codex_log.read_text(encoding="utf-8")
-        self.assertIn("resume -C", logged)
-        self.assertIn("thread-123", logged)
-
     def test_interactive_wrapper_prompts_and_applies(self) -> None:
         root, worktree, gh_log, env = self.make_repo()
-        result = self.run_script(worktree, "task_end_interactive.sh", env, "--codex", "none", input_text="y\n")
+        result = self.run_script(worktree, "task_end_interactive.sh", env, input_text="y\n")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertFalse(worktree.exists())
         self.assertIn("Proceed? [y/N]", result.stdout)
@@ -219,7 +188,7 @@ exit 0
 
     def test_interactive_wrapper_cancels_on_no(self) -> None:
         root, worktree, gh_log, env = self.make_repo()
-        result = self.run_script(worktree, "task_end_interactive.sh", env, "--codex", "none", input_text="n\n")
+        result = self.run_script(worktree, "task_end_interactive.sh", env, input_text="n\n")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue(worktree.exists())
         self.assertIn("취소", result.stdout)
