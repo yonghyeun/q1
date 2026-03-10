@@ -69,8 +69,7 @@ class TaskStartIntegrationTests(unittest.TestCase):
         self.assertIn("[git-task-start] Dry run", result.stdout)
         self.assertIn("브랜치: feature/signup-flow", result.stdout)
         self.assertIn("생성 예정 경로: ../signup-flow--impl", result.stdout)
-        self.assertIn("세션 운영 메모", result.stdout)
-        self.assertIn("현재 shell cwd는 자동으로 바뀌지 않습니다", result.stdout)
+        self.assertIn("다음 이동 경로", result.stdout)
         self.assertFalse((root.parent / "signup-flow--impl").exists())
 
     def test_apply_requires_yes(self) -> None:
@@ -84,11 +83,7 @@ class TaskStartIntegrationTests(unittest.TestCase):
         result = self.run_script(root, script, "--branch", "feature/signup-flow", "--apply", "--yes")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue((root.parent / "signup-flow--impl").exists())
-        self.assertIn("세션 메모: 현재 shell cwd는 자동으로 바뀌지 않습니다.", result.stdout)
-        self.assertIn(
-            "세션 메모: 필요하면 새 terminal 또는 현재 세션에서 대상 worktree 기준으로 후속 작업을 진행하세요.",
-            result.stdout,
-        )
+        self.assertIn("다음 이동: cd ../signup-flow--impl", result.stdout)
 
         refs = subprocess.run(
             ["git", "show-ref", "--verify", "refs/heads/feature/signup-flow"],

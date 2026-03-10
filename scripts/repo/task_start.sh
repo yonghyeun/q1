@@ -196,11 +196,6 @@ print_plan() {
   echo
   echo "다음 이동 경로"
   echo "- cd ${TARGET_PATH}"
-  echo
-  echo "세션 운영 메모"
-  echo "- 사용자의 현재 shell cwd는 자동으로 바뀌지 않습니다."
-  echo "- 같은 worktree를 여러 terminal/세션에서 공유하면 branch와 working tree 상태가 공유됩니다."
-  echo "- 필요하면 새 terminal에서 cd ${TARGET_PATH} 후 원하는 방식으로 후속 작업을 시작하세요."
 }
 
 print_plan
@@ -220,5 +215,3 @@ echo "✅ task start 완료"
 echo "- 브랜치: ${BRANCH}"
 echo "- 워크트리: ${TARGET_PATH}"
 echo "- 다음 이동: cd ${TARGET_PATH}"
-echo "- 세션 메모: 현재 shell cwd는 자동으로 바뀌지 않습니다."
-echo "- 세션 메모: 필요하면 새 terminal 또는 현재 세션에서 대상 worktree 기준으로 후속 작업을 진행하세요."
