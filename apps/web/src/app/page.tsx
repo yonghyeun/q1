@@ -9,8 +9,8 @@ export default function Home() {
           Q1 web app scaffold
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
-          Bootstrap cleanup and project tooling configuration will be added on top of this
-          minimal entry page.
+          Bootstrap cleanup and project tooling configuration will be added on top of this minimal
+          entry page.
         </p>
       </div>
     </main>
