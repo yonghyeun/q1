@@ -36,6 +36,7 @@
 - worktree는 branch와 연결된 실행 공간으로 사용.
 - 다른 branch 작업은 가능하면 별도 worktree에서 수행.
 - 하나의 worktree 안에서 여러 목적의 작업을 섞지 않음.
+- orphan worktree 디렉토리 감지 시 자동 삭제보다 상태 진단과 수동 정리를 우선한다.
 
 ## Issue Linkage
 - 현재 worktree와 연결된 issue 정보는 worktree metadata로 관리.

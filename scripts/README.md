@@ -41,7 +41,7 @@
 - `current_pr.sh`: 현재 worktree에 기록된 PR metadata 조회. `--live` 지원
 - `worktree_name_guard.py`: worktree 이름 정책 검증
 - `worktree_add.sh`: worktree 생성 전 이름 정책 검증 wrapper
-- `worktree_cleanup.sh`: removable linked worktree 검증 후 안전한 제거
+- `worktree_cleanup.sh`: removable linked worktree 검증 후 안전한 제거. orphan worktree 디렉토리는 감지만 하고 자동 삭제하지 않음
 - `worktree_issue_metadata.sh`: worktree-scoped issue metadata read/write/clear helper
 - `worktree_pr_metadata.sh`: worktree-scoped PR metadata read/write/clear helper
 - `codex_wbs_emit.sh`: `codex exec --output-schema`로 WBS artifact 생성 + 검증

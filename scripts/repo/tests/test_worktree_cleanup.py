@@ -92,6 +92,27 @@ class WorktreeCleanupTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertFalse(worktree.exists())
 
+    def test_detects_orphan_worktree_directory(self) -> None:
+        root, script, worktree, branch = self.make_repo()
+        _ = branch
+
+        gitdir_line = (worktree / ".git").read_text(encoding="utf-8").strip()
+        gitdir = gitdir_line.removeprefix("gitdir: ").strip()
+        admin_path = (worktree / gitdir).resolve()
+        shutil.rmtree(admin_path)
+
+        result = self.run_script(
+            root,
+            script,
+            "--worktree",
+            str(worktree),
+            "--expected-branch",
+            "feature/worktree-cleanup",
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("orphan worktree", result.stderr)
+        self.assertIn("수동 정리", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
