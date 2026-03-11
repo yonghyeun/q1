@@ -101,7 +101,6 @@
 - `human_decision_required`
 
 ## Open Point
-- ingress spec과 WBS slice의 정확한 매핑 규칙
 - atomic task와 handoff packet의 차이
 - source type 분류 체계
 
@@ -157,6 +156,62 @@
   - `non_goals`가 있어야 범위 팽창을 막을 수 있다.
   - `open_points`가 있어야 모르는 것을 감춘 채 진행하지 않는다.
 
+## Normalization Policy
+- WBS와 ingress spec 사이를 1:1 필드 매핑으로 고정하지 않는다.
+- 입력원은 `semantic normalization`을 통해 공통 task ingress spec 초안으로 변환한다.
+- 변환 레이어의 에이전트는 입력 의미를 읽고 필드를 추론할 수 있다.
+- 다만 근거가 약한 추정은 확정값으로 채우지 않고 `open_points`로 남긴다.
+- 생성된 ingress draft는 사람 승인 전까지 확정본이 아니다.
+- 승인 전후 모두 구조 유효성은 타입체크 또는 검증 스크립트로 확인한다.
+
+## Normalization Flow
+### 1. Source Read
+- 입력원을 읽고 `source_type`, `source_ref`, 핵심 근거를 수집한다.
+- 입력원 예시:
+  - WBS slice
+  - 자연어 요청
+  - backlog 메모
+  - 운영 개선 요청
+
+### 2. Ingress Draft
+- 에이전트가 공통 task spec 초안을 작성한다.
+- 이때 필드는 입력원의 의미를 기준으로 재구성할 수 있다.
+- 예:
+  - WBS의 `goal`은 `objective` 초안으로 해석할 수 있다.
+  - `owned_scope`와 `verification_requirements`는 `constraints` 초안에 반영할 수 있다.
+- 억지 추론은 금지한다.
+
+### 3. Validation
+- draft 구조를 타입체크 또는 검증 스크립트로 확인한다.
+- 확인 대상:
+  - 필수 필드 존재 여부
+  - 필드 타입
+  - 참조 경로 해석 가능 여부
+  - enum 또는 형식 규칙 위반 여부
+
+### 4. Human Approval
+- 사람이 draft를 검토한다.
+- 승인 가능한 행동:
+  - 승인
+  - 수정
+  - 반려
+- 승인 전에는 decomposition layer로 넘기지 않는다.
+
+### 5. Accepted Task
+- 승인된 ingress task만 분해 레이어의 입력이 된다.
+- 이후 atomic task 분해와 execution planning은 이 승인본을 기준으로 진행한다.
+
+## Why Not Fixed Mapping
+- WBS와 ingress task의 형태는 시간이 지나며 바뀔 수 있다.
+- 1:1 매핑을 고정하면 schema 변경 때마다 매핑 규칙을 계속 손봐야 한다.
+- 반면 normalization 방식은 입력 형식 변화에 더 강하다.
+- 또한 WBS 외 입력원도 같은 ingress shape로 수용할 수 있다.
+
+## Human Role
+- 사람은 변환 결과의 의미 적합성을 최종 확인한다.
+- 에이전트가 잘 추론했더라도 범위 과장, 누락, 잘못된 비목표 설정은 사람이 교정한다.
+- 구조 검증은 스크립트가 맡고, 의미 검증은 사람이 맡는다.
+
 ## Reading Aid
 - `source_type`: task가 어디서 왔는지
 - `source_ref`: 원문 근거가 어디 있는지
@@ -167,3 +222,9 @@
 - `non_goals`: 이번에 하지 않을 것
 - `dependencies`: 먼저 확인하거나 해결해야 할 것
 - `open_points`: 아직 모르는 것
+
+## Reading Aid For This Policy
+- `normalization`: 원문 입력을 공통 task spec으로 의미 기반 재구성하는 과정
+- `ingress draft`: 아직 승인되지 않은 task spec 초안
+- `validation`: 구조와 형식을 기계적으로 확인하는 단계
+- `approval`: 의미와 범위를 사람이 최종 확인하는 단계
