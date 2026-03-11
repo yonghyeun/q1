@@ -20,6 +20,9 @@
 - `dirty_worktree_guard.py`: dirty worktree 상태 차단
 - `issue_title_guard.sh`: 이슈 제목 컨벤션 생성/검증 (`[type] 요약`)
 - `issue_body_quality_guard.py`: issue 본문 품질 검증
+- `issue_label_taxonomy.py`: issue label taxonomy SoT
+- `issue_label_guard.py`: issue label taxonomy 검증 + label 인자 생성
+- `issue_label_sync.py`: GitHub 원격 label 생성/갱신
 - `pr_body_quality_guard.py`: PR 본문 품질 검증
 - `pr_issue_guard.py`: PR 본문 close 키워드 존재 검증
 - `gh_preflight.sh`: `origin` remote/`gh auth` 사전 점검
@@ -54,6 +57,10 @@
   - `python3 -m unittest scripts.repo.tests.test_issue_title_guard -v`
 - 이슈 본문 품질 테스트:
   - `python3 -m unittest scripts.repo.tests.test_issue_body_quality_guard -v`
+- 이슈 label taxonomy 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_issue_label_guard -v`
+- 이슈 label sync 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_issue_label_sync -v`
 - PR 본문 품질 테스트:
   - `python3 -m unittest scripts.repo.tests.test_pr_body_quality_guard -v`
 - PR issue 링크 검증 테스트:

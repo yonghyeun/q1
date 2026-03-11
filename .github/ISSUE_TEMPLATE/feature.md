@@ -2,31 +2,28 @@
 name: Feature Request
 about: 기능 개선/신규 기능 작업을 위한 이슈 템플릿
 title: ""
-labels: feature
 assignees: ""
 ---
 
 ## Summary
-<!-- 해결하려는 문제와 기대 결과를 2~4줄로 요약 -->
+<!-- 요청/개선 사항을 2~4줄로 요약 -->
 
 ## Context
-<!-- 배경, 제약, 작업 필요성, 현재 상태 -->
+<!-- 왜 이 요청이 생겼는지, 현재 어떤 상황인지 -->
 
 ## Problem / Opportunity
-<!-- 어떤 문제를 해결하는지 또는 어떤 기회를 잡으려는지 -->
+<!-- 해결하려는 문제 또는 잡고 싶은 기회 -->
 
 ## Goal
-<!-- 이 작업이 달성해야 할 목표 -->
+<!-- 해결 후 기대 상태 -->
 
-## In Scope
+## Expected Impact
+<!-- 사용자 또는 시스템 차원의 기대 변화 -->
 - 
 
-## Out of Scope
+## Constraints
+<!-- 제약, 의존성, 주의점 -->
 - 
-
-## Related Issues
-<!-- 함께 봐야 하는 다른 issue -->
-- Related: #
 
 ## Decision Candidates
 <!-- 작업 진행 전 검토가 필요한 선택지나 쟁점 -->
@@ -34,12 +31,14 @@ assignees: ""
   - Options:
   - Notes:
 
-## Acceptance Criteria
-- [ ] 
-- [ ] 
-
-## Risks
+## Done Signal
+<!-- 이 issue를 닫아도 되는 최소 신호 -->
 - 
 
-## Notes
-<!-- 관련 문서, 정책, WBS 링크가 필요하면 여기에 inline으로 기입 -->
+## Out of Scope
+<!-- 여기서 다루지 않을 범위 -->
+- 
+
+## Related Links
+<!-- 관련 issue, PR, docs, decision 링크 -->
+- 

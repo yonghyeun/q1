@@ -2,7 +2,6 @@
 name: Chore / Ops
 about: 운영/정책/자동화 작업을 위한 이슈 템플릿
 title: ""
-labels: chore
 assignees: ""
 ---
 
@@ -12,18 +11,21 @@ assignees: ""
 ## Context
 <!-- 배경, 제약, 운영상 문제, 작업 필요성 -->
 
-## Objective
+## Operational Problem
+<!-- 현재 운영상 문제 -->
 - 
 
-## In Scope
+## Goal
+<!-- 정리 후 기대 상태 -->
 - 
 
-## Out of Scope
+## Affected Surface
+<!-- 영향 영역. 예: repo, github, docs, agent, wbs -->
 - 
 
-## Related Issues
-<!-- 함께 봐야 하는 다른 issue -->
-- Related: #
+## Constraints
+<!-- 제약, 의존성, 주의점 -->
+- 
 
 ## Decision Candidates
 <!-- 정책/운영/자동화 측면에서 선택이 필요한 쟁점 -->
@@ -31,15 +33,14 @@ assignees: ""
   - Options:
   - Notes:
 
-## Operational Impact
+## Done Signal
+<!-- 정비 완료로 볼 최소 신호 -->
 - 
 
-## Acceptance Criteria
-- [ ] 
-- [ ] 
-
-## Risks
+## Out of Scope
+<!-- 여기서 다루지 않을 범위 -->
 - 
 
-## Notes
-<!-- 관련 문서, 정책, decision, WBS 링크가 필요하면 여기에 inline으로 기입 -->
+## Related Links
+<!-- 관련 issue, PR, docs, decision 링크 -->
+- 

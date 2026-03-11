@@ -2,7 +2,6 @@
 name: Bug Report
 about: 버그 수정 작업을 위한 이슈 템플릿
 title: ""
-labels: bug
 assignees: ""
 ---
 
@@ -12,27 +11,29 @@ assignees: ""
 ## Context
 <!-- 발생 배경, 제약, 관련 변경 이력, 관찰된 조건 -->
 
-## Bug Summary
-<!-- 어떤 문제가 발생하는지 한 번 더 명확히 기술 -->
-
-## Reproduction Steps
-1. 
-2. 
-3. 
+## Observed Behavior
+<!-- 실제로 관찰된 문제 -->
+- 
 
 ## Expected Behavior
+<!-- 원래 기대 동작 -->
 - 
 
-## Actual Behavior
+## Impact
+<!-- 사용자, 운영, 시스템 영향 -->
 - 
 
-## Suspected Cause / Constraints
-<!-- 의심 원인, 확인된 제약, 조사 중 사실 -->
+## Reproduction Clues
+<!-- 재현 조건, 환경, 로그, 입력 단서 -->
 - 
 
-## Related Issues
-<!-- 함께 봐야 하는 다른 issue -->
-- Related: #
+## Suspected Area
+<!-- 의심 컴포넌트, 최근 변경, 관련 영역 -->
+- 
+
+## Constraints
+<!-- 조사/수정 시 제약 -->
+- 
 
 ## Decision Candidates
 <!-- 수정 방식에 따라 선택이 필요한 쟁점 -->
@@ -40,12 +41,10 @@ assignees: ""
   - Options:
   - Notes:
 
-## Acceptance Criteria
-- [ ] 재현 케이스에서 오류가 발생하지 않는다.
-- [ ] 회귀 영향 범위 점검이 완료되었다.
-
-## Risks
+## Done Signal
+<!-- 문제 해결로 볼 최소 신호 -->
 - 
 
-## Notes
-<!-- 관련 문서, 정책, WBS 링크가 필요하면 여기에 inline으로 기입 -->
+## Related Links
+<!-- 관련 issue, PR, docs, decision 링크 -->
+- 

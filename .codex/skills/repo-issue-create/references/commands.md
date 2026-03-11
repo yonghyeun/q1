@@ -1,7 +1,7 @@
 # Repo Issue Create Commands
 
 ## Required
-- `./.codex/skills/repo-issue-create/scripts/run.sh --type <feature|bug|chore> --title "<title>" --body-file <path>`
+- `./.codex/skills/repo-issue-create/scripts/run.sh --type <feature|bug|chore> --status <inbox|ready|active|blocked|cancelled> --priority <p0|p1|p2|p3> --source-type <human-request|agent-team|runtime-observation|wbs-planned> --area <product|repo|docs|agent-team> [--area <product|repo|docs|agent-team> ...] --title "<title>" --body-file <path>`
 
 ## Type selection
 - `feature`: 기능 추가, 기능 개선, 구조 개선.
@@ -10,17 +10,21 @@
 
 ## Suggested authoring flow
 1. 해당 type의 `.github/ISSUE_TEMPLATE/<type>.md` 읽기.
-2. 제목을 `[type] 요약` 형식으로 작성.
-3. body 초안 작성.
-4. wrapper 실행.
-5. 실패 시 gate 메시지의 `다음 행동:` 반영 후 재시도.
+2. `status`, `priority`, `area`, `source_type` 값을 선택.
+3. 제목을 `[type] 요약` 형식으로 작성.
+4. body 초안 작성.
+5. wrapper 실행.
+6. 실패 시 gate 메시지의 `다음 행동:` 반영 후 재시도.
 
 ## Self-check helpers
 - 제목 검증:
   - `./scripts/repo/issue_title_guard.sh validate --type <type> --title "[type] 요약"`
 - 본문 검증:
   - `python3 ./scripts/repo/issue_body_quality_guard.py --issue-type <type> --body-file <path>`
+- label 검증:
+  - `python3 ./scripts/repo/issue_label_guard.py --type <type> --status <status> --priority <priority> --source-type <source-type> --area <area>`
 
 ## Gates reached through the wrapper
 - `issue-title`
 - `issue-body`
+- `issue-label`
