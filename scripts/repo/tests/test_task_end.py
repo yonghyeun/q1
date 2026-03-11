@@ -129,7 +129,30 @@ if [[ "$1" == "pr" && "$2" == "view" ]]; then
   exit 0
 fi
 if [[ "$1" == "pr" && "$2" == "merge" ]]; then
-  printf '%s\\n' "$*" > "${FAKE_GH_LOG}"
+  printf '%s\\n' "$*" >> "${FAKE_GH_LOG}"
+  exit 0
+fi
+if [[ "$1" == "issue" && "$2" == "view" ]]; then
+  shift 2
+  issue_number="${1:-}"
+  state="${FAKE_GH_ISSUE_STATE:-CLOSED}"
+  status="${FAKE_GH_ISSUE_STATUS:-status:active}"
+  second_status="${FAKE_GH_SECOND_ISSUE_STATUS:-}"
+  labels_json=""
+  if [[ -n "${status}" ]]; then
+    labels_json="{\\"name\\":\\"${status}\\"}"
+  fi
+  if [[ -n "${second_status}" ]]; then
+    if [[ -n "${labels_json}" ]]; then
+      labels_json="${labels_json},"
+    fi
+    labels_json="${labels_json}{\\"name\\":\\"${second_status}\\"}"
+  fi
+  printf '{"number":%s,"title":"Issue %s","url":"https://example.test/issues/%s","state":"%s","labels":[%s]}\\n' "${issue_number}" "${issue_number}" "${issue_number}" "${state}" "${labels_json}"
+  exit 0
+fi
+if [[ "$1" == "issue" && "$2" == "edit" ]]; then
+  printf '%s\\n' "$*" >> "${FAKE_GH_LOG}"
   exit 0
 fi
 echo "unexpected gh args: $*" >&2
@@ -171,6 +194,8 @@ exit 1
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("task end 계획", result.stdout)
         self.assertIn("<PR_TITLE_FROM_GH>", result.stdout)
+        self.assertIn("Linked issue: #19", result.stdout)
+        self.assertIn("Issue close status cleanup: remove status:* after linked issue closes", result.stdout)
 
     def test_apply_requires_yes(self) -> None:
         _root, worktree, _gh_log, env = self.make_repo()
@@ -206,6 +231,7 @@ exit 1
         self.assertIn("pr merge", logged)
         self.assertIn("--squash", logged)
         self.assertIn("[config] task end test", logged)
+        self.assertIn("issue edit 19 --remove-label status:active", logged)
 
     def test_apply_yes_clears_issue_metadata_when_worktree_is_kept(self) -> None:
         _root, worktree, _gh_log, env = self.make_repo()
@@ -221,6 +247,29 @@ exit 1
             check=False,
         ).stdout.strip()
         self.assertEqual(metadata, "")
+
+    def test_apply_yes_stops_cleanup_when_linked_issue_is_not_closed(self) -> None:
+        root, worktree, gh_log, env = self.make_repo()
+        env = dict(env)
+        env["FAKE_GH_ISSUE_STATE"] = "OPEN"
+
+        result = self.run_script(worktree, "task_end.sh", env, "--apply", "--yes")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("linked issue #19 가 닫히지 않았습니다", result.stderr)
+        self.assertTrue(worktree.exists())
+
+        branches = subprocess.run(
+            ["git", "branch", "--list", "config/task-end-flow"],
+            cwd=root,
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        self.assertIn("config/task-end-flow", branches)
+
+        logged = gh_log.read_text(encoding="utf-8")
+        self.assertIn("pr merge", logged)
+        self.assertNotIn("issue edit 19", logged)
 
     def test_task_end_uses_branch_helper_scripts_when_primary_lacks_them(self) -> None:
         root, worktree, gh_log, env = self.make_repo()
