@@ -87,24 +87,21 @@ LIVE_ISSUE_TITLE=""
 LIVE_ISSUE_URL=""
 LIVE_ISSUE_STATE=""
 LIVE_ISSUE_STATUS=""
+LIVE_WARNING=""
 
 if [[ ${LIVE_MODE} -eq 1 && -n "${ISSUE_NUMBER}" ]]; then
-  ./scripts/repo/gh_preflight.sh >/dev/null || {
-    echo "❌ live issue 조회 전 gh preflight에 실패했습니다." >&2
-    echo "다음 행동: gh 인증과 origin remote 상태를 확인한 뒤 다시 실행하세요." >&2
-    exit 10
-  }
-
-  LIVE_OUTPUT="$(gh issue view "${ISSUE_NUMBER}" --json number,title,url,state,labels 2>&1)" || {
-    echo "❌ issue #${ISSUE_NUMBER} live 조회에 실패했습니다." >&2
-    echo "다음 행동: 네트워크와 gh 인증 상태를 확인한 뒤 다시 실행하세요." >&2
-    exit 11
-  }
-
-  LIVE_ISSUE_TITLE="$(extract_live_field "${LIVE_OUTPUT}" "title")"
-  LIVE_ISSUE_URL="$(extract_live_field "${LIVE_OUTPUT}" "url")"
-  LIVE_ISSUE_STATE="$(extract_live_field "${LIVE_OUTPUT}" "state")"
-  LIVE_ISSUE_STATUS="$(extract_live_status "${LIVE_OUTPUT}")"
+  if ./scripts/repo/gh_preflight.sh >/dev/null 2>&1; then
+    if LIVE_OUTPUT="$(gh issue view "${ISSUE_NUMBER}" --json number,title,url,state,labels 2>&1)"; then
+      LIVE_ISSUE_TITLE="$(extract_live_field "${LIVE_OUTPUT}" "title")"
+      LIVE_ISSUE_URL="$(extract_live_field "${LIVE_OUTPUT}" "url")"
+      LIVE_ISSUE_STATE="$(extract_live_field "${LIVE_OUTPUT}" "state")"
+      LIVE_ISSUE_STATUS="$(extract_live_status "${LIVE_OUTPUT}")"
+    else
+      LIVE_WARNING="live 조회 실패. recorded snapshot만 표시"
+    fi
+  else
+    LIVE_WARNING="gh preflight 실패. recorded snapshot만 표시"
+  fi
 fi
 
 echo "현재 worktree 연결 issue"
@@ -136,6 +133,9 @@ fi
 if [[ ${LIVE_MODE} -eq 1 && -n "${ISSUE_NUMBER}" ]]; then
   echo
   echo "GitHub live 상태"
+  if [[ -n "${LIVE_WARNING}" ]]; then
+    echo "- 상태: ${LIVE_WARNING}"
+  fi
   if [[ -n "${LIVE_ISSUE_TITLE}" ]]; then
     echo "- 제목: ${LIVE_ISSUE_TITLE}"
   fi

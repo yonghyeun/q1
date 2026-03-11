@@ -54,9 +54,16 @@ class CurrentIssueTests(unittest.TestCase):
             """#!/usr/bin/env bash
 set -euo pipefail
 if [[ "$1" == "auth" && "$2" == "status" ]]; then
+  if [[ "${FAKE_GH_AUTH_FAIL:-0}" == "1" ]]; then
+    exit 1
+  fi
   exit 0
 fi
 if [[ "$1" == "issue" && "$2" == "view" ]]; then
+  if [[ "${FAKE_GH_ISSUE_VIEW_FAIL:-0}" == "1" ]]; then
+    echo "error connecting to api.github.com" >&2
+    exit 1
+  fi
   issue_number="${3:-}"
   python3 - "${issue_number}" <<'PY'
 import json
@@ -176,6 +183,82 @@ exit 1
         self.assertIn("- 현재 state: OPEN", result.stdout)
         self.assertIn("- 현재 status label: status:ready", result.stdout)
         self.assertIn("- 제목: Issue 19 live", result.stdout)
+
+    def test_live_mode_falls_back_to_snapshot_when_issue_view_fails(self) -> None:
+        worktree, env = self.make_repo()
+        env = dict(env)
+        env["FAKE_GH_ISSUE_VIEW_FAIL"] = "1"
+
+        write_result = subprocess.run(
+            [
+                "bash",
+                "./scripts/repo/worktree_issue_metadata.sh",
+                "write",
+                "--number",
+                "19",
+                "--url",
+                "https://example.test/issues/19",
+                "--title",
+                "issue title",
+                "--status-at-record",
+                "status:active",
+                "--branch",
+                "config/local-issue-linkage",
+                "--worktree",
+                str(worktree),
+                "--recorded-at",
+                "2026-03-11T15:00:00Z",
+            ],
+            cwd=worktree,
+            text=True,
+            capture_output=True,
+            env=env,
+            check=False,
+        )
+        self.assertEqual(write_result.returncode, 0, write_result.stderr)
+
+        result = self.run_script(worktree, env, "--live")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("- 제목: issue title", result.stdout)
+        self.assertIn("recorded snapshot만 표시", result.stdout)
+
+    def test_live_mode_falls_back_to_snapshot_when_preflight_fails(self) -> None:
+        worktree, env = self.make_repo()
+        env = dict(env)
+        env["FAKE_GH_AUTH_FAIL"] = "1"
+
+        write_result = subprocess.run(
+            [
+                "bash",
+                "./scripts/repo/worktree_issue_metadata.sh",
+                "write",
+                "--number",
+                "19",
+                "--url",
+                "https://example.test/issues/19",
+                "--title",
+                "issue title",
+                "--status-at-record",
+                "status:active",
+                "--branch",
+                "config/local-issue-linkage",
+                "--worktree",
+                str(worktree),
+                "--recorded-at",
+                "2026-03-11T15:00:00Z",
+            ],
+            cwd=worktree,
+            text=True,
+            capture_output=True,
+            env=env,
+            check=False,
+        )
+        self.assertEqual(write_result.returncode, 0, write_result.stderr)
+
+        result = self.run_script(worktree, env, "--live")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("- 제목: issue title", result.stdout)
+        self.assertIn("gh preflight 실패", result.stdout)
 
 
 if __name__ == "__main__":
