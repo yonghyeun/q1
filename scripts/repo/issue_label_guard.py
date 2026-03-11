@@ -5,18 +5,13 @@ import argparse
 import sys
 
 from body_guard_common import BodyQualityError, with_next_action  # type: ignore
-
-
-TYPE_VALUES = {"feature", "bug", "chore"}
-STATUS_VALUES = {"inbox", "ready", "active", "blocked", "cancelled"}
-PRIORITY_VALUES = {"p0", "p1", "p2", "p3"}
-AREA_VALUES = {"product", "repo", "docs", "agent-team"}
-SOURCE_TYPE_VALUES = {
-    "human-request",
-    "agent-team",
-    "runtime-observation",
-    "wbs-planned",
-}
+from issue_label_taxonomy import (  # type: ignore
+    AREA_VALUES,
+    PRIORITY_VALUES,
+    SOURCE_TYPE_VALUES,
+    STATUS_VALUES,
+    TYPE_VALUES,
+)
 
 
 def _validate_single_axis(name: str, value: str, allowed: set[str]) -> str:
