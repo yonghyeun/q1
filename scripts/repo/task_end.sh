@@ -64,6 +64,13 @@ run_branch_cleanup() {
   ./scripts/repo/post_merge_branch_cleanup.sh "$@"
 }
 
+run_issue_metadata_cleanup() {
+  (
+    cd "${WORKTREE}" &&
+    ./scripts/repo/worktree_issue_metadata.sh clear
+  )
+}
+
 METHOD="squash"
 PR_TARGET=""
 BRANCH=""
@@ -234,8 +241,9 @@ echo "- Method: ${METHOD}"
 if [[ -n "${MERGE_SUBJECT}" ]]; then
 echo "- Merge subject: ${MERGE_SUBJECT}"
 else
-  echo "- Merge subject: <not-used>"
+echo "- Merge subject: <not-used>"
 fi
+echo "- Issue metadata cleanup: run"
 echo "- Branch cleanup: $([[ ${NO_BRANCH_CLEANUP} -eq 1 ]] && echo skip || echo run)"
 echo "- Worktree cleanup: $([[ ${NO_WORKTREE_REMOVE} -eq 1 ]] && echo skip || echo run)"
 echo
@@ -257,6 +265,10 @@ if [[ ${APPLY} -eq 0 ]]; then
 fi
 
 ./scripts/repo/pr_merge.sh "${MERGE_RUN_ARGS[@]}"
+
+run_issue_metadata_cleanup >/dev/null || {
+  fail "issue metadata cleanup에 실패했습니다: ${WORKTREE}" "대상 worktree에서 worktree_issue_metadata.sh clear 가 동작하는지 확인한 뒤 metadata를 수동으로 정리하세요."
+}
 
 if [[ ${NO_WORKTREE_REMOVE} -eq 0 ]]; then
   run_worktree_cleanup "${WORKTREE_RUN_ARGS[@]}"

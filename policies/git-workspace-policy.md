@@ -37,6 +37,13 @@
 - 다른 branch 작업은 가능하면 별도 worktree에서 수행.
 - 하나의 worktree 안에서 여러 목적의 작업을 섞지 않음.
 
+## Issue Linkage
+- 현재 worktree와 연결된 issue 정보는 worktree metadata로 관리.
+- 기록은 `task start --issue <number>` lifecycle에서 수행.
+- 조회 표준 경로는 `./scripts/repo/current_issue.sh`.
+- 종료 시 정리는 `task end` lifecycle에서 수행.
+- live 상태 확인이 필요하면 `./scripts/repo/current_issue.sh --live` 사용.
+
 ## Commit Readiness
 - 커밋 전 변경 범위 확인.
 - 관련 없는 변경 혼입 여부 확인.

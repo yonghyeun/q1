@@ -172,6 +172,7 @@ BRANCH_IN_WORKTREE=0
 BRANCH_IN_WORKTREE_PATH=""
 WT_PATH=""
 ISSUE_URL=""
+ISSUE_TITLE=""
 ISSUE_STATE=""
 ISSUE_STATUS=""
 NEXT_ISSUE_STATUS=""
@@ -200,11 +201,12 @@ fi
 if [[ -n "${ISSUE_NUMBER}" ]]; then
   ./scripts/repo/gh_preflight.sh >/dev/null
 
-  ISSUE_VIEW_OUTPUT="$(gh issue view "${ISSUE_NUMBER}" --json number,state,labels,url 2>&1)" || {
+  ISSUE_VIEW_OUTPUT="$(gh issue view "${ISSUE_NUMBER}" --json number,title,state,labels,url 2>&1)" || {
     fail "issue #${ISSUE_NUMBER} 를 조회할 수 없습니다." "issue 번호와 gh 인증 상태를 확인한 뒤 다시 실행하세요."
   }
 
   ISSUE_URL="$(extract_issue_field "${ISSUE_VIEW_OUTPUT}" "url")"
+  ISSUE_TITLE="$(extract_issue_field "${ISSUE_VIEW_OUTPUT}" "title")"
   ISSUE_STATE="$(extract_issue_field "${ISSUE_VIEW_OUTPUT}" "state")"
   while IFS= read -r status_label; do
     [[ -n "${status_label}" ]] || continue
@@ -293,6 +295,9 @@ print_plan() {
   if [[ -n "${ISSUE_NUMBER}" && "${ISSUE_STATUS}" != "${NEXT_ISSUE_STATUS}" ]]; then
     echo "- gh issue edit ${ISSUE_NUMBER} --remove-label ${ISSUE_STATUS} --add-label ${NEXT_ISSUE_STATUS}"
   fi
+  if [[ -n "${ISSUE_NUMBER}" ]]; then
+    echo "- (cd ${TARGET_PATH} && ./scripts/repo/worktree_issue_metadata.sh write --number ${ISSUE_NUMBER} ...)"
+  fi
   echo
   echo "다음 이동 경로"
   echo "- cd ${TARGET_PATH}"
@@ -313,6 +318,23 @@ fi
 if [[ -n "${ISSUE_NUMBER}" && "${ISSUE_STATUS}" != "${NEXT_ISSUE_STATUS}" ]]; then
   gh issue edit "${ISSUE_NUMBER}" --remove-label "${ISSUE_STATUS}" --add-label "${NEXT_ISSUE_STATUS}" >/dev/null || {
     fail "branch/worktree 생성 후 issue #${ISSUE_NUMBER} 상태 전이에 실패했습니다." "gh 인증과 issue label 상태를 확인한 뒤 issue status를 수동으로 ${NEXT_ISSUE_STATUS} 로 맞추세요."
+  }
+fi
+
+if [[ -n "${ISSUE_NUMBER}" ]]; then
+  ISSUE_RECORDED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  (
+    cd "${TARGET_PATH}" &&
+    ./scripts/repo/worktree_issue_metadata.sh write \
+      --number "${ISSUE_NUMBER}" \
+      --url "${ISSUE_URL}" \
+      --title "${ISSUE_TITLE}" \
+      --status-at-record "${NEXT_ISSUE_STATUS}" \
+      --branch "${BRANCH}" \
+      --worktree "${ABS_TARGET_PATH}" \
+      --recorded-at "${ISSUE_RECORDED_AT}"
+  ) >/dev/null || {
+    fail "worktree issue metadata 기록에 실패했습니다: ${ABS_TARGET_PATH}" "대상 worktree에서 metadata helper 실행 가능 여부를 확인한 뒤 다시 실행하거나 수동으로 metadata를 정리하세요."
   }
 fi
 
