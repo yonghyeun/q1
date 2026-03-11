@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "${ROOT_DIR}"
+source "${ROOT_DIR}/scripts/repo/gh_failure_guard.sh"
 
 usage() {
   cat <<'EOF'
@@ -306,6 +307,9 @@ if [[ -n "${ISSUE_NUMBER}" ]]; then
   ./scripts/repo/gh_preflight.sh --require-api >/dev/null
 
   ISSUE_VIEW_OUTPUT="$(gh issue view "${ISSUE_NUMBER}" --json number,title,state,labels,url 2>&1)" || {
+    if gh_output_indicates_connectivity_issue "${ISSUE_VIEW_OUTPUT}"; then
+      fail "issue #${ISSUE_NUMBER} 를 조회할 수 없습니다. $(gh_connectivity_suffix)" "$(gh_retry_next_action)"
+    fi
     fail "issue #${ISSUE_NUMBER} 를 조회할 수 없습니다." "issue 번호와 gh 인증 상태를 확인한 뒤 다시 실행하세요."
   }
 
@@ -425,7 +429,10 @@ fi
 ./scripts/repo/worktree_add.sh --path "${TARGET_PATH}" --branch "${BRANCH}"
 
 if [[ -n "${ISSUE_NUMBER}" && "${ISSUE_STATUS}" != "${NEXT_ISSUE_STATUS}" ]]; then
-  gh issue edit "${ISSUE_NUMBER}" --remove-label "${ISSUE_STATUS}" --add-label "${NEXT_ISSUE_STATUS}" >/dev/null || {
+  ISSUE_EDIT_OUTPUT="$(gh issue edit "${ISSUE_NUMBER}" --remove-label "${ISSUE_STATUS}" --add-label "${NEXT_ISSUE_STATUS}" 2>&1)" || {
+    if gh_output_indicates_connectivity_issue "${ISSUE_EDIT_OUTPUT}"; then
+      fail "branch/worktree 생성 후 issue #${ISSUE_NUMBER} 상태 전이에 실패했습니다. $(gh_connectivity_suffix)" "$(gh_retry_next_action)"
+    fi
     fail "branch/worktree 생성 후 issue #${ISSUE_NUMBER} 상태 전이에 실패했습니다." "gh 인증과 issue label 상태를 확인한 뒤 issue status를 수동으로 ${NEXT_ISSUE_STATUS} 로 맞추세요."
   }
 fi

@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
 SCRIPT_NAMES = [
+    "gh_failure_guard.sh",
     "pr_merge.sh",
     "post_merge_cleanup.sh",
     "branch_guard.py",

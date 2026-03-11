@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "${ROOT_DIR}"
+source "${ROOT_DIR}/scripts/repo/gh_failure_guard.sh"
 
 usage() {
   cat <<'EOF'
@@ -89,7 +90,12 @@ else
 fi
 
 if [[ ${DRY_RUN} -eq 0 ]]; then
-  gh pr view "${VIEW_TARGET}" --json number,state,mergeStateStatus,isDraft >/dev/null
+  VIEW_OUTPUT="$(gh pr view "${VIEW_TARGET}" --json number,state,mergeStateStatus,isDraft 2>&1)" || {
+    if gh_output_indicates_connectivity_issue "${VIEW_OUTPUT}"; then
+      fail "merge 대상 PR을 조회할 수 없습니다. $(gh_connectivity_suffix)" "$(gh_retry_next_action)"
+    fi
+    fail "merge 대상 PR을 조회할 수 없습니다." "PR 번호/브랜치와 gh 상태를 확인한 뒤 다시 실행하세요."
+  }
 fi
 
 MERGE_ARGS=(pr merge)
@@ -109,7 +115,12 @@ if [[ "${METHOD}" == "squash" || "${METHOD}" == "merge" ]]; then
     MERGE_SUBJECT="${SUBJECT}"
   else
     if [[ ${DRY_RUN} -eq 0 ]]; then
-      MERGE_SUBJECT="$(gh pr view "${VIEW_TARGET}" --json title --jq .title)"
+      MERGE_SUBJECT="$(gh pr view "${VIEW_TARGET}" --json title --jq .title 2>&1)" || {
+        if gh_output_indicates_connectivity_issue "${MERGE_SUBJECT}"; then
+          fail "PR 제목을 조회할 수 없어 merge subject를 자동 설정할 수 없습니다. $(gh_connectivity_suffix)" "$(gh_retry_next_action)"
+        fi
+        fail "PR 제목을 조회할 수 없어 merge subject를 자동 설정할 수 없습니다." "--subject 를 명시하거나 PR 제목을 확인한 뒤 다시 실행하세요."
+      }
       if [[ -z "${MERGE_SUBJECT}" ]]; then
         fail "PR 제목을 조회할 수 없어 merge subject를 자동 설정할 수 없습니다." "--subject 를 명시하거나 PR 제목을 확인한 뒤 다시 실행하세요."
       fi
@@ -136,7 +147,12 @@ if [[ ${DRY_RUN} -eq 1 ]]; then
   exit 0
 fi
 
-gh "${MERGE_ARGS[@]}"
+MERGE_OUTPUT="$(gh "${MERGE_ARGS[@]}" 2>&1)" || {
+  if gh_output_indicates_connectivity_issue "${MERGE_OUTPUT}"; then
+    fail "PR merge에 실패했습니다. $(gh_connectivity_suffix)" "$(gh_retry_next_action)"
+  fi
+  fail "PR merge에 실패했습니다." "PR 상태와 gh merge 권한을 확인한 뒤 다시 실행하세요."
+}
 
 echo "✅ PR merge 완료: ${BRANCH}"
 echo "다음 행동: 후속 정리가 필요하면 task_end.sh 또는 post-merge cleanup shell을 실행하세요."

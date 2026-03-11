@@ -26,6 +26,7 @@
 - `pr_body_quality_guard.py`: PR 본문 품질 검증
 - `pr_issue_guard.py`: PR 본문 close 키워드 존재 검증
 - `gh_preflight.sh`: `origin` remote/`gh auth` 사전 점검. `--require-api` 사용 시 GitHub API 연결 가능 여부까지 확인
+- `gh_failure_guard.sh`: `gh` 실행 실패 stderr를 분류해 sandbox/API 차단 재시도 힌트를 공통 제공
 - `issue_create.sh`: gh CLI로 issue 생성 (`--body-file` 필수). GitHub API 차단 시 권한 상승 재시도 힌트를 출력
 - `pr_create.sh`: 정책/본문 검증 후 PR 생성 (`--body-file` 필수). 성공 시 현재 worktree에 PR metadata 기록. GitHub API 차단 시 권한 상승 재시도 힌트를 출력
 - `pr_title_guard.sh`: PR 제목 컨벤션 생성/검증 (`[scope] 요약`)

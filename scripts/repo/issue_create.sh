@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "${ROOT_DIR}"
+source "${ROOT_DIR}/scripts/repo/gh_failure_guard.sh"
 
 usage() {
   cat <<'EOH'
@@ -106,7 +107,17 @@ done < <(
 
 ./scripts/repo/gh_preflight.sh --require-api
 
-ISSUE_URL="$(gh issue create -t "${TITLE}" -F "${BODY_FILE}" "${LABEL_ARGS[@]}")"
+ISSUE_URL="$(gh issue create -t "${TITLE}" -F "${BODY_FILE}" "${LABEL_ARGS[@]}" 2>&1)" || {
+  if gh_output_indicates_connectivity_issue "${ISSUE_URL}"; then
+    echo "❌ issue 생성에 실패했습니다. $(gh_connectivity_suffix)" >&2
+    echo "다음 행동: $(gh_retry_next_action)" >&2
+  else
+    echo "❌ issue 생성에 실패했습니다." >&2
+    gh_print_output_hint "${ISSUE_URL}"
+    echo "다음 행동: GitHub issue 생성 권한과 gh 상태를 확인한 뒤 같은 wrapper 명령을 다시 실행하세요." >&2
+  fi
+  exit 1
+}
 ISSUE_NUMBER="$(printf '%s' "${ISSUE_URL}" | grep -Eo '[0-9]+$' || true)"
 
 if [[ -z "${ISSUE_NUMBER}" ]]; then
