@@ -16,16 +16,16 @@
 - 각 단계 산출물은 다음 단계의 입력으로 재사용 가능해야 한다.
 
 ## Current Phase
-- 시작 상태: `목표 정의`
+- 현재 단계: `업무 분해`
 
 ## Steps
-- [ ] 목표 정의
+- [x] 목표 정의
   - [x] 무엇을 자동화할지 명확화
   - [x] 성공 기준 설정
-  - [ ] 예시 지표 정의
-    - [ ] 처리 시간 단축
-    - [ ] 오류율 감소
-    - [ ] PR 리드타임 감소
+  - [x] 예시 지표 정의
+    - [x] 전체 trace 성공률
+    - [x] node별 성공률
+    - [x] 동일 병목 재발률
 - [ ] 업무 분해
   - [ ] 큰 목표를 반복 가능한 단위 작업으로 분해
   - [ ] 입력, 처리, 출력 기준 정리
@@ -117,5 +117,8 @@
 - 결정: WBS 또는 해야 할 작업을 입력으로 받아 원자 분해 -> 계획 -> 작업 -> 로깅 -> 검증 -> 병목 탐지/수정의 피드백 루프를 자동화한다.
 - 결정: 이 시스템은 이슈/PR 준비 자동화보다 하네스 엔지니어링이 포함된 에이전트 개발 시스템을 목표로 한다.
 - 결정: 속도보다 품질, 안정성, 안정적 운영 방안을 우선한다.
-- 보류: 성공 지표 수치와 측정 방식은 아직 미정이다.
+- 결정: 초기 핵심 지표는 전체 trace 성공률, node별 성공률, 동일 병목 재발률로 둔다.
+- 결정: 리드타임은 핵심 KPI가 아니라 보조 관측 지표로 둔다.
+- 보류: 성공 지표의 수치 목표와 계산 주기는 아직 미정이다.
 - 산출물: [agent-team/context/goal.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/goal.md)
+- 산출물: [agent-team/context/metrics.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/metrics.md)
