@@ -16,7 +16,7 @@
 - 각 단계 산출물은 다음 단계의 입력으로 재사용 가능해야 한다.
 
 ## Current Phase
-- 현재 단계: `운영 규칙 정의`
+- 현재 단계: `Tool 맵핑`
 
 ## Steps
 - [x] 목표 정의
@@ -55,11 +55,11 @@
     - [x] status
     - [x] evidence
   - [x] handoff 실패 조건 정의
-- [ ] 운영 규칙 정의
-  - [ ] 우선순위 규칙 정의
-  - [ ] 충돌 시 결정 방식 정의
-  - [ ] 실패 시 fallback 경로 정의
-  - [ ] 인간 승인 필요 조건 정의
+- [x] 운영 규칙 정의
+  - [x] 우선순위 규칙 정의
+  - [x] 충돌 시 결정 방식 정의
+  - [x] 실패 시 fallback 경로 정의
+  - [x] 인간 승인 필요 조건 정의
 - [ ] Tool 맵핑
   - [ ] 역할마다 사용할 도구 연결
   - [ ] 예시 매핑 검토
@@ -166,3 +166,12 @@
 - 결정: 필수 필드 누락, enum 위반, owned path 없는 write 요청, approval 누락, evidence 없는 terminal status는 handoff 실패로 본다.
 - 보류: packet artifact를 JSON 우선으로 둘지 Markdown template 우선으로 둘지는 아직 미정이다.
 - 산출물: [agent-team/context/interface.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/interface.md)
+
+### 운영 규칙 정의
+- 결정: 운영 규칙은 `우선순위`, `충돌 해결`, `fallback`, `인간 승인` 4축으로 정의한다.
+- 결정: 시스템 기본 원칙은 `속도보다 안전`, `추정보다 근거`, `자동 진행보다 명시적 승인`으로 둔다.
+- 결정: 충돌 해결 우선순위는 `Human approval -> Repository policy and gate -> Accepted task -> Role boundary -> Handoff packet -> Local optimization`으로 고정한다.
+- 결정: input missing, normalization failure, planning conflict, runtime block, verification failure, repeated failure에 대한 fallback 경로를 명시한다.
+- 결정: objective 변경, acceptance criteria 변경/축소, scope expansion, packet 밖 경로 수정, destructive action, branch 전환 계열, policy surface 수정, taxonomy 수정, policy 예외 처리는 공통 승인 대상으로 둔다.
+- 보류: approval 대기 상태를 packet status enum에 별도로 둘지는 아직 미정이다.
+- 산출물: [agent-team/context/operating-rules.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/operating-rules.md)

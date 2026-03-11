@@ -214,3 +214,6 @@
 
 ## Open Point
 - packet artifact를 JSON 우선으로 둘지, Markdown template 우선으로 둘지는 구현 단계에서 다시 닫는다.
+
+## Related Artifact
+- 시스템 레벨 우선순위, 충돌 처리, fallback, 승인 규칙은 [operating-rules.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/operating-rules.md)에 둔다.
