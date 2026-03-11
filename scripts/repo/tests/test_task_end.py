@@ -262,6 +262,7 @@ exit 1
         self.assertIn("pr merge", logged)
         self.assertIn("--squash", logged)
         self.assertIn("[config] task end test", logged)
+        self.assertNotIn("--delete-branch", logged)
         self.assertIn("issue edit 19 --remove-label status:active", logged)
 
     def test_apply_yes_clears_issue_metadata_when_worktree_is_kept(self) -> None:
