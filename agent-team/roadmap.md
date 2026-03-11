@@ -122,3 +122,10 @@
 - 보류: 성공 지표의 수치 목표와 계산 주기는 아직 미정이다.
 - 산출물: [agent-team/context/goal.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/goal.md)
 - 산출물: [agent-team/context/metrics.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/metrics.md)
+
+### 업무 분해
+- 결정: agent-team 입력 task는 WBS에 한정하지 않고, 공통 task ingress shape로 정규화한다.
+- 결정: task를 원자 단위로 자르는 decomposition layer와, 분해된 작업을 trace node로 계획하는 execution planning layer를 분리한다.
+- 결정: 초기 trace node는 분해 -> 계획 -> 실행 -> 검증 -> 개선으로 둔다.
+- 보류: 공통 task spec의 필수 필드와 WBS 매핑 규칙은 아직 확정 전이다.
+- 산출물: [agent-team/context/task-model.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/task-model.md)
