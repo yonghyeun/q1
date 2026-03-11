@@ -6,6 +6,7 @@
 ## Active Gates
 - [issue-title.md](issue-title.md)
 - [issue-body.md](issue-body.md)
+- [issue-label.md](issue-label.md)
 - [pr-title.md](pr-title.md)
 - [pr-body.md](pr-body.md)
 - [pr-primary-issue-link.md](pr-primary-issue-link.md)

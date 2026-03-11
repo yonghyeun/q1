@@ -17,16 +17,19 @@ Trigger when the user asks to open, draft, write, revise, or fix a GitHub issue 
 
 ## Workflow
 1. Choose the issue type: `feature`, `bug`, or `chore`.
-2. Read the matching template under `.github/ISSUE_TEMPLATE/`.
-3. If needed, read `policies/issue-convention.md` and the issue gate docs under `policies/gates/`.
-4. Draft the title and issue body in a local temp file.
-5. Run `./.codex/skills/repo-issue-create/scripts/run.sh` instead of raw `gh issue create`.
-6. If a gate fails, follow the error message's `다음 행동:` and retry the same wrapper path.
+2. Choose labels for all required axes: `status`, `priority`, `area`, `source_type`.
+3. Read the matching template under `.github/ISSUE_TEMPLATE/`.
+4. If needed, read `policies/issue-convention.md` and the issue gate docs under `policies/gates/`.
+5. Draft the title and issue body in a local temp file.
+6. Run `./.codex/skills/repo-issue-create/scripts/run.sh` instead of raw `gh issue create`.
+7. If a gate fails, follow the error message's `다음 행동:` and retry the same wrapper path.
 
 ## Guardrails
 - Raw `gh issue create` 직접 호출 지양.
 - 제목은 `[type] 요약` 형식 유지.
-- `Related Issues`, `Decision Candidates`, `Acceptance Criteria`를 비우지 않기.
+- `Decision Candidates`, `Done Signal`, `Related Links`를 비우지 않기.
+- `status`, `priority`, `source_type`는 각각 1개씩 지정.
+- `area`는 1개 이상 지정.
 - 필요한 링크는 각 섹션 안에 inline으로 두기.
 
 ## References
