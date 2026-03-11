@@ -24,6 +24,7 @@ SCRIPT_NAMES = [
     "dirty_worktree_guard.py",
     "worktree_config_bootstrap.sh",
     "worktree_issue_metadata.sh",
+    "worktree_pr_metadata.sh",
 ]
 
 
@@ -91,6 +92,36 @@ class TaskEndTests(unittest.TestCase):
         )
         if metadata_result.returncode != 0:
             raise RuntimeError(metadata_result.stderr)
+
+        pr_metadata_result = subprocess.run(
+            [
+                "bash",
+                "./scripts/repo/worktree_pr_metadata.sh",
+                "write",
+                "--number",
+                "42",
+                "--url",
+                "https://example.test/pull/42",
+                "--title",
+                "[config] task end test",
+                "--state",
+                "OPEN",
+                "--base-branch",
+                "main",
+                "--head-branch",
+                branch,
+                "--worktree",
+                str(worktree),
+                "--recorded-at",
+                "2026-03-11T15:00:00Z",
+            ],
+            cwd=worktree,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if pr_metadata_result.returncode != 0:
+            raise RuntimeError(pr_metadata_result.stderr)
 
         bin_dir = workspace / "bin"
         bin_dir.mkdir()
@@ -247,6 +278,15 @@ exit 1
             check=False,
         ).stdout.strip()
         self.assertEqual(metadata, "")
+
+        pr_metadata = subprocess.run(
+            ["git", "config", "--worktree", "--get", "q1.pr.number"],
+            cwd=worktree,
+            text=True,
+            capture_output=True,
+            check=False,
+        ).stdout.strip()
+        self.assertEqual(pr_metadata, "")
 
     def test_apply_yes_stops_cleanup_when_linked_issue_is_not_closed(self) -> None:
         root, worktree, gh_log, env = self.make_repo()

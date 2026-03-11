@@ -114,6 +114,13 @@ run_issue_metadata_cleanup() {
   )
 }
 
+run_pr_metadata_cleanup() {
+  (
+    cd "${WORKTREE}" &&
+    ./scripts/repo/worktree_pr_metadata.sh clear
+  )
+}
+
 METHOD="squash"
 PR_TARGET=""
 BRANCH=""
@@ -306,6 +313,7 @@ echo "- Linked issue: <none>"
 echo "- Issue close status cleanup: skip"
 fi
 echo "- Issue metadata cleanup: run"
+echo "- PR metadata cleanup: run"
 echo "- Branch cleanup: $([[ ${NO_BRANCH_CLEANUP} -eq 1 ]] && echo skip || echo run)"
 echo "- Worktree cleanup: $([[ ${NO_WORKTREE_REMOVE} -eq 1 ]] && echo skip || echo run)"
 echo
@@ -353,6 +361,10 @@ fi
 
 run_issue_metadata_cleanup >/dev/null || {
   fail "issue metadata cleanup에 실패했습니다: ${WORKTREE}" "대상 worktree에서 worktree_issue_metadata.sh clear 가 동작하는지 확인한 뒤 metadata를 수동으로 정리하세요."
+}
+
+run_pr_metadata_cleanup >/dev/null || {
+  fail "PR metadata cleanup에 실패했습니다: ${WORKTREE}" "대상 worktree에서 worktree_pr_metadata.sh clear 가 동작하는지 확인한 뒤 metadata를 수동으로 정리하세요."
 }
 
 if [[ ${NO_WORKTREE_REMOVE} -eq 0 ]]; then
