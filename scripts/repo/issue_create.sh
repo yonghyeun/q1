@@ -104,7 +104,7 @@ done < <(
     "${AREA_ARGS[@]}"
 )
 
-./scripts/repo/gh_preflight.sh
+./scripts/repo/gh_preflight.sh --require-api
 
 ISSUE_URL="$(gh issue create -t "${TITLE}" -F "${BODY_FILE}" "${LABEL_ARGS[@]}")"
 ISSUE_NUMBER="$(printf '%s' "${ISSUE_URL}" | grep -Eo '[0-9]+$' || true)"

@@ -140,6 +140,14 @@ set -euo pipefail
 if [[ "$1" == "auth" && "$2" == "status" ]]; then
   exit 0
 fi
+if [[ "$1" == "api" && "$2" == "rate_limit" ]]; then
+  if [[ "${FAKE_GH_API_FAIL:-0}" == "1" ]]; then
+    echo "error connecting to api.github.com" >&2
+    exit 1
+  fi
+  echo "5000"
+  exit 0
+fi
 if [[ "$1" == "pr" && "$2" == "view" ]]; then
   shift 2
   target="${1:-}"

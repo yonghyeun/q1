@@ -23,6 +23,7 @@ Trigger when the user asks to open, draft, write, revise, or fix a GitHub issue 
 5. Draft the title and issue body in a local temp file.
 6. Run `./.codex/skills/repo-issue-create/scripts/run.sh` instead of raw `gh issue create`.
 7. If a gate fails, follow the error message's `다음 행동:` and retry the same wrapper path.
+8. `gh_preflight.sh --require-api` 가 sandbox/network 차단을 알리면, 같은 wrapper 명령을 권한 상승으로 재실행한다.
 
 ## Guardrails
 - Raw `gh issue create` 직접 호출 지양.

@@ -416,7 +416,7 @@ if [[ -z "${PR_TARGET}" && -n "${RECORDED_PR_NUMBER}" ]]; then
 fi
 
 if [[ ${APPLY} -eq 1 ]]; then
-  ./scripts/repo/gh_preflight.sh >/dev/null
+  ./scripts/repo/gh_preflight.sh --require-api >/dev/null
 
   ensure_remote_branch_exists
 

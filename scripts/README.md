@@ -25,9 +25,9 @@
 - `issue_label_sync.py`: GitHub 원격 label 생성/갱신
 - `pr_body_quality_guard.py`: PR 본문 품질 검증
 - `pr_issue_guard.py`: PR 본문 close 키워드 존재 검증
-- `gh_preflight.sh`: `origin` remote/`gh auth` 사전 점검
-- `issue_create.sh`: gh CLI로 issue 생성 (`--body-file` 필수)
-- `pr_create.sh`: 정책/본문 검증 후 PR 생성 (`--body-file` 필수). 성공 시 현재 worktree에 PR metadata 기록
+- `gh_preflight.sh`: `origin` remote/`gh auth` 사전 점검. `--require-api` 사용 시 GitHub API 연결 가능 여부까지 확인
+- `issue_create.sh`: gh CLI로 issue 생성 (`--body-file` 필수). GitHub API 차단 시 권한 상승 재시도 힌트를 출력
+- `pr_create.sh`: 정책/본문 검증 후 PR 생성 (`--body-file` 필수). 성공 시 현재 worktree에 PR metadata 기록. GitHub API 차단 시 권한 상승 재시도 힌트를 출력
 - `pr_title_guard.sh`: PR 제목 컨벤션 생성/검증 (`[scope] 요약`)
 - `pr_merge.sh`: PR merge leaf (`gh pr merge` wrapper). remote merge만 담당하고 local cleanup은 수행하지 않음
 - `task_start.sh`: 새 작업용 branch/worktree 준비 core wrapper. base ref와 재사용 branch의 origin 최신성을 확인한 뒤 진행. `--issue <number>` 지정 시 issue status를 `active`로 전이 가능. 기본 dry-run, 실제 실행은 `--apply --yes`

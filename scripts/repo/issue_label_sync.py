@@ -46,7 +46,7 @@ def main() -> int:
             print("- " + " ".join(command))
         return 0
 
-    subprocess.run(["bash", str(ROOT_DIR / "scripts" / "repo" / "gh_preflight.sh")], check=True)
+    subprocess.run(["bash", str(ROOT_DIR / "scripts" / "repo" / "gh_preflight.sh"), "--require-api"], check=True)
     for command in commands:
         subprocess.run(command, check=True)
 

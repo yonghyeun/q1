@@ -78,7 +78,7 @@ LIVE_PR_HEAD_BRANCH=""
 LIVE_WARNING=""
 
 if [[ ${LIVE_MODE} -eq 1 && -n "${PR_NUMBER}" ]]; then
-  if ./scripts/repo/gh_preflight.sh >/dev/null 2>&1; then
+  if ./scripts/repo/gh_preflight.sh --require-api >/dev/null 2>&1; then
     if LIVE_OUTPUT="$(gh pr view "${PR_NUMBER}" --json number,title,url,state,isDraft,baseRefName,headRefName 2>&1)"; then
       LIVE_PR_TITLE="$(extract_live_field "${LIVE_OUTPUT}" "title")"
       LIVE_PR_URL="$(extract_live_field "${LIVE_OUTPUT}" "url")"

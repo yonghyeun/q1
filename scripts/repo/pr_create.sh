@@ -99,7 +99,7 @@ python3 scripts/repo/pr_body_quality_guard.py --body-file "${BODY_FILE}"
 python3 scripts/repo/pr_issue_guard.py --pr-body-file "${BODY_FILE}"
 
 if [[ ${DRY_RUN} -eq 0 ]]; then
-  ./scripts/repo/gh_preflight.sh
+  ./scripts/repo/gh_preflight.sh --require-api
 fi
 
 if [[ ${DRY_RUN} -eq 1 ]]; then

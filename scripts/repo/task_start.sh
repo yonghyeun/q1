@@ -303,7 +303,7 @@ if [[ ${BRANCH_IN_WORKTREE} -eq 1 ]]; then
 fi
 
 if [[ -n "${ISSUE_NUMBER}" ]]; then
-  ./scripts/repo/gh_preflight.sh >/dev/null
+  ./scripts/repo/gh_preflight.sh --require-api >/dev/null
 
   ISSUE_VIEW_OUTPUT="$(gh issue view "${ISSUE_NUMBER}" --json number,title,state,labels,url 2>&1)" || {
     fail "issue #${ISSUE_NUMBER} 를 조회할 수 없습니다." "issue 번호와 gh 인증 상태를 확인한 뒤 다시 실행하세요."

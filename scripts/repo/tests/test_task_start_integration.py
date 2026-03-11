@@ -63,6 +63,14 @@ set -euo pipefail
 if [[ "$1" == "auth" && "$2" == "status" ]]; then
   exit 0
 fi
+if [[ "$1" == "api" && "$2" == "rate_limit" ]]; then
+  if [[ "${FAKE_GH_API_FAIL:-0}" == "1" ]]; then
+    echo "error connecting to api.github.com" >&2
+    exit 1
+  fi
+  echo "5000"
+  exit 0
+fi
 if [[ "$1" == "issue" && "$2" == "view" ]]; then
   issue_number="${3:-}"
   python3 - "${issue_number}" <<'PY'
@@ -286,6 +294,16 @@ exit 1
         result = self.run_script(root, script, "--branch", "chore/task-start-issue-transition", "--issue", "15", env=env)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("status label이 여러 개", result.stderr)
+
+    def test_issue_fails_with_api_retry_hint_when_preflight_detects_network_block(self) -> None:
+        root, script, _interactive, env, _gh_log = self.make_repo()
+        env = dict(env)
+        env["FAKE_GH_API_FAIL"] = "1"
+        result = self.run_script(root, script, "--branch", "chore/task-start-issue-transition", "--issue", "15", env=env)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("GitHub API 연결 확인에 실패했습니다", result.stderr)
+        self.assertIn("sandbox/network", result.stderr)
+        self.assertIn("권한 상승으로 재실행", result.stderr)
 
     def test_interactive_wrapper_prompts_and_applies(self) -> None:
         root, _script, interactive, _env, _gh_log = self.make_repo()

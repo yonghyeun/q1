@@ -79,7 +79,7 @@ python3 scripts/repo/branch_guard.py validate-name --branch "${BRANCH}"
 python3 scripts/repo/dirty_worktree_guard.py validate-clean
 
 if [[ ${DRY_RUN} -eq 0 ]]; then
-  ./scripts/repo/gh_preflight.sh
+  ./scripts/repo/gh_preflight.sh --require-api
 fi
 
 if [[ -n "${PR_TARGET}" ]]; then
