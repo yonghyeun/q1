@@ -32,7 +32,7 @@
 - `pr_merge.sh`: PR merge leaf (`gh pr merge` wrapper)
 - `task_start.sh`: 새 작업용 branch/worktree 준비 core wrapper. `--issue <number>` 지정 시 issue status를 `active`로 전이 가능. 기본 dry-run, 실제 실행은 `--apply --yes`
 - `task_start_interactive.sh`: 사람용 interactive wrapper. dry-run 후 `y/N` 확인, 승인 시 `task_start.sh --apply --yes`
-- `task_end.sh`: task 종료 core wrapper. 기본 dry-run, 실제 실행은 `--apply --yes`. local cleanup 순서는 `worktree -> branch`
+- `task_end.sh`: task 종료 core wrapper. 기본 dry-run, 실제 실행은 `--apply --yes`. local cleanup 순서는 `worktree -> branch`, partial completion이면 recovery cleanup만 수행
 - `task_end_interactive.sh`: 사람용 interactive wrapper. dry-run 후 `y/N` 확인, 승인 시 `task_end.sh --apply --yes`
 - `pr_finalize.sh`: legacy compatibility wrapper → `task_end.sh`
 - `post_merge_branch_cleanup.sh`: merge 후 base branch sync + merged local branch 정리. linked worktree가 남아 있으면 선행 cleanup 필요

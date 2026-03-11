@@ -38,7 +38,7 @@ fail() {
   exit 1
 }
 
-extract_issue_field() {
+extract_json_field() {
   local json_input="$1"
   local field_name="$2"
   python3 -c '
@@ -111,6 +111,13 @@ lookup_pr_title() {
 
   [[ -n "${pr_number}" ]] || return 0
   gh pr view "${pr_number}" --json title --jq .title 2>/dev/null || true
+}
+
+lookup_pr_json() {
+  local pr_number="${1:-}"
+
+  [[ -n "${pr_number}" ]] || return 0
+  gh pr view "${pr_number}" --json number,title,state,mergedAt,url 2>/dev/null || true
 }
 
 ensure_remote_branch_exists() {
@@ -384,6 +391,8 @@ PR_VIEW_TARGET="${PR_TARGET:-${BRANCH}}"
 PR_LABEL="${PR_VIEW_TARGET}"
 PR_NUMBER=""
 PR_TITLE=""
+PR_STATE=""
+PR_MERGED_AT=""
 ISSUE_METADATA=""
 PR_METADATA=""
 LINKED_ISSUE_NUMBER=""
@@ -426,7 +435,13 @@ if [[ ${APPLY} -eq 1 ]]; then
   fi
   PR_VIEW_TARGET="${PR_NUMBER}"
   PR_LABEL="#${PR_NUMBER}"
-  PR_TITLE="$(lookup_pr_title "${PR_NUMBER}")"
+  PR_VIEW_OUTPUT="$(lookup_pr_json "${PR_NUMBER}")"
+  if [[ -z "${PR_VIEW_OUTPUT}" ]]; then
+    fail "PR 상세 상태를 조회할 수 없습니다: #${PR_NUMBER}" "gh auth 상태와 PR 접근 권한을 확인한 뒤 다시 실행하세요."
+  fi
+  PR_TITLE="$(extract_json_field "${PR_VIEW_OUTPUT}" "title")"
+  PR_STATE="$(extract_json_field "${PR_VIEW_OUTPUT}" "state")"
+  PR_MERGED_AT="$(extract_json_field "${PR_VIEW_OUTPUT}" "mergedAt")"
   if [[ -z "${PR_TITLE}" || "${PR_TITLE}" == "null" ]]; then
     fail "PR 제목을 조회할 수 없습니다: #${PR_NUMBER}" "--subject 를 명시하거나 gh auth 상태를 확인한 뒤 다시 실행하세요."
   fi
@@ -500,6 +515,7 @@ else
 echo "- PR ensure: branch 기준 조회 후 없으면 생성"
 fi
 echo "- Method: ${METHOD}"
+echo "- Recovery path: apply 시 merged PR이면 merge step을 건너뛰고 남은 cleanup만 수행"
 if [[ -n "${MERGE_SUBJECT}" ]]; then
 echo "- Merge subject: ${MERGE_SUBJECT}"
 else
@@ -537,14 +553,19 @@ if [[ ${APPLY} -eq 0 ]]; then
   exit 0
 fi
 
-./scripts/repo/pr_merge.sh "${MERGE_RUN_ARGS[@]}"
+if [[ -n "${PR_MERGED_AT}" && "${PR_MERGED_AT}" != "null" ]]; then
+  echo "ℹ️ partial completion 감지: ${PR_LABEL} 는 이미 merged 상태입니다."
+  echo "ℹ️ recovery mode: merge step을 건너뛰고 남은 cleanup만 수행합니다."
+else
+  ./scripts/repo/pr_merge.sh "${MERGE_RUN_ARGS[@]}"
+fi
 
 if [[ -n "${LINKED_ISSUE_NUMBER}" ]]; then
   ISSUE_VIEW_OUTPUT="$(gh issue view "${LINKED_ISSUE_NUMBER}" --json state,labels,url,title 2>&1)" || {
     fail "merge 후 linked issue #${LINKED_ISSUE_NUMBER} 를 조회할 수 없습니다." "gh 인증과 issue 접근 권한을 확인한 뒤 issue 상태를 수동으로 점검하세요."
   }
 
-  LINKED_ISSUE_STATE="$(extract_issue_field "${ISSUE_VIEW_OUTPUT}" "state")"
+  LINKED_ISSUE_STATE="$(extract_json_field "${ISSUE_VIEW_OUTPUT}" "state")"
   if [[ "${LINKED_ISSUE_STATE}" != "CLOSED" ]]; then
     fail "merge 후 linked issue #${LINKED_ISSUE_NUMBER} 가 닫히지 않았습니다." "PR body close keyword 또는 issue close 상태를 정리한 뒤 status label을 수동으로 정리하세요."
   fi
