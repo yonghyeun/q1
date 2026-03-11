@@ -10,7 +10,7 @@ usage() {
   ./scripts/repo/issue_create.sh --type <feature|bug|chore> --status <inbox|ready|active|blocked|cancelled> --priority <p0|p1|p2|p3> --source-type <human-request|agent-team|runtime-observation|wbs-planned> --area <product|repo|docs|agent-team> [--area <product|repo|docs|agent-team> ...] --title "<제목>" --body-file <file>
 
 예시:
-  ./scripts/repo/issue_create.sh --type feature --status inbox --priority p2 --source-type human-request --area repo --title "[feature] 브랜치 거버넌스 고도화" --body-file /tmp/issue.md
+  ./scripts/repo/issue_create.sh --type chore --status inbox --priority p2 --source-type human-request --area repo --title "[chore] 브랜치 거버넌스 운영 기준 정리" --body-file /tmp/issue.md
 EOH
 }
 

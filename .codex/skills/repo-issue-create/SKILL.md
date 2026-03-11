@@ -17,6 +17,8 @@ Trigger when the user asks to open, draft, write, revise, or fix a GitHub issue 
 
 ## Workflow
 1. Choose the issue type: `feature`, `bug`, or `chore`.
+   - 제품/사용자 관점의 동작이나 가치 전달이 바뀌면 `feature`를 우선 검토.
+   - branch/worktree/wrapper/policy/template/metadata 같은 repo 운영 작업이면 `chore` 가설에서 시작.
 2. Choose labels for all required axes: `status`, `priority`, `area`, `source_type`.
 3. Read the matching template under `.github/ISSUE_TEMPLATE/`.
 4. If needed, read `policies/issue-convention.md` and the issue gate docs under `policies/gates/`.
@@ -27,6 +29,7 @@ Trigger when the user asks to open, draft, write, revise, or fix a GitHub issue 
 ## Guardrails
 - Raw `gh issue create` 직접 호출 지양.
 - 제목은 `[type] 요약` 형식 유지.
+- "추가", "지원", "연결" 같은 표현만으로 `feature`로 분류하지 않기.
 - `Decision Candidates`, `Done Signal`, `Related Links`를 비우지 않기.
 - `status`, `priority`, `source_type`는 각각 1개씩 지정.
 - `area`는 1개 이상 지정.
