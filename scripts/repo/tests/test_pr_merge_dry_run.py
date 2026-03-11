@@ -62,6 +62,7 @@ class PrMergeDryRunTests(unittest.TestCase):
         self.assertIn("--squash", result.stdout)
         self.assertIn("--subject", result.stdout)
         self.assertIn("PR_TITLE_FROM_GH", result.stdout)
+        self.assertNotIn("--delete-branch", result.stdout)
         self.assertNotIn("post_merge_cleanup", result.stdout)
 
     def test_dry_run_squash_uses_manual_subject(self) -> None:
@@ -81,6 +82,7 @@ class PrMergeDryRunTests(unittest.TestCase):
         self.assertIn("--subject", result.stdout)
         self.assertIn("config", result.stdout)
         self.assertIn("squash\\ merge\\ 제목", result.stdout)
+        self.assertNotIn("--delete-branch", result.stdout)
 
     def test_dry_run_rebase_ignores_subject(self) -> None:
         root, script, _branch = self.make_repo()
@@ -96,6 +98,7 @@ class PrMergeDryRunTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("--rebase", result.stdout)
         self.assertNotIn("--subject", result.stdout)
+        self.assertNotIn("--delete-branch", result.stdout)
         self.assertIn("무시", result.stderr)
 
     def test_rejects_invalid_method(self) -> None:

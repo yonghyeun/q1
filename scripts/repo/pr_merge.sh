@@ -125,8 +125,6 @@ if [[ -n "${MERGE_SUBJECT}" ]]; then
   MERGE_ARGS+=(--subject "${MERGE_SUBJECT}")
 fi
 
-MERGE_ARGS+=(--delete-branch)
-
 if [[ ${DRY_RUN} -eq 1 ]]; then
   PRINT_CMD="gh"
   for arg in "${MERGE_ARGS[@]}"; do
