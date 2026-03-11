@@ -7,12 +7,13 @@ cd "${ROOT_DIR}"
 usage() {
   cat <<'EOF'
 사용법:
-  ./scripts/repo/task_start.sh --branch <type/slug> [--purpose <purpose>] [--base <ref>] [--path-root <dir>] [--apply --yes]
+  ./scripts/repo/task_start.sh --branch <type/slug> [--issue <number>] [--purpose <purpose>] [--base <ref>] [--path-root <dir>] [--apply --yes]
 
 예시:
   ./scripts/repo/task_start.sh --branch feature/signup-flow
+  ./scripts/repo/task_start.sh --branch chore/task-start-issue-transition --issue 15
   ./scripts/repo/task_start.sh --branch fix/token-refresh-race --purpose fix
-  ./scripts/repo/task_start.sh --branch feature/signup-flow --apply --yes
+  ./scripts/repo/task_start.sh --branch feature/signup-flow --issue 42 --apply --yes
 EOF
 }
 
@@ -29,7 +30,38 @@ realpath_py() {
   python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$1"
 }
 
+extract_issue_field() {
+  local json_input="$1"
+  local field_name="$2"
+  python3 -c '
+import json
+import sys
+
+data = json.loads(sys.argv[1])
+field = sys.argv[2]
+value = data.get(field, "")
+if value is None:
+    value = ""
+print(value)
+' "${json_input}" "${field_name}"
+}
+
+extract_issue_status_labels() {
+  local json_input="$1"
+  python3 -c '
+import json
+import sys
+
+data = json.loads(sys.argv[1])
+for label in data.get("labels", []):
+    name = label.get("name", "")
+    if name.startswith("status:"):
+        print(name)
+' "${json_input}"
+}
+
 BRANCH=""
+ISSUE_NUMBER=""
 PURPOSE="impl"
 BASE="main"
 PATH_ROOT=".."
@@ -40,6 +72,10 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --branch)
       BRANCH="${2:-}"
+      shift 2
+      ;;
+    --issue)
+      ISSUE_NUMBER="${2:-}"
       shift 2
       ;;
     --purpose)
@@ -78,6 +114,10 @@ done
 if [[ -z "${BRANCH}" ]]; then
   usage
   fail "--branch 는 필수입니다." "--branch <type/slug> 를 지정해서 다시 실행하세요."
+fi
+
+if [[ -n "${ISSUE_NUMBER}" && ! "${ISSUE_NUMBER}" =~ ^[0-9]+$ ]]; then
+  fail "--issue 는 숫자 issue 번호여야 합니다." "--issue <number> 형식으로 다시 실행하세요."
 fi
 
 case "${PURPOSE}" in
@@ -131,6 +171,11 @@ WORKTREE_NAME_OUTPUT="$(python3 scripts/repo/worktree_name_guard.py "${TARGET_PA
 BRANCH_IN_WORKTREE=0
 BRANCH_IN_WORKTREE_PATH=""
 WT_PATH=""
+ISSUE_URL=""
+ISSUE_STATE=""
+ISSUE_STATUS=""
+NEXT_ISSUE_STATUS=""
+ISSUE_STATUS_LABEL_COUNT=0
 
 while IFS= read -r line; do
   if [[ "${line}" == worktree\ * ]]; then
@@ -152,6 +197,38 @@ if [[ ${BRANCH_IN_WORKTREE} -eq 1 ]]; then
   fail "branch \`${BRANCH}\` 가 이미 checkout 중입니다: ${BRANCH_IN_WORKTREE_PATH}" "기존 worktree로 이동해 작업을 이어가거나 새 branch 이름으로 다시 시작하세요."
 fi
 
+if [[ -n "${ISSUE_NUMBER}" ]]; then
+  ./scripts/repo/gh_preflight.sh >/dev/null
+
+  ISSUE_VIEW_OUTPUT="$(gh issue view "${ISSUE_NUMBER}" --json number,state,labels,url 2>&1)" || {
+    fail "issue #${ISSUE_NUMBER} 를 조회할 수 없습니다." "issue 번호와 gh 인증 상태를 확인한 뒤 다시 실행하세요."
+  }
+
+  ISSUE_URL="$(extract_issue_field "${ISSUE_VIEW_OUTPUT}" "url")"
+  ISSUE_STATE="$(extract_issue_field "${ISSUE_VIEW_OUTPUT}" "state")"
+  while IFS= read -r status_label; do
+    [[ -n "${status_label}" ]] || continue
+    ISSUE_STATUS_LABEL_COUNT=$((ISSUE_STATUS_LABEL_COUNT + 1))
+    if [[ ${ISSUE_STATUS_LABEL_COUNT} -eq 1 ]]; then
+      ISSUE_STATUS="${status_label}"
+    fi
+  done < <(extract_issue_status_labels "${ISSUE_VIEW_OUTPUT}")
+
+  if [[ "${ISSUE_STATE}" != "OPEN" ]]; then
+    fail "issue #${ISSUE_NUMBER} 가 OPEN 상태가 아닙니다: ${ISSUE_STATE}" "열린 issue 번호를 지정하거나 issue 상태를 확인한 뒤 다시 실행하세요."
+  fi
+
+  if [[ ${ISSUE_STATUS_LABEL_COUNT} -eq 0 ]]; then
+    fail "issue #${ISSUE_NUMBER} 에 status label이 없습니다." "GitHub에서 status:* label 1개를 지정한 뒤 다시 실행하세요."
+  fi
+
+  if [[ ${ISSUE_STATUS_LABEL_COUNT} -gt 1 ]]; then
+    fail "issue #${ISSUE_NUMBER} 에 status label이 여러 개입니다." "GitHub에서 status:* label을 1개만 남긴 뒤 다시 실행하세요."
+  fi
+
+  NEXT_ISSUE_STATUS="status:active"
+fi
+
 print_plan() {
   echo "[git-task-start] Dry run"
   echo
@@ -165,11 +242,24 @@ print_plan() {
   fi
   echo "- 워크트리 목적: ${PURPOSE}"
   echo "- 생성 예정 경로: ${TARGET_PATH}"
+  if [[ -n "${ISSUE_NUMBER}" ]]; then
+    echo "- 연결 이슈: #${ISSUE_NUMBER}"
+    echo "- 이슈 URL: ${ISSUE_URL}"
+    echo "- 현재 이슈 상태: ${ISSUE_STATUS}"
+    if [[ "${ISSUE_STATUS}" == "${NEXT_ISSUE_STATUS}" ]]; then
+      echo "- apply 시 이슈 상태: ${NEXT_ISSUE_STATUS} (변경 없음)"
+    else
+      echo "- apply 시 이슈 상태: ${ISSUE_STATUS} -> ${NEXT_ISSUE_STATUS}"
+    fi
+  fi
   echo
   echo "검증 결과"
   echo "- 브랜치 이름 규칙: 통과"
   echo "- 워크트리 이름 규칙: 통과"
   echo "- 브랜치 사용 가능 여부: 통과"
+  if [[ -n "${ISSUE_NUMBER}" ]]; then
+    echo "- 이슈 조회/상태 규칙: 통과"
+  fi
   echo "- 현재 위치: ${CURRENT_WORKTREE}"
   echo "- 현재 브랜치: ${CURRENT_BRANCH:-HEAD}"
   if [[ -n "${STATUS_LINES}" ]]; then
@@ -187,12 +277,22 @@ print_plan() {
   fi
   echo "2. worktree \`${TARGET_PATH}\` 생성"
   echo "3. 대상 worktree에서 branch \`${BRANCH}\` checkout"
+  if [[ -n "${ISSUE_NUMBER}" ]]; then
+    if [[ "${ISSUE_STATUS}" == "${NEXT_ISSUE_STATUS}" ]]; then
+      echo "4. issue #${ISSUE_NUMBER} status 유지 (${NEXT_ISSUE_STATUS})"
+    else
+      echo "4. issue #${ISSUE_NUMBER} status를 ${NEXT_ISSUE_STATUS} 로 전이"
+    fi
+  fi
   echo
   echo "실행 예정 명령"
   if [[ ${BRANCH_EXISTS} -eq 0 ]]; then
     echo "- git branch ${BRANCH} ${BASE}"
   fi
   echo "- ./scripts/repo/worktree_add.sh --path ${TARGET_PATH} --branch ${BRANCH}"
+  if [[ -n "${ISSUE_NUMBER}" && "${ISSUE_STATUS}" != "${NEXT_ISSUE_STATUS}" ]]; then
+    echo "- gh issue edit ${ISSUE_NUMBER} --remove-label ${ISSUE_STATUS} --add-label ${NEXT_ISSUE_STATUS}"
+  fi
   echo
   echo "다음 이동 경로"
   echo "- cd ${TARGET_PATH}"
@@ -210,8 +310,21 @@ fi
 
 ./scripts/repo/worktree_add.sh --path "${TARGET_PATH}" --branch "${BRANCH}"
 
+if [[ -n "${ISSUE_NUMBER}" && "${ISSUE_STATUS}" != "${NEXT_ISSUE_STATUS}" ]]; then
+  gh issue edit "${ISSUE_NUMBER}" --remove-label "${ISSUE_STATUS}" --add-label "${NEXT_ISSUE_STATUS}" >/dev/null || {
+    fail "branch/worktree 생성 후 issue #${ISSUE_NUMBER} 상태 전이에 실패했습니다." "gh 인증과 issue label 상태를 확인한 뒤 issue status를 수동으로 ${NEXT_ISSUE_STATUS} 로 맞추세요."
+  }
+fi
+
 echo
 echo "✅ task start 완료"
 echo "- 브랜치: ${BRANCH}"
 echo "- 워크트리: ${TARGET_PATH}"
+if [[ -n "${ISSUE_NUMBER}" ]]; then
+  if [[ "${ISSUE_STATUS}" == "${NEXT_ISSUE_STATUS}" ]]; then
+    echo "- 이슈: #${ISSUE_NUMBER} (${NEXT_ISSUE_STATUS} 유지)"
+  else
+    echo "- 이슈: #${ISSUE_NUMBER} (${NEXT_ISSUE_STATUS})"
+  fi
+fi
 echo "- 다음 이동: cd ${TARGET_PATH}"
