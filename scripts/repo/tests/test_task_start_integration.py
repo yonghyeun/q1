@@ -40,6 +40,7 @@ class TaskStartIntegrationTests(unittest.TestCase):
 
         origin = workspace / "origin.git"
         subprocess.run(["git", "init", "--bare", str(origin)], check=True, capture_output=True)
+        self.origin = origin
 
         subprocess.run(["git", "init", "-b", "main"], cwd=root, check=True, capture_output=True)
         subprocess.run(["git", "config", "user.name", "Test User"], cwd=root, check=True)
@@ -50,6 +51,7 @@ class TaskStartIntegrationTests(unittest.TestCase):
         readme.write_text("base\n", encoding="utf-8")
         subprocess.run(["git", "add", "README.md", "scripts/repo"], cwd=root, check=True)
         subprocess.run(["git", "commit", "-m", "base commit"], cwd=root, check=True, capture_output=True)
+        subprocess.run(["git", "push", "-u", "origin", "main"], cwd=root, check=True, capture_output=True)
 
         bin_dir = workspace / "bin"
         bin_dir.mkdir()
@@ -99,6 +101,26 @@ exit 1
         env["FAKE_GH_LOG"] = str(gh_log)
 
         return root, scripts_dir / "task_start.sh", scripts_dir / "task_start_interactive.sh", env, gh_log
+
+    def advance_remote_branch(self, branch: str, filename: str = "REMOTE_STATE.txt") -> None:
+        if not hasattr(self, "origin"):
+            raise AssertionError("origin fixture is not initialized")
+
+        clone_dir = self.origin.parent / f"remote-{branch.replace('/', '-')}"
+        subprocess.run(
+            ["git", "clone", "--branch", branch, "--single-branch", str(self.origin), str(clone_dir)],
+            check=True,
+            capture_output=True,
+        )
+        subprocess.run(["git", "config", "user.name", "Remote User"], cwd=clone_dir, check=True)
+        subprocess.run(["git", "config", "user.email", "remote@example.com"], cwd=clone_dir, check=True)
+
+        target = clone_dir / filename
+        previous = target.read_text(encoding="utf-8") if target.exists() else ""
+        target.write_text(previous + f"{branch}\n", encoding="utf-8")
+        subprocess.run(["git", "add", filename], cwd=clone_dir, check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", f"advance {branch}"], cwd=clone_dir, check=True, capture_output=True)
+        subprocess.run(["git", "push", "origin", branch], cwd=clone_dir, check=True, capture_output=True)
 
     def run_script(
         self,
@@ -167,6 +189,27 @@ exit 1
         result = self.run_script(root, script, "--branch", "feature/signup-flow")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("기존 branch `feature/signup-flow` 재사용", result.stdout)
+
+    def test_fails_when_base_branch_is_behind_origin(self) -> None:
+        root, script, _interactive, _env, _gh_log = self.make_repo()
+        self.advance_remote_branch("main")
+
+        result = self.run_script(root, script, "--branch", "feature/signup-flow")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("기준 branch `main` 가 원격 ref `origin/main` 와 일치하지 않습니다", result.stderr)
+
+    def test_fails_when_existing_branch_is_behind_origin(self) -> None:
+        root, script, _interactive, _env, _gh_log = self.make_repo()
+        branch = "fix/task-start-upstream-freshness"
+        subprocess.run(["git", "branch", branch, "main"], cwd=root, check=True, capture_output=True)
+        subprocess.run(["git", "push", "-u", "origin", f"{branch}:{branch}"], cwd=root, check=True, capture_output=True)
+        self.advance_remote_branch(branch, filename="REMOTE_BRANCH_STATE.txt")
+
+        result = self.run_script(root, script, "--branch", branch)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(f"재사용 branch `{branch}` 가 원격 ref `origin/{branch}` 보다 뒤처져 있습니다", result.stderr)
 
     def test_fails_when_branch_is_checked_out_in_other_worktree(self) -> None:
         root, script, _interactive, _env, _gh_log = self.make_repo()
