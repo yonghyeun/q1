@@ -16,7 +16,7 @@
 - 각 단계 산출물은 다음 단계의 입력으로 재사용 가능해야 한다.
 
 ## Current Phase
-- 현재 단계: `에이전트 간 인터페이스 정의`
+- 현재 단계: `운영 규칙 정의`
 
 ## Steps
 - [x] 목표 정의
@@ -45,16 +45,16 @@
   - [x] 쓰기 가능 자원 정의
   - [x] 금지 행위 정의
   - [x] destructive action 승인 조건 명시
-- [ ] 에이전트 간 인터페이스 정의
-  - [ ] 전달 포맷 통일
-  - [ ] 필수 항목 정의
-    - [ ] task id
-    - [ ] objective
-    - [ ] constraints
-    - [ ] expected output
-    - [ ] status
-    - [ ] evidence
-  - [ ] handoff 실패 조건 정의
+- [x] 에이전트 간 인터페이스 정의
+  - [x] 전달 포맷 통일
+  - [x] 필수 항목 정의
+    - [x] task id
+    - [x] objective
+    - [x] constraints
+    - [x] expected output
+    - [x] status
+    - [x] evidence
+  - [x] handoff 실패 조건 정의
 - [ ] 운영 규칙 정의
   - [ ] 우선순위 규칙 정의
   - [ ] 충돌 시 결정 방식 정의
@@ -157,3 +157,12 @@
 - 결정: branch switch, rebase, reset, force push, 삭제, 대량 rename, CI/hook/deploy 수정은 공통 승인 대상으로 둔다.
 - 보류: remote issue update를 어느 역할의 기본 write로 둘지는 아직 미정이다.
 - 산출물: [agent-team/context/role-boundaries.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/role-boundaries.md)
+
+### 에이전트 간 인터페이스 정의
+- 결정: 에이전트 간 공통 인터페이스는 `handoff packet` 하나로 통일한다.
+- 결정: packet은 `template + schema + validator` 하이브리드로 운영한다.
+- 결정: 필수 필드는 `packet_id`, `run_id`, `trace_id`, `task_id`, `atomic_task_id`, `from_role`, `to_role`, `stage`, `objective`, `constraints`, `inputs`, `expected_outputs`, `owned_paths`, `required_checks`, `status`, `evidence`, `open_points`, `human_approval`로 둔다.
+- 결정: roadmap 필수 항목인 `task id`, `objective`, `constraints`, `expected output`, `status`, `evidence`는 packet 공통 필드로 강제한다.
+- 결정: 필수 필드 누락, enum 위반, owned path 없는 write 요청, approval 누락, evidence 없는 terminal status는 handoff 실패로 본다.
+- 보류: packet artifact를 JSON 우선으로 둘지 Markdown template 우선으로 둘지는 아직 미정이다.
+- 산출물: [agent-team/context/interface.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/interface.md)

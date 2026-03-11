@@ -319,6 +319,9 @@
 - handoff packet은 execution planning과 runtime handoff artifact다.
 - packet은 atomic task를 concrete execution unit으로 투영한 결과로 본다.
 
+## Related Artifact
+- handoff packet의 공통 인터페이스 규칙은 [interface.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/interface.md)에 둔다.
+
 ## Why Not Fixed Mapping
 - WBS와 ingress task의 형태는 시간이 지나며 바뀔 수 있다.
 - 1:1 매핑을 고정하면 schema 변경 때마다 매핑 규칙을 계속 손봐야 한다.
