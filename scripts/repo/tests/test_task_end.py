@@ -22,6 +22,8 @@ SCRIPT_NAMES = [
     "detached_head_guard.py",
     "protected_branch_write_guard.py",
     "dirty_worktree_guard.py",
+    "worktree_config_bootstrap.sh",
+    "worktree_issue_metadata.sh",
 ]
 
 
@@ -61,6 +63,34 @@ class TaskEndTests(unittest.TestCase):
 
         worktree = workspace / "config-task-end-flow--impl"
         subprocess.run(["git", "worktree", "add", str(worktree), branch], cwd=root, check=True, capture_output=True)
+
+        metadata_result = subprocess.run(
+            [
+                "bash",
+                "./scripts/repo/worktree_issue_metadata.sh",
+                "write",
+                "--number",
+                "19",
+                "--url",
+                "https://example.test/issues/19",
+                "--title",
+                "Issue 19",
+                "--status-at-record",
+                "status:active",
+                "--branch",
+                branch,
+                "--worktree",
+                str(worktree),
+                "--recorded-at",
+                "2026-03-11T15:00:00Z",
+            ],
+            cwd=worktree,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if metadata_result.returncode != 0:
+            raise RuntimeError(metadata_result.stderr)
 
         bin_dir = workspace / "bin"
         bin_dir.mkdir()
@@ -176,6 +206,21 @@ exit 1
         self.assertIn("pr merge", logged)
         self.assertIn("--squash", logged)
         self.assertIn("[config] task end test", logged)
+
+    def test_apply_yes_clears_issue_metadata_when_worktree_is_kept(self) -> None:
+        _root, worktree, _gh_log, env = self.make_repo()
+        result = self.run_script(worktree, "task_end.sh", env, "--apply", "--yes", "--no-worktree-remove", "--no-branch-cleanup")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(worktree.exists())
+
+        metadata = subprocess.run(
+            ["git", "config", "--worktree", "--get", "q1.issue.number"],
+            cwd=worktree,
+            text=True,
+            capture_output=True,
+            check=False,
+        ).stdout.strip()
+        self.assertEqual(metadata, "")
 
     def test_task_end_uses_branch_helper_scripts_when_primary_lacks_them(self) -> None:
         root, worktree, gh_log, env = self.make_repo()
