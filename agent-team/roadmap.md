@@ -27,7 +27,7 @@
     - [x] node별 성공률
     - [x] 동일 병목 재발률
 - [ ] 업무 분해
-  - [ ] 큰 목표를 반복 가능한 단위 작업으로 분해
+  - [x] 큰 목표를 반복 가능한 단위 작업으로 분해
   - [x] 입력, 처리, 출력 기준 정리
   - [x] 사람 판단이 필요한 구간 표시
 - [ ] 역할 설계
@@ -126,6 +126,8 @@
 ### 업무 분해
 - 결정: agent-team의 backlog 입력 SoT는 GitHub issue로 둔다.
 - 결정: WBS, 사람 요청, runtime 관찰은 issue 생성의 upstream source로 취급한다.
+- 결정: agent-team 구축 작업은 시스템 레이어가 아니라 실제 운영 순서 기준으로 분해한다.
+- 결정: 상위 운영 순서는 `Issue Intake -> Ingress Normalization -> Accepted Task Approval -> Atomic Decomposition -> Execution Planning -> Runtime Execution -> Verification -> Feedback And Improvement`로 둔다.
 - 결정: task를 원자 단위로 자르는 decomposition layer와, 분해된 작업을 trace node로 계획하는 execution planning layer를 분리한다.
 - 결정: 초기 trace node는 분해 -> 계획 -> 실행 -> 검증 -> 개선으로 둔다.
 - 결정: 공통 task ingress spec은 `task_id`, `source_type`, `source_ref`, `objective`, `why`, `acceptance_criteria`, `constraints`, `non_goals`, `dependencies`, `open_points`를 기본 필드로 둔다.
@@ -136,3 +138,4 @@
 - 결정: issue status는 `inbox`, `ready`, `active`, `blocked`, `cancelled`로 해석하고 완료는 issue close로 처리한다.
 - 보류: issue를 `ready`로 승격하는 승인 조건과 validation 구체 규칙은 아직 확정 전이다.
 - 산출물: [agent-team/context/task-model.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/task-model.md)
+- 산출물: [agent-team/context/work-breakdown.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/work-breakdown.md)

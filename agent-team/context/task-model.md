@@ -70,6 +70,16 @@
   -> verification
   -> feedback into next run
 
+## Operating-Order Breakdown
+- `Issue Intake`
+- `Ingress Normalization`
+- `Accepted Task Approval`
+- `Atomic Decomposition`
+- `Execution Planning`
+- `Runtime Execution`
+- `Verification`
+- `Feedback And Improvement`
+
 ## Boundary
 - GitHub issue는 backlog input SoT다.
 - WBS는 planning-layer source이며 직접 runtime intake SoT가 아니다.
