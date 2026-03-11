@@ -176,5 +176,8 @@
 - `Reviewer`는 새로운 구현을 직접 수행하지 않는다.
 - 사람 승인은 계속 별도 control point로 유지한다.
 
+## Related Artifact
+- 상세 권한 경계는 [role-boundaries.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/role-boundaries.md)에 둔다.
+
 ## Open Point
 - 추후 profile 설계 시 role 이름을 그대로 쓸지, `worker`를 `executor`로 내릴지는 별도 결정한다.

@@ -16,7 +16,7 @@
 - 각 단계 산출물은 다음 단계의 입력으로 재사용 가능해야 한다.
 
 ## Current Phase
-- 현재 단계: `역할 설계`
+- 현재 단계: `에이전트 간 인터페이스 정의`
 
 ## Steps
 - [x] 목표 정의
@@ -39,12 +39,12 @@
     - [x] Reviewer: 검토
     - [x] Reporter: 결과 정리
   - [x] 역할 중복 최소화
-- [ ] 역할 별 경계 정의
-  - [ ] 각 에이전트의 권한 범위 설정
-  - [ ] 읽기 가능 자원 정의
-  - [ ] 쓰기 가능 자원 정의
-  - [ ] 금지 행위 정의
-  - [ ] destructive action 승인 조건 명시
+- [x] 역할 별 경계 정의
+  - [x] 각 에이전트의 권한 범위 설정
+  - [x] 읽기 가능 자원 정의
+  - [x] 쓰기 가능 자원 정의
+  - [x] 금지 행위 정의
+  - [x] destructive action 승인 조건 명시
 - [ ] 에이전트 간 인터페이스 정의
   - [ ] 전달 포맷 통일
   - [ ] 필수 항목 정의
@@ -148,3 +148,12 @@
 - 결정: 사람 승인은 계속 별도 control point로 유지한다.
 - 보류: runtime profile 이름에서 `Worker`를 `Executor`로 바꿀지는 아직 미정이다.
 - 산출물: [agent-team/context/roles.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/roles.md)
+
+### 역할 별 경계 정의
+- 결정: 역할 경계는 `권한 범위`, `읽기 가능 자원`, `쓰기 가능 자원`, `금지 행위`, `승인 조건` 5축으로 정의한다.
+- 결정: `Router`, `Planner`, `Worker`, `Reviewer`, `Human Control Point` 기준으로 경계를 고정한다.
+- 결정: destructive action과 scope expansion은 역할 자율 판단이 아니라 사람 승인 대상으로 둔다.
+- 결정: `Router`는 intake artifact까지만 쓰고, `Planner`는 planning artifact까지만 쓰며, `Worker`는 runtime output만 쓰고, `Reviewer`는 verdict와 feedback만 쓴다.
+- 결정: branch switch, rebase, reset, force push, 삭제, 대량 rename, CI/hook/deploy 수정은 공통 승인 대상으로 둔다.
+- 보류: remote issue update를 어느 역할의 기본 write로 둘지는 아직 미정이다.
+- 산출물: [agent-team/context/role-boundaries.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/role-boundaries.md)
