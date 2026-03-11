@@ -21,8 +21,31 @@
 
 ## Type 정의
 - `feature`: 기능 요청, 기능 개선, 제품 가치 변화
+  - 사용자나 제품 관점의 동작, 경험, 제공 capability가 바뀌는가를 기준으로 본다.
+  - 저장소 내부 workflow나 운영 자동화에 "추가"가 있어도 제품 동작이 바뀌지 않으면 기본적으로 `feature`로 보지 않는다.
 - `bug`: 기대 동작과 실제 동작의 불일치
 - `chore`: 운영, 정책, 자동화, 저장소 정비
+  - branch/worktree/task wrapper, hook, metadata, template, repo 정책, agent workflow 정비는 기본적으로 `chore` 가설에서 시작한다.
+  - 실행면 정비가 이후 작업을 쉽게 만들어도 곧바로 제품 기능 추가로 해석하지 않는다.
+
+## Type 판단 질문
+- 먼저 묻는 질문: "이 변경이 제품/사용자 관점의 동작이나 가치 전달을 바꾸는가?"
+  - 그렇다면 `feature` 가능성이 높다.
+- 다음 질문: "이 변경이 저장소 운영 기준, 실행 workflow, 자동화, 정책 정합성을 다루는가?"
+  - 그렇다면 `chore` 가능성이 높다.
+- "추가", "지원", "연결", "추적" 같은 표현만으로 `feature`로 기울이지 않는다.
+- repo 내부 운영 작업은 결과물이 새 스크립트나 metadata여도 우선 `chore`에서 검토한다.
+- 분류가 애매하면 `Context`에 제품 변화인지 repo 운영 변화인지 한 줄 근거를 남긴다.
+
+## Repo 운영 작업 분류 예시
+- `chore`
+  - branch naming, worktree naming, task start/end wrapper 정비
+  - issue/PR template, label taxonomy, gate, hook, CI 운영 규칙 정리
+  - worktree issue metadata, local ledger, agent workflow 보조 도구 추가
+  - repo 문서 구조, 운영 policy, automation helper 개선
+- `feature`
+  - 실제 제품 동작, 사용자-facing workflow, 제공 기능 자체의 추가/확장
+  - 저장소 변경이 포함되더라도 최종 변화의 중심이 제품 capability라면 `feature`
 
 ## 본문 규칙
 - issue type별 GitHub 템플릿을 따른다.
