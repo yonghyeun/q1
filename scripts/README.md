@@ -27,7 +27,7 @@
 - `pr_issue_guard.py`: PR 본문 close 키워드 존재 검증
 - `gh_preflight.sh`: `origin` remote/`gh auth` 사전 점검
 - `issue_create.sh`: gh CLI로 issue 생성 (`--body-file` 필수)
-- `pr_create.sh`: 정책/본문 검증 후 PR 생성 (`--body-file` 필수)
+- `pr_create.sh`: 정책/본문 검증 후 PR 생성 (`--body-file` 필수). 성공 시 현재 worktree에 PR metadata 기록
 - `pr_title_guard.sh`: PR 제목 컨벤션 생성/검증 (`[scope] 요약`)
 - `pr_merge.sh`: PR merge leaf (`gh pr merge` wrapper)
 - `task_start.sh`: 새 작업용 branch/worktree 준비 core wrapper. `--issue <number>` 지정 시 issue status를 `active`로 전이 가능. 기본 dry-run, 실제 실행은 `--apply --yes`
@@ -37,9 +37,13 @@
 - `pr_finalize.sh`: legacy compatibility wrapper → `task_end.sh`
 - `post_merge_branch_cleanup.sh`: merge 후 base branch sync + merged local branch 정리
 - `post_merge_cleanup.sh`: legacy compatibility wrapper → `post_merge_branch_cleanup.sh`
+- `current_issue.sh`: 현재 worktree에 기록된 issue metadata 조회. `--live` 지원
+- `current_pr.sh`: 현재 worktree에 기록된 PR metadata 조회. `--live` 지원
 - `worktree_name_guard.py`: worktree 이름 정책 검증
 - `worktree_add.sh`: worktree 생성 전 이름 정책 검증 wrapper
 - `worktree_cleanup.sh`: removable linked worktree 검증 후 안전한 제거
+- `worktree_issue_metadata.sh`: worktree-scoped issue metadata read/write/clear helper
+- `worktree_pr_metadata.sh`: worktree-scoped PR metadata read/write/clear helper
 - `codex_wbs_emit.sh`: `codex exec --output-schema`로 WBS artifact 생성 + 검증
 - `validate_wbs_artifact.py`: WBS packet/trace/operator decision/run ledger schema + semantic 검증
 - `wbs_task_index.py`: WBS task YAML에서 `context/wbs/tasks/index.md` summary projection 생성/검사
@@ -63,10 +67,16 @@
   - `python3 -m unittest scripts.repo.tests.test_issue_label_sync -v`
 - PR 본문 품질 테스트:
   - `python3 -m unittest scripts.repo.tests.test_pr_body_quality_guard -v`
+- PR 생성 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_pr_create -v`
 - PR issue 링크 검증 테스트:
   - `python3 -m unittest scripts.repo.tests.test_pr_issue_guard -v`
 - PR 제목 컨벤션 테스트:
   - `python3 -m unittest scripts.repo.tests.test_pr_title_guard -v`
+- current issue 조회 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_current_issue -v`
+- current PR 조회 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_current_pr -v`
 - PR merge dry-run 동작 테스트:
   - `python3 -m unittest scripts.repo.tests.test_pr_merge_dry_run -v`
 - post-merge branch cleanup 테스트:
@@ -77,6 +87,10 @@
   - `python3 -m unittest scripts.repo.tests.test_task_end -v`
 - task start 테스트:
   - `python3 -m unittest scripts.repo.tests.test_task_start_integration -v`
+- worktree issue metadata 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_worktree_issue_metadata -v`
+- worktree PR metadata 테스트:
+  - `python3 -m unittest scripts.repo.tests.test_worktree_pr_metadata -v`
 - worktree 이름 검증 테스트:
   - `python3 -m unittest scripts.repo.tests.test_worktree_name_guard -v`
 - WBS artifact validator 테스트:

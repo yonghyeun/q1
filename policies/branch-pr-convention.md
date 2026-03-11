@@ -55,6 +55,11 @@
 - 장기 SoT가 필요한 결정은 `context/decisions/` 문서로 분리하고 PR에서는 요약과 링크만 유지.
 - 별도 reference 섹션은 강제하지 않고, 필요한 링크는 해당 섹션 안에 inline으로 둔다.
 
+## PR Linkage
+- 현재 worktree의 실행 PR linkage snapshot은 worktree metadata에 둘 수 있다.
+- local metadata는 remote PR SoT를 대체하지 않고 조회 편의를 위한 실행 snapshot이다.
+- 표준 조회 경로는 `./scripts/repo/current_pr.sh`.
+
 ## 예외 정책
 - 예외 운영이 발생하면 PR 본문에 이유와 후속 조치를 기록.
 

@@ -44,6 +44,13 @@
 - 종료 시 정리는 `task end` lifecycle에서 수행.
 - live 상태 확인이 필요하면 `./scripts/repo/current_issue.sh --live` 사용.
 
+## PR Linkage
+- 현재 worktree와 연결된 PR 정보는 worktree metadata로 관리.
+- 기록은 `pr_create` 성공 직후 수행.
+- 조회 표준 경로는 `./scripts/repo/current_pr.sh`.
+- 종료 시 정리는 `task end` lifecycle에서 수행.
+- live 상태 확인이 필요하면 `./scripts/repo/current_pr.sh --live` 사용.
+
 ## Commit Readiness
 - 커밋 전 변경 범위 확인.
 - 관련 없는 변경 혼입 여부 확인.
