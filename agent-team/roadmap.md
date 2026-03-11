@@ -28,8 +28,8 @@
     - [x] 동일 병목 재발률
 - [ ] 업무 분해
   - [ ] 큰 목표를 반복 가능한 단위 작업으로 분해
-  - [ ] 입력, 처리, 출력 기준 정리
-  - [ ] 사람 판단이 필요한 구간 표시
+  - [x] 입력, 처리, 출력 기준 정리
+  - [x] 사람 판단이 필요한 구간 표시
 - [ ] 역할 설계
   - [ ] 에이전트별 책임 분리
   - [ ] 역할 초안 정의
@@ -114,7 +114,7 @@
 
 ## Notes
 ### 목표 정의
-- 결정: WBS 또는 해야 할 작업을 입력으로 받아 원자 분해 -> 계획 -> 작업 -> 로깅 -> 검증 -> 병목 탐지/수정의 피드백 루프를 자동화한다.
+- 결정: GitHub issue backlog input을 받아 원자 분해 -> 계획 -> 작업 -> 로깅 -> 검증 -> 병목 탐지/수정의 피드백 루프를 자동화한다.
 - 결정: 이 시스템은 이슈/PR 준비 자동화보다 하네스 엔지니어링이 포함된 에이전트 개발 시스템을 목표로 한다.
 - 결정: 속도보다 품질, 안정성, 안정적 운영 방안을 우선한다.
 - 결정: 초기 핵심 지표는 전체 trace 성공률, node별 성공률, 동일 병목 재발률로 둔다.
@@ -124,12 +124,15 @@
 - 산출물: [agent-team/context/metrics.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/metrics.md)
 
 ### 업무 분해
-- 결정: agent-team 입력 task는 WBS에 한정하지 않고, 공통 task ingress shape로 정규화한다.
+- 결정: agent-team의 backlog 입력 SoT는 GitHub issue로 둔다.
+- 결정: WBS, 사람 요청, runtime 관찰은 issue 생성의 upstream source로 취급한다.
 - 결정: task를 원자 단위로 자르는 decomposition layer와, 분해된 작업을 trace node로 계획하는 execution planning layer를 분리한다.
 - 결정: 초기 trace node는 분해 -> 계획 -> 실행 -> 검증 -> 개선으로 둔다.
 - 결정: 공통 task ingress spec은 `task_id`, `source_type`, `source_ref`, `objective`, `why`, `acceptance_criteria`, `constraints`, `non_goals`, `dependencies`, `open_points`를 기본 필드로 둔다.
-- 결정: WBS와 기타 입력원은 1:1 필드 매핑 대신 `추론 + 승인 + 검증` 기반 normalization flow로 ingress draft를 만든다.
+- 결정: issue 본문과 label은 1:1 필드 매핑 대신 `추론 + 승인 + 검증` 기반 normalization flow로 ingress draft를 만든다.
 - 결정: 의미 추론은 에이전트가 수행하고, 구조 검증은 스크립트가 수행하며, 최종 의미 승인과 범위 교정은 사람이 수행한다.
 - 결정: atomic task는 decomposition artifact로, handoff packet은 execution planning/runtime artifact로 분리한다.
-- 보류: source type enum과 validation 구체 규칙은 아직 확정 전이다.
+- 결정: `source_type`은 `human-request`, `agent-team`, `runtime-observation`, `wbs-planned`로 고정한다.
+- 결정: issue status는 `inbox`, `ready`, `active`, `blocked`, `cancelled`로 해석하고 완료는 issue close로 처리한다.
+- 보류: issue를 `ready`로 승격하는 승인 조건과 validation 구체 규칙은 아직 확정 전이다.
 - 산출물: [agent-team/context/task-model.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/task-model.md)

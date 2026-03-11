@@ -1,7 +1,8 @@
 # Goal Definition
 
 ## Goal
-- 입력은 WBS 또는 해야 할 작업 목록이다.
+- 입력의 기본 SoT는 GitHub issue backlog input이다.
+- WBS, 사람 요청, runtime 관찰은 issue로 수렴한 뒤 agent-team에 들어온다.
 - agent-team은 이를 원자적 작업 단위로 분해하고, 계획, 작업, 로깅, 검증, 병목 탐지와 수정의 피드백 루프로 처리해야 한다.
 - 목표는 단순 업무 자동화가 아니라, 측정 가능하고 개선 가능한 멀티에이전트 개발 하네스를 만드는 것이다.
 

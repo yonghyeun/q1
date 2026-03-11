@@ -1,30 +1,28 @@
 # Task Model
 
 ## Decision
-- agent-team이 받는 입력 task는 WBS에 한정하지 않는다.
-- WBS는 주요 입력원 중 하나로 취급한다.
-- 따라서 agent-team은 여러 입력원을 받을 수 있는 공통 task ingress shape를 가져야 한다.
+- agent-team이 실제로 받는 backlog 입력의 기본 SoT는 GitHub issue다.
+- WBS, 사람 요청, runtime 관찰은 issue 생성의 upstream source로 취급한다.
+- 따라서 agent-team은 issue를 읽어 공통 task ingress shape로 정규화한다.
 - 또한 task를 받아 원자 단위로 분해하는 레이어와, 분해된 작업을 계획/실행하는 레이어를 분리한다.
 
 ## Why
-- 실제 작업은 WBS 외의 문서, 대화, 메모, 운영 요청에서도 생성될 수 있다.
-- 입력원이 다르더라도 같은 실행 루프로 보내려면 공통 shape가 필요하다.
-- 그렇지 않으면 입력원마다 다른 방식으로 분해와 실행이 이루어져 trace 비교가 어려워진다.
+- 실제 작업의 최종 backlog 저장소를 issue로 고정해야 조회, triage, PR 연결이 쉬워진다.
+- WBS 외의 문서, 대화, 메모, 운영 요청도 issue로 수렴시키면 같은 intake 흐름을 유지할 수 있다.
+- issue를 공통 intake로 삼아야 입력원별 drift 없이 trace 비교가 가능하다.
 - 분해와 실행 계획을 한 레이어에 섞으면 상위 목표 정리와 하위 실행 최적화가 서로 오염된다.
 
 ## Layers
 ### 1. Task Ingress Layer
-- 역할: 여러 입력원을 agent-team이 받을 수 있는 공통 task 형태로 정규화한다.
-- 입력 예시:
-  - WBS slice
-  - 사용자의 자연어 작업 요청
-  - backlog 메모
-  - 운영성 개선 요청
+- 역할: GitHub issue를 agent-team이 처리할 수 있는 공통 task 형태로 정규화한다.
+- 입력:
+  - GitHub issue backlog input
 - 출력:
   - 공통 task spec
 - 책임:
+  - issue 제목, 본문, label을 읽는다
   - task의 목표를 한 문장으로 정리
-  - 입력원의 근거를 링크로 남김
+  - issue와 upstream source의 근거를 링크로 남김
   - 제약, 비목표, 완료 기준 초안을 수집
   - 아직 불분명한 점을 open point로 표기
 
@@ -63,7 +61,8 @@
   - 병목 피드백
 
 ## Recommended Flow
-- raw request
+- raw request or WBS or runtime observation
+  -> GitHub issue backlog input
   -> task ingress spec
   -> atomic task decomposition
   -> execution planning
@@ -72,8 +71,9 @@
   -> feedback into next run
 
 ## Boundary
-- WBS는 planning-layer SoT다.
-- WBS가 없는 요청도 먼저 ingress spec으로 정규화한 뒤 같은 분해 루프에 넣는다.
+- GitHub issue는 backlog input SoT다.
+- WBS는 planning-layer source이며 직접 runtime intake SoT가 아니다.
+- WBS가 없는 요청도 issue로 수렴한 뒤 같은 분해 루프에 넣는다.
 - decomposition layer는 "무엇을 어떤 단위로 나눌 것인가"에 집중한다.
 - execution planning layer는 "그 단위를 어떤 node와 packet으로 실행할 것인가"에 집중한다.
 
@@ -101,7 +101,7 @@
 - `human_decision_required`
 
 ## Open Point
-- source type 분류 체계
+- issue를 `ready`로 승격하는 승인 조건
 
 ## Common Task Spec Options
 ### Minimal
@@ -156,8 +156,8 @@
   - `open_points`가 있어야 모르는 것을 감춘 채 진행하지 않는다.
 
 ## Normalization Policy
-- WBS와 ingress spec 사이를 1:1 필드 매핑으로 고정하지 않는다.
-- 입력원은 `semantic normalization`을 통해 공통 task ingress spec 초안으로 변환한다.
+- issue 본문과 label을 1:1 필드 매핑으로만 고정하지 않는다.
+- 입력원은 issue 안에 수렴한 뒤, `semantic normalization`을 통해 공통 task ingress spec 초안으로 변환한다.
 - 변환 레이어의 에이전트는 입력 의미를 읽고 필드를 추론할 수 있다.
 - 다만 근거가 약한 추정은 확정값으로 채우지 않고 `open_points`로 남긴다.
 - 생성된 ingress draft는 사람 승인 전까지 확정본이 아니다.
@@ -165,19 +165,20 @@
 
 ## Normalization Flow
 ### 1. Source Read
-- 입력원을 읽고 `source_type`, `source_ref`, 핵심 근거를 수집한다.
-- 입력원 예시:
-  - WBS slice
-  - 자연어 요청
-  - backlog 메모
-  - 운영 개선 요청
+- GitHub issue 제목, 본문, label을 읽고 `source_type`, `source_ref`, 핵심 근거를 수집한다.
+- issue label은 최소한 아래 값을 가져야 한다.
+  - `type:*`
+  - `status:*`
+  - `priority:*`
+  - `area:*`
+  - `source_type:*`
 
 ### 2. Ingress Draft
 - 에이전트가 공통 task spec 초안을 작성한다.
 - 이때 필드는 입력원의 의미를 기준으로 재구성할 수 있다.
 - 예:
-  - WBS의 `goal`은 `objective` 초안으로 해석할 수 있다.
-  - `owned_scope`와 `verification_requirements`는 `constraints` 초안에 반영할 수 있다.
+  - issue `Summary`와 `Goal`은 `objective` 초안으로 해석할 수 있다.
+  - issue `Constraints`와 upstream WBS의 `owned_scope`, `verification_requirements`는 `constraints` 초안에 반영할 수 있다.
 - 억지 추론은 금지한다.
 
 ### 3. Validation
@@ -195,10 +196,40 @@
   - 수정
   - 반려
 - 승인 전에는 decomposition layer로 넘기지 않는다.
+- 승인 후 issue status는 `ready` 또는 그에 준하는 상태로 올린다.
 
 ### 5. Accepted Task
 - 승인된 ingress task만 분해 레이어의 입력이 된다.
 - 이후 atomic task 분해와 execution planning은 이 승인본을 기준으로 진행한다.
+
+## Issue Intake Rule
+- 작업 시작은 GitHub issue에서 출발한다.
+- issue는 `what`, `why`, 제약, 쟁점, label taxonomy를 담는 backlog input이다.
+- issue가 곧 atomic task는 아니다.
+- agent-team은 issue를 읽고 accepted task를 만든 뒤, 그 다음에 atomic task로 분해한다.
+
+## Source Type Enum
+- `source_type:human-request`
+  - 사람의 직접 요청에서 온 issue
+- `source_type:agent-team`
+  - agent-team 운영 개선에서 나온 issue
+- `source_type:runtime-observation`
+  - trace, 실패, 병목, 회고에서 파생된 issue
+- `source_type:wbs-planned`
+  - WBS planning source에서 발행된 issue
+
+## Issue Status For Intake
+- `status:inbox`
+  - 아직 정리되지 않은 backlog input
+- `status:ready`
+  - intake와 승인까지 끝나 작업 시작 가능
+- `status:active`
+  - 현재 작업 중인 issue
+- `status:blocked`
+  - 외부 입력 부족으로 진행 불가
+- `status:cancelled`
+  - 더 이상 진행하지 않기로 결정
+- 완료는 `status:done`이 아니라 issue close로 처리한다.
 
 ## Atomic Task vs Handoff Packet
 ### Core Difference

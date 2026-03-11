@@ -6,6 +6,7 @@
 ## Boundary
 - `agent-team/`은 에이전트 팀의 목표, 역할, 경계, handoff, 승인 체계를 다룬다.
 - `context/`, `docs/`, `policies/`는 저장소와 제품 자체의 운영 문서를 유지한다.
+- backlog 입력의 기본 SoT는 GitHub issue를 따른다.
 - 같은 내용을 두 위치에 중복 기록하지 않는다.
 - 프로젝트 문서와 연결이 필요하면 복사 대신 링크로 연결한다.
 
