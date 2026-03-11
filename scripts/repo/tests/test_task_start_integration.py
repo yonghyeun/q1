@@ -16,6 +16,8 @@ SCRIPT_NAMES = [
     "gh_preflight.sh",
     "branch_guard.py",
     "worktree_name_guard.py",
+    "worktree_config_bootstrap.sh",
+    "worktree_issue_metadata.sh",
 ]
 
 
@@ -71,12 +73,13 @@ status = os.environ.get("FAKE_GH_ISSUE_STATUS", "status:inbox")
 second_status = os.environ.get("FAKE_GH_SECOND_STATUS", "")
 state = os.environ.get("FAKE_GH_ISSUE_STATE", "OPEN")
 url = os.environ.get("FAKE_GH_ISSUE_URL", f"https://example.test/issues/{issue_number}")
+title = os.environ.get("FAKE_GH_ISSUE_TITLE", f"Issue {issue_number}")
 
 labels = [{"name": status}]
 if second_status:
     labels.append({"name": second_status})
 
-print(json.dumps({"number": int(issue_number), "state": state, "url": url, "labels": labels}))
+print(json.dumps({"number": int(issue_number), "title": title, "state": state, "url": url, "labels": labels}))
 PY
   exit 0
 fi
@@ -206,6 +209,32 @@ exit 1
         self.assertIn("issue edit 15", logged)
         self.assertIn("--remove-label status:inbox", logged)
         self.assertIn("--add-label status:active", logged)
+
+        linked_worktree = root.parent / "task-start-issue-transition--impl"
+        number = subprocess.run(
+            ["git", "config", "--worktree", "--get", "q1.issue.number"],
+            cwd=linked_worktree,
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        title = subprocess.run(
+            ["git", "config", "--worktree", "--get", "q1.issue.title"],
+            cwd=linked_worktree,
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        branch = subprocess.run(
+            ["git", "config", "--worktree", "--get", "q1.issue.branch"],
+            cwd=linked_worktree,
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        self.assertEqual(number, "15")
+        self.assertEqual(title, "Issue 15")
+        self.assertEqual(branch, "chore/task-start-issue-transition")
 
     def test_issue_fails_when_multiple_status_labels_exist(self) -> None:
         root, script, _interactive, env, _gh_log = self.make_repo()
