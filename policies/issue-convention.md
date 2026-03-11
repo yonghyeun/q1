@@ -8,6 +8,8 @@
 - 해결해야 할 backlog 항목의 기본 저장소는 GitHub issue.
 - `context/decisions/`는 장기 rationale이 필요한 구조적 판단만 기록.
 - branch, PR, WBS는 issue에서 파생된 실행 artifact.
+- 현재 worktree의 실행 issue linkage snapshot은 worktree metadata에 둘 수 있다.
+- local metadata는 조회 편의를 위한 실행 snapshot이며 backlog SoT를 대체하지 않는다.
 
 ## 제목 규칙
 - 권장 형식: `[type] 요약`

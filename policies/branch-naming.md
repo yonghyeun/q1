@@ -31,4 +31,5 @@
 ## Notes
 - branch naming은 변경 목적 식별에 집중.
 - 실행 슬롯 정보는 branch가 아니라 worktree에서 관리.
+- 연결 issue 정보는 branch 이름이 아니라 worktree metadata에서 관리.
 - PR 규칙과 훅 규칙은 [branch-pr-convention.md](branch-pr-convention.md) 참조.
