@@ -13,6 +13,7 @@ SCRIPT_NAMES = [
     "task_end.sh",
     "task_end_interactive.sh",
     "pr_finalize.sh",
+    "pr_create.sh",
     "pr_merge.sh",
     "post_merge_branch_cleanup.sh",
     "post_merge_cleanup.sh",
@@ -22,6 +23,10 @@ SCRIPT_NAMES = [
     "detached_head_guard.py",
     "protected_branch_write_guard.py",
     "dirty_worktree_guard.py",
+    "pr_title_guard.sh",
+    "pr_body_quality_guard.py",
+    "pr_issue_guard.py",
+    "body_guard_common.py",
     "worktree_config_bootstrap.sh",
     "worktree_issue_metadata.sh",
     "worktree_pr_metadata.sh",
@@ -29,7 +34,7 @@ SCRIPT_NAMES = [
 
 
 class TaskEndTests(unittest.TestCase):
-    def make_repo(self) -> tuple[Path, Path, Path, Path, dict[str, str]]:
+    def make_repo(self, *, with_pr_metadata: bool = True) -> tuple[Path, Path, Path, dict[str, str]]:
         temp_dir = tempfile.TemporaryDirectory()
         self.addCleanup(temp_dir.cleanup)
 
@@ -93,39 +98,41 @@ class TaskEndTests(unittest.TestCase):
         if metadata_result.returncode != 0:
             raise RuntimeError(metadata_result.stderr)
 
-        pr_metadata_result = subprocess.run(
-            [
-                "bash",
-                "./scripts/repo/worktree_pr_metadata.sh",
-                "write",
-                "--number",
-                "42",
-                "--url",
-                "https://example.test/pull/42",
-                "--title",
-                "[config] task end test",
-                "--state",
-                "OPEN",
-                "--base-branch",
-                "main",
-                "--head-branch",
-                branch,
-                "--worktree",
-                str(worktree),
-                "--recorded-at",
-                "2026-03-11T15:00:00Z",
-            ],
-            cwd=worktree,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        if pr_metadata_result.returncode != 0:
-            raise RuntimeError(pr_metadata_result.stderr)
+        if with_pr_metadata:
+            pr_metadata_result = subprocess.run(
+                [
+                    "bash",
+                    "./scripts/repo/worktree_pr_metadata.sh",
+                    "write",
+                    "--number",
+                    "42",
+                    "--url",
+                    "https://example.test/pull/42",
+                    "--title",
+                    "[config] task end test",
+                    "--state",
+                    "OPEN",
+                    "--base-branch",
+                    "main",
+                    "--head-branch",
+                    branch,
+                    "--worktree",
+                    str(worktree),
+                    "--recorded-at",
+                    "2026-03-11T15:00:00Z",
+                ],
+                cwd=worktree,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if pr_metadata_result.returncode != 0:
+                raise RuntimeError(pr_metadata_result.stderr)
 
         bin_dir = workspace / "bin"
         bin_dir.mkdir()
         gh_log = workspace / "gh.log"
+        gh_state = workspace / "gh-created-pr.txt"
         gh_script = bin_dir / "gh"
         gh_script.write_text(
             """#!/usr/bin/env bash
@@ -152,11 +159,53 @@ if [[ "$1" == "pr" && "$2" == "view" ]]; then
         ;;
     esac
   done
-  case "${jq_expr}" in
-    .number) echo "42" ;;
-    .title) echo "[config] task end test" ;;
-    *) : ;;
-  esac
+  created_number=""
+  created_title=""
+  created_head=""
+  if [[ -f "${FAKE_GH_CREATED_PR_STATE}" ]]; then
+    IFS='|' read -r created_number created_title created_head < "${FAKE_GH_CREATED_PR_STATE}"
+  fi
+  if [[ "${target}" == "42" ]]; then
+    case "${jq_expr}" in
+      .number) echo "42" ;;
+      .title) echo "[config] task end test" ;;
+      *) printf '{"number":42,"title":"[config] task end test","url":"https://example.test/pull/42","state":"OPEN","baseRefName":"main","headRefName":"config/task-end-flow"}\\n' ;;
+    esac
+    exit 0
+  fi
+  if [[ -n "${created_number}" && ( "${target}" == "${created_number}" || "${target}" == "${created_head}" ) ]]; then
+    case "${jq_expr}" in
+      .number) echo "${created_number}" ;;
+      .title) echo "${created_title}" ;;
+      *) printf '{"number":%s,"title":"%s","url":"https://example.test/pull/%s","state":"OPEN","baseRefName":"main","headRefName":"%s"}\\n' "${created_number}" "${created_title}" "${created_number}" "${created_head}" ;;
+    esac
+    exit 0
+  fi
+  exit 1
+fi
+if [[ "$1" == "pr" && "$2" == "create" ]]; then
+  printf '%s\\n' "$*" >> "${FAKE_GH_LOG}"
+  shift 2
+  created_number="${FAKE_GH_CREATED_PR_NUMBER:-77}"
+  created_title=""
+  created_head=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --title)
+        created_title="${2:-}"
+        shift 2
+        ;;
+      --head)
+        created_head="${2:-}"
+        shift 2
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+  printf '%s|%s|%s\\n' "${created_number}" "${created_title}" "${created_head}" > "${FAKE_GH_CREATED_PR_STATE}"
+  echo "https://example.test/pull/${created_number}"
   exit 0
 fi
 if [[ "$1" == "pr" && "$2" == "merge" ]]; then
@@ -196,6 +245,7 @@ exit 1
         env = os.environ.copy()
         env["PATH"] = f"{bin_dir}:{env['PATH']}"
         env["FAKE_GH_LOG"] = str(gh_log)
+        env["FAKE_GH_CREATED_PR_STATE"] = str(gh_state)
 
         return root, worktree, gh_log, env
 
@@ -352,6 +402,34 @@ exit 1
         self.assertTrue(worktree.exists())
         self.assertIn("취소", result.stdout)
         self.assertFalse(gh_log.exists())
+
+    def test_apply_yes_creates_remote_branch_and_pr_when_metadata_is_missing(self) -> None:
+        root, worktree, gh_log, env = self.make_repo(with_pr_metadata=False)
+
+        result = self.run_script(
+            worktree,
+            "task_end.sh",
+            env,
+            "--apply",
+            "--yes",
+            "--no-worktree-remove",
+            "--no-branch-cleanup",
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(worktree.exists())
+
+        remote_branch = subprocess.run(
+            ["git", "ls-remote", "--heads", "origin", "config/task-end-flow"],
+            cwd=root,
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        self.assertIn("refs/heads/config/task-end-flow", remote_branch)
+
+        logged = gh_log.read_text(encoding="utf-8")
+        self.assertIn("pr create --base main --head config/task-end-flow", logged)
+        self.assertIn("pr merge", logged)
 
 
 if __name__ == "__main__":
