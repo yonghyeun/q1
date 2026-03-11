@@ -276,6 +276,7 @@ exit 1
         self.assertIn("task end 계획", result.stdout)
         self.assertIn("<PR_TITLE_FROM_GH>", result.stdout)
         self.assertIn("Linked issue: #19", result.stdout)
+        self.assertIn("Cleanup order: worktree cleanup -> branch cleanup", result.stdout)
         self.assertIn("Issue close status cleanup: remove status:* after linked issue closes", result.stdout)
 
     def test_apply_requires_yes(self) -> None:

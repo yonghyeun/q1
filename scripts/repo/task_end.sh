@@ -470,14 +470,6 @@ MERGE_PLAN_OUTPUT="$(./scripts/repo/pr_merge.sh "${MERGE_DRY_ARGS[@]}" 2>&1)" ||
   fail "merge dry-run 검증에 실패했습니다." "위 실패 메시지의 다음 행동을 먼저 수행한 뒤 다시 실행하세요."
 }
 
-BRANCH_CLEANUP_OUTPUT=""
-if [[ ${NO_BRANCH_CLEANUP} -eq 0 ]]; then
-  BRANCH_CLEANUP_OUTPUT="$(run_branch_cleanup "${BRANCH_CLEANUP_DRY_ARGS[@]}" 2>&1)" || {
-    echo "${BRANCH_CLEANUP_OUTPUT}" >&2
-    fail "branch cleanup dry-run 검증에 실패했습니다." "위 실패 메시지의 다음 행동을 먼저 수행한 뒤 다시 실행하세요."
-  }
-fi
-
 WORKTREE_CLEANUP_OUTPUT=""
 if [[ ${NO_WORKTREE_REMOVE} -eq 0 ]]; then
   WORKTREE_CLEANUP_OUTPUT="$(run_worktree_cleanup "${WORKTREE_DRY_ARGS[@]}" 2>&1)" || {
@@ -486,10 +478,19 @@ if [[ ${NO_WORKTREE_REMOVE} -eq 0 ]]; then
   }
 fi
 
+BRANCH_CLEANUP_OUTPUT=""
+if [[ ${NO_BRANCH_CLEANUP} -eq 0 ]]; then
+  BRANCH_CLEANUP_OUTPUT="$(run_branch_cleanup "${BRANCH_CLEANUP_DRY_ARGS[@]}" 2>&1)" || {
+    echo "${BRANCH_CLEANUP_OUTPUT}" >&2
+    fail "branch cleanup dry-run 검증에 실패했습니다." "위 실패 메시지의 다음 행동을 먼저 수행한 뒤 다시 실행하세요."
+  }
+fi
+
 echo "✅ dry-run: task end 계획"
 echo "- PR: ${PR_LABEL}"
 echo "- Branch: ${BRANCH}"
 echo "- Worktree: ${WORKTREE}"
+echo "- Cleanup order: worktree cleanup -> branch cleanup"
 echo "- Remote branch ensure: origin/${BRANCH} 확인 후 없으면 생성"
 if [[ -n "${PR_TARGET}" ]]; then
 echo "- PR ensure: 명시 target 사용 (${PR_TARGET})"
@@ -521,15 +522,15 @@ echo "- Worktree cleanup: $([[ ${NO_WORKTREE_REMOVE} -eq 1 ]] && echo skip || ec
 echo
 echo "[merge]"
 echo "${MERGE_PLAN_OUTPUT}"
-if [[ -n "${BRANCH_CLEANUP_OUTPUT}" ]]; then
-  echo
-  echo "[branch cleanup]"
-  echo "${BRANCH_CLEANUP_OUTPUT}"
-fi
 if [[ -n "${WORKTREE_CLEANUP_OUTPUT}" ]]; then
   echo
   echo "[worktree cleanup]"
   echo "${WORKTREE_CLEANUP_OUTPUT}"
+fi
+if [[ -n "${BRANCH_CLEANUP_OUTPUT}" ]]; then
+  echo
+  echo "[branch cleanup]"
+  echo "${BRANCH_CLEANUP_OUTPUT}"
 fi
 
 if [[ ${APPLY} -eq 0 ]]; then
