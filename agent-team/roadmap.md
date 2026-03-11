@@ -16,7 +16,7 @@
 - 각 단계 산출물은 다음 단계의 입력으로 재사용 가능해야 한다.
 
 ## Current Phase
-- 현재 단계: `품질 게이트 설정`
+- 현재 단계: `관측성 확보`
 
 ## Steps
 - [x] 목표 정의
@@ -68,14 +68,14 @@
     - [x] 테스트 실행 전용
     - [x] 배포 금지
   - [x] 최소 권한 원칙 적용
-- [ ] 품질 게이트 설정
-  - [ ] 완료 정의 필요
-  - [ ] 예시 게이트 정의
-    - [ ] 테스트 통과
-    - [ ] 포맷 통과
-    - [ ] 리뷰 승인
-    - [ ] 근거 링크 포함
-  - [ ] 게이트 우회 금지 규칙 정의
+- [x] 품질 게이트 설정
+  - [x] 완료 정의 필요
+  - [x] 예시 게이트 정의
+    - [x] 테스트 통과
+    - [x] 포맷 통과
+    - [x] 리뷰 승인
+    - [x] 근거 링크 포함
+  - [x] 게이트 우회 금지 규칙 정의
 - [ ] 관측성 확보
   - [ ] 누가 무엇을 했는지 로그화
   - [ ] 의사결정 이유 기록
@@ -184,3 +184,13 @@
 - 결정: 초기 범위에서 deploy, merge 자동화, infra mutation은 공통 금지 도구로 둔다.
 - 보류: profile 단계에서 tool permission을 config로 얼마나 강하게 분리할지는 아직 미정이다.
 - 산출물: [agent-team/context/tool-mapping.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/tool-mapping.md)
+
+### 품질 게이트 설정
+- 결정: agent-team 품질 게이트는 `완료 정의`, `검증 게이트`, `우회 금지` 3축으로 정의한다.
+- 결정: 저장소 공통 gate는 재사용하고, agent-team 문서는 task/packet/trace 관점 완료 조건을 추가한다.
+- 결정: 완료 정의는 `acceptance criteria 충족`, `required checks 통과`, `reviewer verdict 확보`, `evidence 기록 완료`, `follow-up 필요 시 feedback 기록`으로 둔다.
+- 결정: 초기 최소 게이트는 `relevant test pass`, `relevant format/schema pass`, `reviewer approval`, `evidence link` 4개로 둔다.
+- 결정: gate 실패 시 `completed`로 올리지 않으며 `rework`, `blocked`, `rejected` 중 하나로 분기한다.
+- 결정: gate 실패 후 raw command 우회, evidence 없는 completed, reviewer 없는 self-pass, required checks 생략 완료 처리는 금지한다.
+- 보류: `warning-only` 게이트와 `blocking` 게이트의 분리 시점은 아직 미정이다.
+- 산출물: [agent-team/context/quality-gates.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/quality-gates.md)

@@ -138,3 +138,6 @@
 
 ## Open Point
 - approval 대기 상태를 packet `status` enum에 별도 추가할지는 추후 packet schema 구현 단계에서 다시 닫는다.
+
+## Related Artifact
+- 완료 정의와 gate 통과 기준은 [quality-gates.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/quality-gates.md)에 둔다.
