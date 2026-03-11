@@ -21,37 +21,37 @@ ISSUE_REQUIRED_HEADINGS = {
         "## Context",
         "## Problem / Opportunity",
         "## Goal",
-        "## In Scope",
-        "## Out of Scope",
-        "## Related Issues",
+        "## Expected Impact",
+        "## Constraints",
         "## Decision Candidates",
-        "## Acceptance Criteria",
-        "## Risks",
+        "## Done Signal",
+        "## Out of Scope",
+        "## Related Links",
     ],
     "bug": [
         "## Summary",
         "## Context",
-        "## Bug Summary",
-        "## Reproduction Steps",
+        "## Observed Behavior",
         "## Expected Behavior",
-        "## Actual Behavior",
-        "## Suspected Cause / Constraints",
-        "## Related Issues",
+        "## Impact",
+        "## Reproduction Clues",
+        "## Suspected Area",
+        "## Constraints",
         "## Decision Candidates",
-        "## Acceptance Criteria",
-        "## Risks",
+        "## Done Signal",
+        "## Related Links",
     ],
     "chore": [
         "## Summary",
         "## Context",
-        "## Objective",
-        "## In Scope",
-        "## Out of Scope",
-        "## Related Issues",
+        "## Operational Problem",
+        "## Goal",
+        "## Affected Surface",
+        "## Constraints",
         "## Decision Candidates",
-        "## Operational Impact",
-        "## Acceptance Criteria",
-        "## Risks",
+        "## Done Signal",
+        "## Out of Scope",
+        "## Related Links",
     ],
 }
 
@@ -60,10 +60,7 @@ def validate_issue_body(body: str, issue_type: str) -> None:
     required_headings = ISSUE_REQUIRED_HEADINGS[issue_type]
     ensure_required_headings(body, required_headings)
     ensure_no_placeholders(body)
-    validate_sections_have_content(
-        body,
-        [heading for heading in required_headings if heading != "## Acceptance Criteria"],
-    )
+    validate_sections_have_content(body, required_headings)
 
 
 def parse_args() -> argparse.Namespace:
