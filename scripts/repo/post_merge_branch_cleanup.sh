@@ -68,6 +68,23 @@ if ! git remote get-url origin >/dev/null 2>&1; then
 fi
 
 CURRENT_BRANCH="$(git branch --show-current || true)"
+CURRENT_WORKTREE="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+
+BRANCH_IN_WORKTREE_PATH=""
+while IFS= read -r line; do
+  if [[ "${line}" == worktree\ * ]]; then
+    WT_PATH="${line#worktree }"
+    WT_BRANCH=""
+    continue
+  fi
+  if [[ "${line}" == branch\ refs/heads/* ]]; then
+    WT_BRANCH="${line#branch refs/heads/}"
+    if [[ "${WT_BRANCH}" == "${MERGED_BRANCH}" && "${WT_PATH}" != "${CURRENT_WORKTREE}" ]]; then
+      BRANCH_IN_WORKTREE_PATH="${WT_PATH}"
+      break
+    fi
+  fi
+done < <(git worktree list --porcelain)
 
 if ! git show-ref --verify --quiet "refs/heads/${BASE_BRANCH}"; then
   fail "base branch가 로컬에 없습니다: ${BASE_BRANCH}" "git fetch origin ${BASE_BRANCH}:${BASE_BRANCH} 후 다시 실행하세요."
@@ -77,6 +94,9 @@ if [[ ${DRY_RUN} -eq 1 ]]; then
   echo "✅ dry-run: post-merge branch cleanup 계획"
   echo "- merged branch: ${MERGED_BRANCH}"
   echo "- base branch: ${BASE_BRANCH}"
+  if [[ -n "${BRANCH_IN_WORKTREE_PATH}" ]]; then
+    echo "- cleanup order precondition: remove linked worktree first (${BRANCH_IN_WORKTREE_PATH})"
+  fi
   echo "- switch to ${BASE_BRANCH}"
   echo "- git fetch origin --prune"
   echo "- git pull --rebase origin ${BASE_BRANCH}"
@@ -86,6 +106,10 @@ if [[ ${DRY_RUN} -eq 1 ]]; then
     echo "- local branch already absent: ${MERGED_BRANCH}"
   fi
   exit 0
+fi
+
+if [[ -n "${BRANCH_IN_WORKTREE_PATH}" ]]; then
+  fail "merged branch가 아직 linked worktree에 checkout 중입니다: ${MERGED_BRANCH} @ ${BRANCH_IN_WORKTREE_PATH}" "worktree cleanup을 먼저 수행한 뒤 branch cleanup을 다시 실행하세요."
 fi
 
 if [[ "${CURRENT_BRANCH}" != "${BASE_BRANCH}" ]]; then

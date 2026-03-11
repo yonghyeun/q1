@@ -88,6 +88,30 @@ class PostMergeBranchCleanupTests(unittest.TestCase):
         ).stdout.strip()
         self.assertEqual(branches, "")
 
+    def test_dry_run_reports_linked_worktree_cleanup_precondition(self) -> None:
+        root, script, branch = self.make_repo()
+        subprocess.run(["git", "switch", "main"], cwd=root, check=True, capture_output=True)
+        linked = root.parent / "cleanup-linked--impl"
+        subprocess.run(["git", "worktree", "add", str(linked), branch], cwd=root, check=True, capture_output=True)
+        self.addCleanup(lambda: shutil.rmtree(linked, ignore_errors=True))
+
+        result = self.run_script(root, script, "--branch", branch, "--dry-run")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("remove linked worktree first", result.stdout)
+        self.assertIn(str(linked), result.stdout)
+
+    def test_actual_cleanup_fails_when_branch_is_still_in_linked_worktree(self) -> None:
+        root, script, branch = self.make_repo()
+        subprocess.run(["git", "switch", "main"], cwd=root, check=True, capture_output=True)
+        linked = root.parent / "cleanup-linked--impl"
+        subprocess.run(["git", "worktree", "add", str(linked), branch], cwd=root, check=True, capture_output=True)
+        self.addCleanup(lambda: shutil.rmtree(linked, ignore_errors=True))
+
+        result = self.run_script(root, script, "--branch", branch)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("linked worktree", result.stderr)
+        self.assertIn("worktree cleanup을 먼저", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

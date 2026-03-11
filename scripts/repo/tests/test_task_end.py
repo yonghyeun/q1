@@ -145,6 +145,8 @@ if [[ "$1" == "pr" && "$2" == "view" ]]; then
   target="${1:-}"
   shift || true
   jq_expr=""
+  pr_state="${FAKE_GH_PR_STATE:-OPEN}"
+  pr_merged_at="${FAKE_GH_PR_MERGED_AT:-}"
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --json)
@@ -169,7 +171,13 @@ if [[ "$1" == "pr" && "$2" == "view" ]]; then
     case "${jq_expr}" in
       .number) echo "42" ;;
       .title) echo "[config] task end test" ;;
-      *) printf '{"number":42,"title":"[config] task end test","url":"https://example.test/pull/42","state":"OPEN","baseRefName":"main","headRefName":"config/task-end-flow"}\\n' ;;
+      *)
+        if [[ -n "${pr_merged_at}" ]]; then
+          printf '{"number":42,"title":"[config] task end test","url":"https://example.test/pull/42","state":"%s","mergedAt":"%s","baseRefName":"main","headRefName":"config/task-end-flow"}\\n' "${pr_state}" "${pr_merged_at}"
+        else
+          printf '{"number":42,"title":"[config] task end test","url":"https://example.test/pull/42","state":"%s","mergedAt":null,"baseRefName":"main","headRefName":"config/task-end-flow"}\\n' "${pr_state}"
+        fi
+        ;;
     esac
     exit 0
   fi
@@ -177,7 +185,13 @@ if [[ "$1" == "pr" && "$2" == "view" ]]; then
     case "${jq_expr}" in
       .number) echo "${created_number}" ;;
       .title) echo "${created_title}" ;;
-      *) printf '{"number":%s,"title":"%s","url":"https://example.test/pull/%s","state":"OPEN","baseRefName":"main","headRefName":"%s"}\\n' "${created_number}" "${created_title}" "${created_number}" "${created_head}" ;;
+      *)
+        if [[ -n "${pr_merged_at}" ]]; then
+          printf '{"number":%s,"title":"%s","url":"https://example.test/pull/%s","state":"%s","mergedAt":"%s","baseRefName":"main","headRefName":"%s"}\\n' "${created_number}" "${created_title}" "${created_number}" "${pr_state}" "${pr_merged_at}" "${created_head}"
+        else
+          printf '{"number":%s,"title":"%s","url":"https://example.test/pull/%s","state":"%s","mergedAt":null,"baseRefName":"main","headRefName":"%s"}\\n' "${created_number}" "${created_title}" "${created_number}" "${pr_state}" "${created_head}"
+        fi
+        ;;
     esac
     exit 0
   fi
@@ -276,6 +290,8 @@ exit 1
         self.assertIn("task end 계획", result.stdout)
         self.assertIn("<PR_TITLE_FROM_GH>", result.stdout)
         self.assertIn("Linked issue: #19", result.stdout)
+        self.assertIn("Cleanup order: worktree cleanup -> branch cleanup", result.stdout)
+        self.assertIn("Recovery path: apply 시 merged PR이면 merge step을 건너뛰고 남은 cleanup만 수행", result.stdout)
         self.assertIn("Issue close status cleanup: remove status:* after linked issue closes", result.stdout)
 
     def test_apply_requires_yes(self) -> None:
@@ -312,6 +328,7 @@ exit 1
         self.assertIn("pr merge", logged)
         self.assertIn("--squash", logged)
         self.assertIn("[config] task end test", logged)
+        self.assertNotIn("--delete-branch", logged)
         self.assertIn("issue edit 19 --remove-label status:active", logged)
 
     def test_apply_yes_clears_issue_metadata_when_worktree_is_kept(self) -> None:
@@ -360,6 +377,31 @@ exit 1
         logged = gh_log.read_text(encoding="utf-8")
         self.assertIn("pr merge", logged)
         self.assertNotIn("issue edit 19", logged)
+
+    def test_apply_yes_recovers_when_pr_is_already_merged(self) -> None:
+        root, worktree, gh_log, env = self.make_repo()
+        env = dict(env)
+        env["FAKE_GH_PR_STATE"] = "CLOSED"
+        env["FAKE_GH_PR_MERGED_AT"] = "2026-03-11T16:00:00Z"
+
+        result = self.run_script(worktree, "task_end.sh", env, "--apply", "--yes")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse(worktree.exists())
+        self.assertIn("partial completion 감지", result.stdout)
+        self.assertIn("recovery mode", result.stdout)
+
+        branches = subprocess.run(
+            ["git", "branch", "--list", "config/task-end-flow"],
+            cwd=root,
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        self.assertEqual(branches, "")
+
+        logged = gh_log.read_text(encoding="utf-8")
+        self.assertNotIn("pr merge", logged)
+        self.assertIn("issue edit 19 --remove-label status:active", logged)
 
     def test_task_end_uses_branch_helper_scripts_when_primary_lacks_them(self) -> None:
         root, worktree, gh_log, env = self.make_repo()

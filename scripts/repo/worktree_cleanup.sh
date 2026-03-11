@@ -64,6 +64,17 @@ if [[ ! -d "${TARGET_REALPATH}" ]]; then
   fail "worktree 경로가 존재하지 않습니다: ${TARGET_REALPATH}" "실제 worktree 경로를 확인한 뒤 다시 실행하세요."
 fi
 
+TARGET_DOT_GIT="${TARGET_REALPATH}/.git"
+if [[ -f "${TARGET_DOT_GIT}" ]]; then
+  TARGET_GITDIR_LINE="$(sed -n 's/^gitdir: //p' "${TARGET_DOT_GIT}")"
+  if [[ -n "${TARGET_GITDIR_LINE}" ]]; then
+    TARGET_GITDIR_REALPATH="$(python3 -c 'import os, sys; print(os.path.realpath(os.path.join(sys.argv[1], sys.argv[2])))' "${TARGET_REALPATH}" "${TARGET_GITDIR_LINE}")"
+    if [[ ! -e "${TARGET_GITDIR_REALPATH}" ]]; then
+      fail "orphan worktree 상태입니다: Git admin entry가 없습니다: ${TARGET_REALPATH}" "git worktree list 와 실제 디렉토리를 비교한 뒤 orphan 디렉토리를 수동 정리하세요."
+    fi
+  fi
+fi
+
 if [[ -d "${TARGET_REALPATH}/.git" ]]; then
   fail "primary worktree는 자동 제거하지 않습니다: ${TARGET_REALPATH}" "linked worktree 경로를 지정하거나 --no-worktree-remove 로 최종화를 진행하세요."
 fi
