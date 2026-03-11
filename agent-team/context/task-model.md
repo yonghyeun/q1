@@ -101,7 +101,6 @@
 - `human_decision_required`
 
 ## Open Point
-- atomic task와 handoff packet의 차이
 - source type 분류 체계
 
 ## Common Task Spec Options
@@ -200,6 +199,84 @@
 ### 5. Accepted Task
 - 승인된 ingress task만 분해 레이어의 입력이 된다.
 - 이후 atomic task 분해와 execution planning은 이 승인본을 기준으로 진행한다.
+
+## Atomic Task vs Handoff Packet
+### Core Difference
+- `atomic task`는 분해 레이어의 산출물이다.
+- `handoff packet`은 실행 계획 레이어와 런타임 handoff의 산출물이다.
+- 즉 atomic task는 "무엇을 끝내야 하는가"에 가깝고, packet은 "누가 지금 무엇을 실행해야 하는가"에 가깝다.
+
+### Atomic Task
+- 목적: 큰 목표를 더 작은 실행 단위로 자른다.
+- 레이어: decomposition layer
+- 시점: 실행 계획 이전
+- 성격: 비교적 추상적
+- 포함:
+  - 목표
+  - 완료 조건
+  - 의존성
+  - 사람 판단 필요 여부
+- 아직 가지지 않는 것:
+  - `run_id`
+  - `owner_role`
+  - `handoff_from`
+  - `handoff_to`
+  - `owned_paths`
+  - `required_tests`
+  - `validator_rules`
+- 질문 형태:
+  - 이 큰 목표를 어떤 작업 단위로 나눌 것인가
+  - 이 작업 단위가 끝났다고 보려면 무엇이 필요한가
+
+### Handoff Packet
+- 목적: 특정 node와 역할에게 실행 지시를 내린다.
+- 레이어: execution planning layer -> runtime execution layer
+- 시점: atomic task가 계획된 뒤
+- 성격: 더 구체적이고 handoff-ready
+- 포함:
+  - `run_id`
+  - `owner_role`
+  - `handoff_from`
+  - `handoff_to`
+  - `inputs`
+  - `contracts`
+  - `owned_paths`
+  - `required_tests`
+  - `validator_rules`
+  - `expected_outputs`
+- 질문 형태:
+  - 지금 이 역할은 무엇을 실행해야 하는가
+  - 어떤 입력과 검증 기준이 있어야 하는가
+
+### Relation
+- accepted task는 여러 atomic task로 분해될 수 있다.
+- 하나의 atomic task는 하나 이상의 packet으로 전개될 수 있다.
+- 이유:
+  - atomic task 하나가 여러 node를 거칠 수 있기 때문이다.
+  - 같은 atomic task도 재작업, 역할 전환, 검증 단계에서 packet이 다시 발행될 수 있다.
+
+### Example
+- accepted task:
+  - `agent-team 문서 구조를 정의한다`
+- atomic task:
+  - `agent-team 루트 경계 문서를 작성한다`
+  - `로드맵 문서를 작성한다`
+  - `공통 task ingress spec을 확정한다`
+- packet:
+  - `문서 작성 역할`에게 `agent-team/README.md` 작성을 맡기는 packet
+  - `검토 역할`에게 `경계 문구가 기존 taxonomy와 충돌하지 않는지` 검토를 맡기는 packet
+
+### Why This Split Matters
+- atomic task와 packet을 섞으면 분해 품질과 실행 품질을 따로 측정하기 어렵다.
+- atomic task는 decomposition 품질 지표와 연결된다.
+- packet은 node별 성공률과 trace 성공률 지표와 연결된다.
+- 따라서 두 artifact를 분리해야 병목 위치를 정확히 볼 수 있다.
+
+## Final Decision On This Boundary
+- atomic task와 handoff packet은 별도 artifact로 유지한다.
+- atomic task는 decomposition layer의 planning artifact다.
+- handoff packet은 execution planning과 runtime handoff artifact다.
+- packet은 atomic task를 concrete execution unit으로 투영한 결과로 본다.
 
 ## Why Not Fixed Mapping
 - WBS와 ingress task의 형태는 시간이 지나며 바뀔 수 있다.

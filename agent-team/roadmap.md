@@ -130,5 +130,6 @@
 - 결정: 공통 task ingress spec은 `task_id`, `source_type`, `source_ref`, `objective`, `why`, `acceptance_criteria`, `constraints`, `non_goals`, `dependencies`, `open_points`를 기본 필드로 둔다.
 - 결정: WBS와 기타 입력원은 1:1 필드 매핑 대신 `추론 + 승인 + 검증` 기반 normalization flow로 ingress draft를 만든다.
 - 결정: 의미 추론은 에이전트가 수행하고, 구조 검증은 스크립트가 수행하며, 최종 의미 승인과 범위 교정은 사람이 수행한다.
+- 결정: atomic task는 decomposition artifact로, handoff packet은 execution planning/runtime artifact로 분리한다.
 - 보류: source type enum과 validation 구체 규칙은 아직 확정 전이다.
 - 산출물: [agent-team/context/task-model.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/task-model.md)
