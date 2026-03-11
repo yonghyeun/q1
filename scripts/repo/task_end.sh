@@ -38,6 +38,49 @@ fail() {
   exit 1
 }
 
+extract_issue_field() {
+  local json_input="$1"
+  local field_name="$2"
+  python3 -c '
+import json
+import sys
+
+data = json.loads(sys.argv[1])
+field = sys.argv[2]
+value = data.get(field, "")
+if value is None:
+    value = ""
+print(value)
+' "${json_input}" "${field_name}"
+}
+
+extract_issue_status_labels() {
+  local json_input="$1"
+  python3 -c '
+import json
+import sys
+
+data = json.loads(sys.argv[1])
+for label in data.get("labels", []):
+    name = label.get("name", "")
+    if name.startswith("status:"):
+        print(name)
+' "${json_input}"
+}
+
+read_issue_metadata() {
+  (
+    cd "${WORKTREE}" &&
+    ./scripts/repo/worktree_issue_metadata.sh read
+  ) 2>/dev/null || true
+}
+
+get_metadata_value() {
+  local metadata_output="$1"
+  local key="$2"
+  printf '%s\n' "${metadata_output}" | sed -n "s/^${key}=//p" | head -n 1
+}
+
 run_worktree_cleanup() {
   if [[ "${WORKTREE}" == "${CURRENT_WORKTREE}" && "${WORKTREE}" != "${PRIMARY_WORKTREE}" ]]; then
     (
@@ -179,6 +222,15 @@ PR_VIEW_TARGET="${PR_TARGET:-${BRANCH}}"
 PR_LABEL="${PR_VIEW_TARGET}"
 PR_NUMBER=""
 PR_TITLE=""
+ISSUE_METADATA=""
+LINKED_ISSUE_NUMBER=""
+LINKED_ISSUE_STATUS_AT_RECORD=""
+
+ISSUE_METADATA="$(read_issue_metadata)"
+if [[ -n "${ISSUE_METADATA}" ]]; then
+  LINKED_ISSUE_NUMBER="$(get_metadata_value "${ISSUE_METADATA}" "q1.issue.number")"
+  LINKED_ISSUE_STATUS_AT_RECORD="$(get_metadata_value "${ISSUE_METADATA}" "q1.issue.statusAtRecord")"
+fi
 
 if [[ ${APPLY} -eq 1 ]]; then
   ./scripts/repo/gh_preflight.sh >/dev/null
@@ -250,6 +302,16 @@ echo "- Merge subject: ${MERGE_SUBJECT}"
 else
 echo "- Merge subject: <not-used>"
 fi
+if [[ -n "${LINKED_ISSUE_NUMBER}" ]]; then
+echo "- Linked issue: #${LINKED_ISSUE_NUMBER}"
+if [[ -n "${LINKED_ISSUE_STATUS_AT_RECORD}" ]]; then
+echo "- Linked issue recorded status: ${LINKED_ISSUE_STATUS_AT_RECORD}"
+fi
+echo "- Issue close status cleanup: remove status:* after linked issue closes"
+else
+echo "- Linked issue: <none>"
+echo "- Issue close status cleanup: skip"
+fi
 echo "- Issue metadata cleanup: run"
 echo "- PR metadata cleanup: run"
 echo "- Branch cleanup: $([[ ${NO_BRANCH_CLEANUP} -eq 1 ]] && echo skip || echo run)"
@@ -273,6 +335,29 @@ if [[ ${APPLY} -eq 0 ]]; then
 fi
 
 ./scripts/repo/pr_merge.sh "${MERGE_RUN_ARGS[@]}"
+
+if [[ -n "${LINKED_ISSUE_NUMBER}" ]]; then
+  ISSUE_VIEW_OUTPUT="$(gh issue view "${LINKED_ISSUE_NUMBER}" --json state,labels,url,title 2>&1)" || {
+    fail "merge 후 linked issue #${LINKED_ISSUE_NUMBER} 를 조회할 수 없습니다." "gh 인증과 issue 접근 권한을 확인한 뒤 issue 상태를 수동으로 점검하세요."
+  }
+
+  LINKED_ISSUE_STATE="$(extract_issue_field "${ISSUE_VIEW_OUTPUT}" "state")"
+  if [[ "${LINKED_ISSUE_STATE}" != "CLOSED" ]]; then
+    fail "merge 후 linked issue #${LINKED_ISSUE_NUMBER} 가 닫히지 않았습니다." "PR body close keyword 또는 issue close 상태를 정리한 뒤 status label을 수동으로 정리하세요."
+  fi
+
+  ISSUE_STATUS_REMOVE_ARGS=()
+  while IFS= read -r issue_status_label; do
+    [[ -n "${issue_status_label}" ]] || continue
+    ISSUE_STATUS_REMOVE_ARGS+=(--remove-label "${issue_status_label}")
+  done < <(extract_issue_status_labels "${ISSUE_VIEW_OUTPUT}")
+
+  if [[ ${#ISSUE_STATUS_REMOVE_ARGS[@]} -gt 0 ]]; then
+    gh issue edit "${LINKED_ISSUE_NUMBER}" "${ISSUE_STATUS_REMOVE_ARGS[@]}" >/dev/null || {
+      fail "closed issue #${LINKED_ISSUE_NUMBER} 의 status label 정리에 실패했습니다." "GitHub에서 남은 status:* label을 수동으로 제거한 뒤 다시 정리하세요."
+    }
+  fi
+fi
 
 run_issue_metadata_cleanup >/dev/null || {
   fail "issue metadata cleanup에 실패했습니다: ${WORKTREE}" "대상 worktree에서 worktree_issue_metadata.sh clear 가 동작하는지 확인한 뒤 metadata를 수동으로 정리하세요."

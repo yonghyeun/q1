@@ -73,6 +73,17 @@
   - `status:blocked`: 외부 입력/의존성 부족으로 진행 불가
   - `status:cancelled`: 더 이상 진행하지 않기로 결정
 - 완료는 `status:done` 대신 issue close로 처리.
+- open issue는 `status:*` label 1개를 유지한다.
+- closed issue의 status 해석
+  - 완료로 닫힌 issue는 `status:*` label을 남기지 않는다.
+  - 완료가 아닌 종료는 close 전에 종료 사유를 `status:blocked` 또는 `status:cancelled` 로 명시한 뒤 닫는다.
+  - `status:ready` 또는 `status:active` 가 남은 채 닫힌 issue는 정리되지 않은 상태로 본다.
+- `task end` 성공 종료는 완료 close로 간주한다.
+  - PR merge로 linked issue가 닫힌 뒤 남아 있는 `status:*` label을 제거한다.
+  - linked issue가 닫히지 않았다면 status를 제거하지 않고, close linkage 또는 수동 close를 먼저 정리한다.
+- 완료가 아닌 종료는 `task end` 자동화 대상이 아니다.
+  - `status:blocked` 또는 `status:cancelled` 로 먼저 전환한다.
+  - 그 뒤 GitHub에서 수동 close 하거나 별도 운영 절차로 종료한다.
 - label은 template frontmatter에서 자동 부여하지 않는다.
 - issue 생성 wrapper에서 taxonomy를 검증한 뒤 `gh issue create --label ...`로 전달한다.
 - GitHub UI로 직접 생성할 때도 같은 taxonomy를 수동으로 적용.
