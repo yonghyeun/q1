@@ -16,7 +16,7 @@
 - 각 단계 산출물은 다음 단계의 입력으로 재사용 가능해야 한다.
 
 ## Current Phase
-- 현재 단계: `Tool 맵핑`
+- 현재 단계: `품질 게이트 설정`
 
 ## Steps
 - [x] 목표 정의
@@ -60,14 +60,14 @@
   - [x] 충돌 시 결정 방식 정의
   - [x] 실패 시 fallback 경로 정의
   - [x] 인간 승인 필요 조건 정의
-- [ ] Tool 맵핑
-  - [ ] 역할마다 사용할 도구 연결
-  - [ ] 예시 매핑 검토
-    - [ ] 검색 전용
-    - [ ] 코드 수정 전용
-    - [ ] 테스트 실행 전용
-    - [ ] 배포 금지
-  - [ ] 최소 권한 원칙 적용
+- [x] Tool 맵핑
+  - [x] 역할마다 사용할 도구 연결
+  - [x] 예시 매핑 검토
+    - [x] 검색 전용
+    - [x] 코드 수정 전용
+    - [x] 테스트 실행 전용
+    - [x] 배포 금지
+  - [x] 최소 권한 원칙 적용
 - [ ] 품질 게이트 설정
   - [ ] 완료 정의 필요
   - [ ] 예시 게이트 정의
@@ -175,3 +175,12 @@
 - 결정: objective 변경, acceptance criteria 변경/축소, scope expansion, packet 밖 경로 수정, destructive action, branch 전환 계열, policy surface 수정, taxonomy 수정, policy 예외 처리는 공통 승인 대상으로 둔다.
 - 보류: approval 대기 상태를 packet status enum에 별도로 둘지는 아직 미정이다.
 - 산출물: [agent-team/context/operating-rules.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/operating-rules.md)
+
+### Tool 맵핑
+- 결정: 역할별 도구 맵핑은 `허용 도구`, `우선 도구`, `금지 도구`, `검증 도구` 기준으로 정의한다.
+- 결정: wrapper가 있는 액션은 raw 명령보다 wrapper-first를 기본으로 둔다.
+- 결정: `Router`는 read-heavy 도구, `Planner`는 planning artifact 도구, `Worker`는 수정/테스트 도구, `Reviewer`는 diff/validator 재검증 도구를 기본으로 둔다.
+- 결정: 예시 매핑은 `검색 전용`, `코드 수정 전용`, `테스트 실행 전용`, `배포 금지` 4분류로 정리한다.
+- 결정: 초기 범위에서 deploy, merge 자동화, infra mutation은 공통 금지 도구로 둔다.
+- 보류: profile 단계에서 tool permission을 config로 얼마나 강하게 분리할지는 아직 미정이다.
+- 산출물: [agent-team/context/tool-mapping.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/tool-mapping.md)
