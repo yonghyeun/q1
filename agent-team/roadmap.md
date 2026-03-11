@@ -16,7 +16,7 @@
 - 각 단계 산출물은 다음 단계의 입력으로 재사용 가능해야 한다.
 
 ## Current Phase
-- 현재 단계: `업무 분해`
+- 현재 단계: `역할 설계`
 
 ## Steps
 - [x] 목표 정의
@@ -26,19 +26,19 @@
     - [x] 전체 trace 성공률
     - [x] node별 성공률
     - [x] 동일 병목 재발률
-- [ ] 업무 분해
+- [x] 업무 분해
   - [x] 큰 목표를 반복 가능한 단위 작업으로 분해
   - [x] 입력, 처리, 출력 기준 정리
   - [x] 사람 판단이 필요한 구간 표시
-- [ ] 역할 설계
-  - [ ] 에이전트별 책임 분리
-  - [ ] 역할 초안 정의
-    - [ ] Router: 요청 분류
-    - [ ] Planner: 작업 계획
-    - [ ] Worker: 실행
-    - [ ] Reviewer: 검토
-    - [ ] Reporter: 결과 정리
-  - [ ] 역할 중복 최소화
+- [x] 역할 설계
+  - [x] 에이전트별 책임 분리
+  - [x] 역할 초안 정의
+    - [x] Router: 요청 분류
+    - [x] Planner: 작업 계획
+    - [x] Worker: 실행
+    - [x] Reviewer: 검토
+    - [x] Reporter: 결과 정리
+  - [x] 역할 중복 최소화
 - [ ] 역할 별 경계 정의
   - [ ] 각 에이전트의 권한 범위 설정
   - [ ] 읽기 가능 자원 정의
@@ -139,3 +139,12 @@
 - 보류: issue를 `ready`로 승격하는 승인 조건과 validation 구체 규칙은 아직 확정 전이다.
 - 산출물: [agent-team/context/task-model.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/task-model.md)
 - 산출물: [agent-team/context/work-breakdown.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/work-breakdown.md)
+
+### 역할 설계
+- 결정: `config.toml` profile 설계보다 역할 설계를 먼저 확정한다.
+- 결정: 초기 운영 모델은 `Router`, `Planner`, `Worker`, `Reviewer` 4역할로 둔다.
+- 결정: `Reporter`는 독립 role이 아니라 산출물 책임으로 흡수한다.
+- 결정: 운영 8단계의 주 소유자는 `Router -> Router -> Human/Reviewer -> Planner -> Planner -> Worker -> Reviewer -> Reviewer/Router` 순서로 둔다.
+- 결정: 사람 승인은 계속 별도 control point로 유지한다.
+- 보류: runtime profile 이름에서 `Worker`를 `Executor`로 바꿀지는 아직 미정이다.
+- 산출물: [agent-team/context/roles.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/roles.md)
