@@ -90,7 +90,7 @@ LIVE_ISSUE_STATUS=""
 LIVE_WARNING=""
 
 if [[ ${LIVE_MODE} -eq 1 && -n "${ISSUE_NUMBER}" ]]; then
-  if ./scripts/repo/gh_preflight.sh >/dev/null 2>&1; then
+  if ./scripts/repo/gh_preflight.sh --require-api >/dev/null 2>&1; then
     if LIVE_OUTPUT="$(gh issue view "${ISSUE_NUMBER}" --json number,title,url,state,labels 2>&1)"; then
       LIVE_ISSUE_TITLE="$(extract_live_field "${LIVE_OUTPUT}" "title")"
       LIVE_ISSUE_URL="$(extract_live_field "${LIVE_OUTPUT}" "url")"

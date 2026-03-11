@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
 SCRIPT_NAMES = [
+    "gh_failure_guard.sh",
     "pr_create.sh",
     "gh_preflight.sh",
     "pr_title_guard.sh",
@@ -109,7 +110,19 @@ set -euo pipefail
 if [[ "$1" == "auth" && "$2" == "status" ]]; then
   exit 0
 fi
+if [[ "$1" == "api" && "$2" == "rate_limit" ]]; then
+  if [[ "${FAKE_GH_API_FAIL:-0}" == "1" ]]; then
+    echo "error connecting to api.github.com" >&2
+    exit 1
+  fi
+  echo "5000"
+  exit 0
+fi
 if [[ "$1" == "pr" && "$2" == "create" ]]; then
+  if [[ "${FAKE_GH_PR_CREATE_FAIL:-0}" == "1" ]]; then
+    echo "error connecting to api.github.com" >&2
+    exit 1
+  fi
   printf '%s\\n' "$*" > "${FAKE_GH_LOG}"
   echo "https://example.test/pull/42"
   exit 0
@@ -202,6 +215,39 @@ exit 1
         self.assertEqual(title, "[config] PR metadata 저장")
         self.assertEqual(base_branch, "main")
         self.assertEqual(head_branch, "config/pr-number-metadata")
+
+    def test_fails_with_retry_hint_when_api_preflight_detects_network_block(self) -> None:
+        worktree, env, body_file = self.make_repo()
+        env = dict(env)
+        env["FAKE_GH_API_FAIL"] = "1"
+        result = self.run_script(
+            worktree,
+            env,
+            "--title",
+            "[config] PR metadata 저장",
+            "--body-file",
+            str(body_file),
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("GitHub API 연결 확인에 실패했습니다", result.stderr)
+        self.assertIn("권한 상승으로 재실행", result.stderr)
+
+    def test_fails_with_retry_hint_when_pr_create_hits_connect_error(self) -> None:
+        worktree, env, body_file = self.make_repo()
+        env = dict(env)
+        env["FAKE_GH_PR_CREATE_FAIL"] = "1"
+        result = self.run_script(
+            worktree,
+            env,
+            "--title",
+            "[config] PR metadata 저장",
+            "--body-file",
+            str(body_file),
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("PR 생성에 실패했습니다", result.stderr)
+        self.assertIn("sandbox/network", result.stderr)
+        self.assertIn("권한 상승으로 재실행", result.stderr)
 
 
 if __name__ == "__main__":

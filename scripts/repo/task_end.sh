@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "${ROOT_DIR}"
+source "${ROOT_DIR}/scripts/repo/gh_failure_guard.sh"
 
 HELPER_TMP_DIR="$(mktemp -d)"
 cleanup_helpers() {
@@ -416,7 +417,7 @@ if [[ -z "${PR_TARGET}" && -n "${RECORDED_PR_NUMBER}" ]]; then
 fi
 
 if [[ ${APPLY} -eq 1 ]]; then
-  ./scripts/repo/gh_preflight.sh >/dev/null
+  ./scripts/repo/gh_preflight.sh --require-api >/dev/null
 
   ensure_remote_branch_exists
 
@@ -562,6 +563,9 @@ fi
 
 if [[ -n "${LINKED_ISSUE_NUMBER}" ]]; then
   ISSUE_VIEW_OUTPUT="$(gh issue view "${LINKED_ISSUE_NUMBER}" --json state,labels,url,title 2>&1)" || {
+    if gh_output_indicates_connectivity_issue "${ISSUE_VIEW_OUTPUT}"; then
+      fail "merge 후 linked issue #${LINKED_ISSUE_NUMBER} 를 조회할 수 없습니다. $(gh_connectivity_suffix)" "$(gh_retry_next_action)"
+    fi
     fail "merge 후 linked issue #${LINKED_ISSUE_NUMBER} 를 조회할 수 없습니다." "gh 인증과 issue 접근 권한을 확인한 뒤 issue 상태를 수동으로 점검하세요."
   }
 
@@ -577,7 +581,10 @@ if [[ -n "${LINKED_ISSUE_NUMBER}" ]]; then
   done < <(extract_issue_status_labels "${ISSUE_VIEW_OUTPUT}")
 
   if [[ ${#ISSUE_STATUS_REMOVE_ARGS[@]} -gt 0 ]]; then
-    gh issue edit "${LINKED_ISSUE_NUMBER}" "${ISSUE_STATUS_REMOVE_ARGS[@]}" >/dev/null || {
+    ISSUE_EDIT_OUTPUT="$(gh issue edit "${LINKED_ISSUE_NUMBER}" "${ISSUE_STATUS_REMOVE_ARGS[@]}" 2>&1)" || {
+      if gh_output_indicates_connectivity_issue "${ISSUE_EDIT_OUTPUT}"; then
+        fail "closed issue #${LINKED_ISSUE_NUMBER} 의 status label 정리에 실패했습니다. $(gh_connectivity_suffix)" "$(gh_retry_next_action)"
+      fi
       fail "closed issue #${LINKED_ISSUE_NUMBER} 의 status label 정리에 실패했습니다." "GitHub에서 남은 status:* label을 수동으로 제거한 뒤 다시 정리하세요."
     }
   fi

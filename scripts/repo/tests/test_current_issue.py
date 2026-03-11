@@ -59,6 +59,14 @@ if [[ "$1" == "auth" && "$2" == "status" ]]; then
   fi
   exit 0
 fi
+if [[ "$1" == "api" && "$2" == "rate_limit" ]]; then
+  if [[ "${FAKE_GH_API_FAIL:-0}" == "1" ]]; then
+    echo "error connecting to api.github.com" >&2
+    exit 1
+  fi
+  echo "5000"
+  exit 0
+fi
 if [[ "$1" == "issue" && "$2" == "view" ]]; then
   if [[ "${FAKE_GH_ISSUE_VIEW_FAIL:-0}" == "1" ]]; then
     echo "error connecting to api.github.com" >&2
@@ -258,6 +266,44 @@ exit 1
         result = self.run_script(worktree, env, "--live")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("- 제목: issue title", result.stdout)
+
+    def test_live_mode_falls_back_to_snapshot_when_api_preflight_fails(self) -> None:
+        worktree, env = self.make_repo()
+        env = dict(env)
+        env["FAKE_GH_API_FAIL"] = "1"
+
+        write_result = subprocess.run(
+            [
+                "bash",
+                "./scripts/repo/worktree_issue_metadata.sh",
+                "write",
+                "--number",
+                "19",
+                "--url",
+                "https://example.test/issues/19",
+                "--title",
+                "issue title",
+                "--status-at-record",
+                "status:active",
+                "--branch",
+                "config/local-issue-linkage",
+                "--worktree",
+                str(worktree),
+                "--recorded-at",
+                "2026-03-11T15:00:00Z",
+            ],
+            cwd=worktree,
+            text=True,
+            capture_output=True,
+            env=env,
+            check=False,
+        )
+        self.assertEqual(write_result.returncode, 0, write_result.stderr)
+
+        result = self.run_script(worktree, env, "--live")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("- 제목: issue title", result.stdout)
+        self.assertIn("recorded snapshot만 표시", result.stdout)
         self.assertIn("gh preflight 실패", result.stdout)
 
 

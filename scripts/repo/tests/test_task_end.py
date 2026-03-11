@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
 SCRIPT_NAMES = [
+    "gh_failure_guard.sh",
     "task_end.sh",
     "task_end_interactive.sh",
     "pr_finalize.sh",
@@ -140,6 +141,14 @@ set -euo pipefail
 if [[ "$1" == "auth" && "$2" == "status" ]]; then
   exit 0
 fi
+if [[ "$1" == "api" && "$2" == "rate_limit" ]]; then
+  if [[ "${FAKE_GH_API_FAIL:-0}" == "1" ]]; then
+    echo "error connecting to api.github.com" >&2
+    exit 1
+  fi
+  echo "5000"
+  exit 0
+fi
 if [[ "$1" == "pr" && "$2" == "view" ]]; then
   shift 2
   target="${1:-}"
@@ -224,9 +233,17 @@ if [[ "$1" == "pr" && "$2" == "create" ]]; then
 fi
 if [[ "$1" == "pr" && "$2" == "merge" ]]; then
   printf '%s\\n' "$*" >> "${FAKE_GH_LOG}"
+  if [[ "${FAKE_GH_PR_MERGE_FAIL:-0}" == "1" ]]; then
+    echo "error connecting to api.github.com" >&2
+    exit 1
+  fi
   exit 0
 fi
 if [[ "$1" == "issue" && "$2" == "view" ]]; then
+  if [[ "${FAKE_GH_ISSUE_VIEW_FAIL:-0}" == "1" ]]; then
+    echo "error connecting to api.github.com" >&2
+    exit 1
+  fi
   shift 2
   issue_number="${1:-}"
   state="${FAKE_GH_ISSUE_STATE:-CLOSED}"
@@ -247,6 +264,10 @@ if [[ "$1" == "issue" && "$2" == "view" ]]; then
 fi
 if [[ "$1" == "issue" && "$2" == "edit" ]]; then
   printf '%s\\n' "$*" >> "${FAKE_GH_LOG}"
+  if [[ "${FAKE_GH_ISSUE_EDIT_FAIL:-0}" == "1" ]]; then
+    echo "error connecting to api.github.com" >&2
+    exit 1
+  fi
   exit 0
 fi
 echo "unexpected gh args: $*" >&2
@@ -402,6 +423,16 @@ exit 1
         logged = gh_log.read_text(encoding="utf-8")
         self.assertNotIn("pr merge", logged)
         self.assertIn("issue edit 19 --remove-label status:active", logged)
+
+    def test_apply_yes_shows_retry_hint_when_issue_view_fails_after_merge(self) -> None:
+        _root, worktree, _gh_log, env = self.make_repo()
+        env = dict(env)
+        env["FAKE_GH_ISSUE_VIEW_FAIL"] = "1"
+        result = self.run_script(worktree, "task_end.sh", env, "--apply", "--yes")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("linked issue #19 를 조회할 수 없습니다", result.stderr)
+        self.assertIn("sandbox/network", result.stderr)
+        self.assertIn("권한 상승으로 재실행", result.stderr)
 
     def test_task_end_uses_branch_helper_scripts_when_primary_lacks_them(self) -> None:
         root, worktree, gh_log, env = self.make_repo()

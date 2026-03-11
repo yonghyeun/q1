@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
 SCRIPT_NAMES = [
+    "gh_failure_guard.sh",
     "task_start.sh",
     "task_start_interactive.sh",
     "worktree_add.sh",
@@ -63,7 +64,19 @@ set -euo pipefail
 if [[ "$1" == "auth" && "$2" == "status" ]]; then
   exit 0
 fi
+if [[ "$1" == "api" && "$2" == "rate_limit" ]]; then
+  if [[ "${FAKE_GH_API_FAIL:-0}" == "1" ]]; then
+    echo "error connecting to api.github.com" >&2
+    exit 1
+  fi
+  echo "5000"
+  exit 0
+fi
 if [[ "$1" == "issue" && "$2" == "view" ]]; then
+  if [[ "${FAKE_GH_ISSUE_VIEW_FAIL:-0}" == "1" ]]; then
+    echo "error connecting to api.github.com" >&2
+    exit 1
+  fi
   issue_number="${3:-}"
   python3 - "${issue_number}" <<'PY'
 import json
@@ -86,6 +99,10 @@ PY
   exit 0
 fi
 if [[ "$1" == "issue" && "$2" == "edit" ]]; then
+  if [[ "${FAKE_GH_ISSUE_EDIT_FAIL:-0}" == "1" ]]; then
+    echo "error connecting to api.github.com" >&2
+    exit 1
+  fi
   printf '%s\\n' "$*" > "${FAKE_GH_LOG}"
   exit 0
 fi
@@ -286,6 +303,46 @@ exit 1
         result = self.run_script(root, script, "--branch", "chore/task-start-issue-transition", "--issue", "15", env=env)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("status label이 여러 개", result.stderr)
+
+    def test_issue_fails_with_api_retry_hint_when_preflight_detects_network_block(self) -> None:
+        root, script, _interactive, env, _gh_log = self.make_repo()
+        env = dict(env)
+        env["FAKE_GH_API_FAIL"] = "1"
+        result = self.run_script(root, script, "--branch", "chore/task-start-issue-transition", "--issue", "15", env=env)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("GitHub API 연결 확인에 실패했습니다", result.stderr)
+        self.assertIn("sandbox/network", result.stderr)
+        self.assertIn("권한 상승으로 재실행", result.stderr)
+
+    def test_issue_view_fails_with_retry_hint_when_connect_error_happens_after_preflight(self) -> None:
+        root, script, _interactive, env, _gh_log = self.make_repo()
+        env = dict(env)
+        env["FAKE_GH_ISSUE_VIEW_FAIL"] = "1"
+        result = self.run_script(root, script, "--branch", "chore/task-start-issue-transition", "--issue", "15", env=env)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("issue #15 를 조회할 수 없습니다", result.stderr)
+        self.assertIn("sandbox/network", result.stderr)
+        self.assertIn("권한 상승으로 재실행", result.stderr)
+
+    def test_issue_edit_fails_with_retry_hint_when_connect_error_happens_after_preflight(self) -> None:
+        root, script, _interactive, env, _gh_log = self.make_repo()
+        env = dict(env)
+        env["FAKE_GH_ISSUE_EDIT_FAIL"] = "1"
+        result = self.run_script(
+            root,
+            script,
+            "--branch",
+            "chore/task-start-issue-transition",
+            "--issue",
+            "15",
+            "--apply",
+            "--yes",
+            env=env,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("상태 전이에 실패했습니다", result.stderr)
+        self.assertIn("sandbox/network", result.stderr)
+        self.assertIn("권한 상승으로 재실행", result.stderr)
 
     def test_interactive_wrapper_prompts_and_applies(self) -> None:
         root, _script, interactive, _env, _gh_log = self.make_repo()

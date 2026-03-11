@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "${ROOT_DIR}"
+source "${ROOT_DIR}/scripts/repo/gh_failure_guard.sh"
 
 extract_json_field() {
   local json_input="$1"
@@ -99,7 +100,7 @@ python3 scripts/repo/pr_body_quality_guard.py --body-file "${BODY_FILE}"
 python3 scripts/repo/pr_issue_guard.py --pr-body-file "${BODY_FILE}"
 
 if [[ ${DRY_RUN} -eq 0 ]]; then
-  ./scripts/repo/gh_preflight.sh
+  ./scripts/repo/gh_preflight.sh --require-api
 fi
 
 if [[ ${DRY_RUN} -eq 1 ]]; then
@@ -113,7 +114,17 @@ if [[ ${DRAFT} -eq 1 ]]; then
   CREATE_ARGS+=(--draft)
 fi
 
-CREATE_OUTPUT="$(gh "${CREATE_ARGS[@]}")"
+CREATE_OUTPUT="$(gh "${CREATE_ARGS[@]}" 2>&1)" || {
+  if gh_output_indicates_connectivity_issue "${CREATE_OUTPUT}"; then
+    echo "❌ PR 생성에 실패했습니다. $(gh_connectivity_suffix)" >&2
+    echo "다음 행동: $(gh_retry_next_action)" >&2
+  else
+    echo "❌ PR 생성에 실패했습니다." >&2
+    gh_print_output_hint "${CREATE_OUTPUT}"
+    echo "다음 행동: GitHub PR 생성 권한과 gh 상태를 확인한 뒤 같은 wrapper 명령을 다시 실행하세요." >&2
+  fi
+  exit 1
+}
 PR_URL="$(printf '%s\n' "${CREATE_OUTPUT}" | tail -n 1)"
 PR_NUMBER="$(printf '%s' "${PR_URL}" | grep -Eo '[0-9]+$' || true)"
 
