@@ -26,6 +26,80 @@ fail() {
   exit 1
 }
 
+ensure_origin_remote() {
+  if ! git remote get-url origin >/dev/null 2>&1; then
+    fail "origin remote가 없습니다." "git remote add origin <github-repo-url> 후 다시 실행하세요."
+  fi
+}
+
+fetch_origin_state() {
+  ensure_origin_remote
+  if ! git fetch origin --prune >/dev/null 2>&1; then
+    fail "origin fetch에 실패했습니다." "네트워크와 origin 접근 권한을 확인한 뒤 다시 실행하세요."
+  fi
+}
+
+resolve_branch_upstream_ref() {
+  local branch_name="$1"
+  local upstream_ref=""
+  upstream_ref="$(git for-each-ref --format='%(upstream:short)' "refs/heads/${branch_name}" | sed -n '1p')"
+  if [[ -n "${upstream_ref}" ]]; then
+    printf '%s\n' "${upstream_ref}"
+    return 0
+  fi
+
+  if git show-ref --verify --quiet "refs/remotes/origin/${branch_name}"; then
+    printf 'origin/%s\n' "${branch_name}"
+    return 0
+  fi
+
+  return 1
+}
+
+describe_branch_remote_freshness() {
+  local local_branch="$1"
+  local remote_ref="$2"
+  local branch_label="$3"
+  local mode="$4"
+  local counts=""
+  local ahead=0
+  local behind=0
+  local count_parts=()
+
+  counts="$(git rev-list --left-right --count "${local_branch}...${remote_ref}" 2>/dev/null)" || {
+    fail "${branch_label} 원격 비교에 실패했습니다: ${local_branch} vs ${remote_ref}" "git fetch origin --prune 후 ref 상태를 확인하고 다시 실행하세요."
+  }
+
+  IFS=$' \t' read -r -a count_parts <<< "${counts}"
+  ahead="${count_parts[0]:-}"
+  behind="${count_parts[1]:-}"
+
+  if [[ "${ahead}" =~ ^[0-9]+$ && "${behind}" =~ ^[0-9]+$ ]]; then
+    :
+  else
+    fail "${branch_label} ahead/behind 계산 결과를 해석할 수 없습니다." "git rev-list 상태를 확인한 뒤 다시 실행하세요."
+  fi
+
+  if [[ "${mode}" == "exact" ]]; then
+    if [[ "${ahead}" -gt 0 || "${behind}" -gt 0 ]]; then
+      fail "${branch_label} \`${local_branch}\` 가 원격 ref \`${remote_ref}\` 와 일치하지 않습니다 (ahead=${ahead}, behind=${behind})." "git checkout ${local_branch} && git pull --rebase 또는 상태 정리 후 다시 실행하세요."
+    fi
+    printf '`%s` == `%s`\n' "${local_branch}" "${remote_ref}"
+    return 0
+  fi
+
+  if [[ "${behind}" -gt 0 ]]; then
+    fail "${branch_label} \`${local_branch}\` 가 원격 ref \`${remote_ref}\` 보다 뒤처져 있습니다 (ahead=${ahead}, behind=${behind})." "git checkout ${local_branch} && git pull --rebase 또는 상태 정리 후 다시 실행하세요."
+  fi
+
+  if [[ "${ahead}" -gt 0 ]]; then
+    printf '`%s` 가 `%s` 보다 %s commit 앞서 있고 behind는 없습니다\n' "${local_branch}" "${remote_ref}" "${ahead}"
+    return 0
+  fi
+
+  printf '`%s` == `%s`\n' "${local_branch}" "${remote_ref}"
+}
+
 realpath_py() {
   python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$1"
 }
@@ -67,6 +141,9 @@ BASE="main"
 PATH_ROOT=".."
 APPLY=0
 ASSUME_YES=0
+ORIGIN_FETCH_STATUS="미확인"
+BASE_REMOTE_STATUS="비교 전"
+BRANCH_REMOTE_STATUS="비교 대상 없음"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -160,6 +237,33 @@ fi
 if [[ ${BRANCH_EXISTS} -eq 0 ]]; then
   if ! git rev-parse --verify "${BASE}^{commit}" >/dev/null 2>&1; then
     fail "기준 브랜치/커밋을 찾을 수 없습니다: ${BASE}" "--base 값을 올바르게 수정하거나 존재하는 ref를 지정해서 다시 실행하세요."
+  fi
+fi
+
+fetch_origin_state
+ORIGIN_FETCH_STATUS="origin fetch 완료"
+
+if git show-ref --verify --quiet "refs/heads/${BASE}"; then
+  BASE_UPSTREAM_REF="$(resolve_branch_upstream_ref "${BASE}" || true)"
+  if [[ -z "${BASE_UPSTREAM_REF}" ]]; then
+    fail "기준 branch \`${BASE}\` 의 upstream을 찾을 수 없습니다." "git push -u origin ${BASE} 또는 git branch --set-upstream-to origin/${BASE} ${BASE} 후 다시 실행하세요."
+  fi
+  BASE_REMOTE_STATUS="$(describe_branch_remote_freshness "${BASE}" "${BASE_UPSTREAM_REF}" "기준 branch" "exact")"
+elif [[ "${BASE}" == origin/* ]]; then
+  if ! git rev-parse --verify "${BASE}^{commit}" >/dev/null 2>&1; then
+    fail "기준 원격 ref를 찾을 수 없습니다: ${BASE}" "git fetch origin --prune 후 다시 실행하거나 --base 값을 수정하세요."
+  fi
+  BASE_REMOTE_STATUS="\`${BASE}\` fetch 확인 완료"
+else
+  BASE_REMOTE_STATUS="\`${BASE}\` 는 branch ref가 아니어서 원격 최신성 비교를 생략합니다"
+fi
+
+if [[ ${BRANCH_EXISTS} -eq 1 ]]; then
+  BRANCH_UPSTREAM_REF="$(resolve_branch_upstream_ref "${BRANCH}" || true)"
+  if [[ -n "${BRANCH_UPSTREAM_REF}" ]]; then
+    BRANCH_REMOTE_STATUS="$(describe_branch_remote_freshness "${BRANCH}" "${BRANCH_UPSTREAM_REF}" "재사용 branch" "allow-ahead")"
+  else
+    BRANCH_REMOTE_STATUS="\`${BRANCH}\` 는 upstream이 없어 원격 최신성 비교를 생략합니다"
   fi
 fi
 
@@ -258,7 +362,12 @@ print_plan() {
   echo "검증 결과"
   echo "- 브랜치 이름 규칙: 통과"
   echo "- 워크트리 이름 규칙: 통과"
+  echo "- origin fetch: ${ORIGIN_FETCH_STATUS}"
+  echo "- 기준 ref 원격 최신성: ${BASE_REMOTE_STATUS}"
   echo "- 브랜치 사용 가능 여부: 통과"
+  if [[ ${BRANCH_EXISTS} -eq 1 ]]; then
+    echo "- 재사용 branch 원격 최신성: ${BRANCH_REMOTE_STATUS}"
+  fi
   if [[ -n "${ISSUE_NUMBER}" ]]; then
     echo "- 이슈 조회/상태 규칙: 통과"
   fi

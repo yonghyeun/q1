@@ -30,7 +30,7 @@
 - `pr_create.sh`: 정책/본문 검증 후 PR 생성 (`--body-file` 필수). 성공 시 현재 worktree에 PR metadata 기록
 - `pr_title_guard.sh`: PR 제목 컨벤션 생성/검증 (`[scope] 요약`)
 - `pr_merge.sh`: PR merge leaf (`gh pr merge` wrapper). remote merge만 담당하고 local cleanup은 수행하지 않음
-- `task_start.sh`: 새 작업용 branch/worktree 준비 core wrapper. `--issue <number>` 지정 시 issue status를 `active`로 전이 가능. 기본 dry-run, 실제 실행은 `--apply --yes`
+- `task_start.sh`: 새 작업용 branch/worktree 준비 core wrapper. base ref와 재사용 branch의 origin 최신성을 확인한 뒤 진행. `--issue <number>` 지정 시 issue status를 `active`로 전이 가능. 기본 dry-run, 실제 실행은 `--apply --yes`
 - `task_start_interactive.sh`: 사람용 interactive wrapper. dry-run 후 `y/N` 확인, 승인 시 `task_start.sh --apply --yes`
 - `task_end.sh`: task 종료 core wrapper. 기본 dry-run, 실제 실행은 `--apply --yes`. local cleanup 순서는 `worktree -> branch`, partial completion이면 recovery cleanup만 수행
 - `task_end_interactive.sh`: 사람용 interactive wrapper. dry-run 후 `y/N` 확인, 승인 시 `task_end.sh --apply --yes`
