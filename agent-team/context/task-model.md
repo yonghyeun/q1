@@ -84,8 +84,8 @@
 - `source_ref`
 - `objective`
 - `why`
-- `constraints`
 - `acceptance_criteria`
+- `constraints`
 - `non_goals`
 - `dependencies`
 - `open_points`
@@ -104,3 +104,66 @@
 - ingress spec과 WBS slice의 정확한 매핑 규칙
 - atomic task와 handoff packet의 차이
 - source type 분류 체계
+
+## Common Task Spec Options
+### Minimal
+- `task_id`
+- `objective`
+- `acceptance_criteria`
+- `constraints`
+- 특징: 가장 단순하지만 입력원, 비목표, 미해결 쟁점이 빠진다.
+
+### Standard
+- `task_id`
+- `source_ref`
+- `objective`
+- `scope`
+- `acceptance_criteria`
+- `constraints`
+- `dependencies`
+- `owner`
+- `priority`
+- 특징: 일반적인 티켓 관리에는 익숙하지만, agent-team ingress 관점에서는 관리 성격이 강하다.
+
+### Compromise
+- `task_id`
+- `source_ref`
+- `objective`
+- `why`
+- `acceptance_criteria`
+- `constraints`
+- `dependencies`
+- `open_points`
+- 특징: 가볍지만 `non_goals`, `source_type` 부재로 범위와 입력원 구분이 약하다.
+
+### Selected
+- `task_id`
+- `source_type`
+- `source_ref`
+- `objective`
+- `why`
+- `acceptance_criteria`
+- `constraints`
+- `non_goals`
+- `dependencies`
+- `open_points`
+- 특징: 입력원 다양성, 작업 이유, 범위 통제, 미해결 쟁점을 함께 담을 수 있다.
+
+## Final Decision
+- 공통 task ingress spec은 `Selected` 안을 채택한다.
+- `why`, `non_goals`, `open_points`는 초기에 익숙하지 않아도 유지한다.
+- 이유:
+  - `why`가 있어야 분해 방향이 흔들리지 않는다.
+  - `non_goals`가 있어야 범위 팽창을 막을 수 있다.
+  - `open_points`가 있어야 모르는 것을 감춘 채 진행하지 않는다.
+
+## Reading Aid
+- `source_type`: task가 어디서 왔는지
+- `source_ref`: 원문 근거가 어디 있는지
+- `objective`: 이번 작업의 한 문장 목표
+- `why`: 왜 필요한지
+- `acceptance_criteria`: 무엇이 되면 완료인지
+- `constraints`: 반드시 지켜야 할 제한
+- `non_goals`: 이번에 하지 않을 것
+- `dependencies`: 먼저 확인하거나 해결해야 할 것
+- `open_points`: 아직 모르는 것
