@@ -141,3 +141,4 @@
 
 ## Related Artifact
 - 완료 정의와 gate 통과 기준은 [quality-gates.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/quality-gates.md)에 둔다.
+- 관측성과 failure 축적 규칙은 [observability.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/observability.md)에 둔다.

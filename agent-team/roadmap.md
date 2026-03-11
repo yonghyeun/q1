@@ -16,7 +16,7 @@
 - 각 단계 산출물은 다음 단계의 입력으로 재사용 가능해야 한다.
 
 ## Current Phase
-- 현재 단계: `관측성 확보`
+- 현재 단계: `작은 파일럿 실행`
 
 ## Steps
 - [x] 목표 정의
@@ -76,10 +76,10 @@
     - [x] 리뷰 승인
     - [x] 근거 링크 포함
   - [x] 게이트 우회 금지 규칙 정의
-- [ ] 관측성 확보
-  - [ ] 누가 무엇을 했는지 로그화
-  - [ ] 의사결정 이유 기록
-  - [ ] 실패 패턴 축적
+- [x] 관측성 확보
+  - [x] 누가 무엇을 했는지 로그화
+  - [x] 의사결정 이유 기록
+  - [x] 실패 패턴 축적
 - [ ] 작은 파일럿 실행
   - [ ] 저위험 업무 1개부터 시작
   - [ ] 예시 후보 검토
@@ -194,3 +194,12 @@
 - 결정: gate 실패 후 raw command 우회, evidence 없는 completed, reviewer 없는 self-pass, required checks 생략 완료 처리는 금지한다.
 - 보류: `warning-only` 게이트와 `blocking` 게이트의 분리 시점은 아직 미정이다.
 - 산출물: [agent-team/context/quality-gates.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/quality-gates.md)
+
+### 관측성 확보
+- 결정: agent-team 관측성은 `trace`, `operator decision`, `current run ledger`, `snapshot ledger`, `failure pattern log` 5축으로 정의한다.
+- 결정: `누가 무엇을 했는지`는 trace에, `왜 그렇게 판정했는지`는 operator decision에 분리 기록한다.
+- 결정: 현재 상태 판단은 packet 원문보다 `current run ledger`를 우선한다.
+- 결정: backlog 상태와 runtime 상태는 같은 ledger에 섞지 않는다.
+- 결정: 반복 실패는 `failure pattern log`로 승격해 `동일 병목 재발률` 계산 기반으로 사용한다.
+- 보류: failure pattern log를 독립 artifact로 둘지 ledger projection에서 먼저 시작할지는 아직 미정이다.
+- 산출물: [agent-team/context/observability.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/observability.md)
