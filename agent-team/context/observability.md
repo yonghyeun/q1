@@ -135,3 +135,6 @@
 
 ## Open Point
 - failure pattern log를 독립 artifact로 둘지, current ledger의 `open_feedback` projection에서 먼저 시작할지는 파일럿 단계에서 다시 닫는다.
+
+## Related Artifact
+- task 정본, run metadata, run-index projection의 저장 경계는 [artifact-placement.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/artifact-placement.md)에 둔다.

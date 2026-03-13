@@ -120,8 +120,8 @@
 - 결정: 초기 핵심 지표는 전체 trace 성공률, node별 성공률, 동일 병목 재발률로 둔다.
 - 결정: 리드타임은 핵심 KPI가 아니라 보조 관측 지표로 둔다.
 - 보류: 성공 지표의 수치 목표와 계산 주기는 아직 미정이다.
-- 산출물: [agent-team/context/goal.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/goal.md)
-- 산출물: [agent-team/context/metrics.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/metrics.md)
+- 산출물: [agent-team/context/goal.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/goal.md)
+- 산출물: [agent-team/context/metrics.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/metrics.md)
 
 ### 업무 분해
 - 결정: agent-team의 backlog 입력 SoT는 GitHub issue로 둔다.
@@ -137,8 +137,8 @@
 - 결정: `source_type`은 `human-request`, `agent-team`, `runtime-observation`, `wbs-planned`로 고정한다.
 - 결정: issue status는 `inbox`, `ready`, `active`, `blocked`, `cancelled`로 해석하고 완료는 issue close로 처리한다.
 - 보류: issue를 `ready`로 승격하는 승인 조건과 validation 구체 규칙은 아직 확정 전이다.
-- 산출물: [agent-team/context/task-model.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/task-model.md)
-- 산출물: [agent-team/context/work-breakdown.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/work-breakdown.md)
+- 산출물: [agent-team/context/task-model.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/task-model.md)
+- 산출물: [agent-team/context/work-breakdown.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/work-breakdown.md)
 
 ### 역할 설계
 - 결정: `config.toml` profile 설계보다 역할 설계를 먼저 확정한다.
@@ -147,7 +147,7 @@
 - 결정: 운영 8단계의 주 소유자는 `Router -> Router -> Human/Reviewer -> Planner -> Planner -> Worker -> Reviewer -> Reviewer/Router` 순서로 둔다.
 - 결정: 사람 승인은 계속 별도 control point로 유지한다.
 - 보류: runtime profile 이름에서 `Worker`를 `Executor`로 바꿀지는 아직 미정이다.
-- 산출물: [agent-team/context/roles.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/roles.md)
+- 산출물: [agent-team/context/roles.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/roles.md)
 
 ### 역할 별 경계 정의
 - 결정: 역할 경계는 `권한 범위`, `읽기 가능 자원`, `쓰기 가능 자원`, `금지 행위`, `승인 조건` 5축으로 정의한다.
@@ -156,7 +156,7 @@
 - 결정: `Router`는 intake artifact까지만 쓰고, `Planner`는 planning artifact까지만 쓰며, `Worker`는 runtime output만 쓰고, `Reviewer`는 verdict와 feedback만 쓴다.
 - 결정: branch switch, rebase, reset, force push, 삭제, 대량 rename, CI/hook/deploy 수정은 공통 승인 대상으로 둔다.
 - 보류: remote issue update를 어느 역할의 기본 write로 둘지는 아직 미정이다.
-- 산출물: [agent-team/context/role-boundaries.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/role-boundaries.md)
+- 산출물: [agent-team/context/role-boundaries.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/role-boundaries.md)
 
 ### 에이전트 간 인터페이스 정의
 - 결정: 에이전트 간 공통 인터페이스는 `handoff packet` 하나로 통일한다.
@@ -165,7 +165,7 @@
 - 결정: roadmap 필수 항목인 `task id`, `objective`, `constraints`, `expected output`, `status`, `evidence`는 packet 공통 필드로 강제한다.
 - 결정: 필수 필드 누락, enum 위반, owned path 없는 write 요청, approval 누락, evidence 없는 terminal status는 handoff 실패로 본다.
 - 보류: packet artifact를 JSON 우선으로 둘지 Markdown template 우선으로 둘지는 아직 미정이다.
-- 산출물: [agent-team/context/interface.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/interface.md)
+- 산출물: [agent-team/context/interface.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/interface.md)
 
 ### 운영 규칙 정의
 - 결정: 운영 규칙은 `우선순위`, `충돌 해결`, `fallback`, `인간 승인` 4축으로 정의한다.
@@ -174,7 +174,7 @@
 - 결정: input missing, normalization failure, planning conflict, runtime block, verification failure, repeated failure에 대한 fallback 경로를 명시한다.
 - 결정: objective 변경, acceptance criteria 변경/축소, scope expansion, packet 밖 경로 수정, destructive action, branch 전환 계열, policy surface 수정, taxonomy 수정, policy 예외 처리는 공통 승인 대상으로 둔다.
 - 보류: approval 대기 상태를 packet status enum에 별도로 둘지는 아직 미정이다.
-- 산출물: [agent-team/context/operating-rules.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/operating-rules.md)
+- 산출물: [agent-team/context/operating-rules.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/operating-rules.md)
 
 ### Tool 맵핑
 - 결정: 역할별 도구 맵핑은 `허용 도구`, `우선 도구`, `금지 도구`, `검증 도구` 기준으로 정의한다.
@@ -183,7 +183,7 @@
 - 결정: 예시 매핑은 `검색 전용`, `코드 수정 전용`, `테스트 실행 전용`, `배포 금지` 4분류로 정리한다.
 - 결정: 초기 범위에서 deploy, merge 자동화, infra mutation은 공통 금지 도구로 둔다.
 - 보류: profile 단계에서 tool permission을 config로 얼마나 강하게 분리할지는 아직 미정이다.
-- 산출물: [agent-team/context/tool-mapping.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/tool-mapping.md)
+- 산출물: [agent-team/context/tool-mapping.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/tool-mapping.md)
 
 ### 품질 게이트 설정
 - 결정: agent-team 품질 게이트는 `완료 정의`, `검증 게이트`, `우회 금지` 3축으로 정의한다.
@@ -193,7 +193,7 @@
 - 결정: gate 실패 시 `completed`로 올리지 않으며 `rework`, `blocked`, `rejected` 중 하나로 분기한다.
 - 결정: gate 실패 후 raw command 우회, evidence 없는 completed, reviewer 없는 self-pass, required checks 생략 완료 처리는 금지한다.
 - 보류: `warning-only` 게이트와 `blocking` 게이트의 분리 시점은 아직 미정이다.
-- 산출물: [agent-team/context/quality-gates.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/quality-gates.md)
+- 산출물: [agent-team/context/quality-gates.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/quality-gates.md)
 
 ### 관측성 확보
 - 결정: agent-team 관측성은 `trace`, `operator decision`, `current run ledger`, `snapshot ledger`, `failure pattern log` 5축으로 정의한다.
@@ -202,4 +202,4 @@
 - 결정: backlog 상태와 runtime 상태는 같은 ledger에 섞지 않는다.
 - 결정: 반복 실패는 `failure pattern log`로 승격해 `동일 병목 재발률` 계산 기반으로 사용한다.
 - 보류: failure pattern log를 독립 artifact로 둘지 ledger projection에서 먼저 시작할지는 아직 미정이다.
-- 산출물: [agent-team/context/observability.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/observability.md)
+- 산출물: [agent-team/context/observability.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/observability.md)
