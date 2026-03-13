@@ -22,7 +22,8 @@ Trigger when the user asks to finish the current task, end a PR-backed task, fin
 5. Summarize the plan for the user. Highlight PR, branch, worktree, merge method, and planned cleanup.
 6. Ask for explicit approval in chat before any side effect.
 7. After approval, run the same wrapper path with `--apply --yes`.
-8. If a gate fails, follow the error message's `다음 행동:` and retry the same wrapper path.
+8. If apply succeeds, read the merged PR again and print a short handoff summary with change purpose, key changes, impact scope, and follow-up checks. Prefer `./.codex/skills/git-task-end/scripts/pr_summary.py --pr <number> ...` and pass linked issue context when already known.
+9. If a gate fails, follow the error message's `다음 행동:` and retry the same wrapper path.
 
 ## Guardrails
 - Raw `gh pr merge` 직접 호출 지양.
@@ -32,6 +33,8 @@ Trigger when the user asks to finish the current task, end a PR-backed task, fin
 - merge subject는 기본적으로 PR title 사용.
 - skill은 interactive shell wrapper를 호출하지 않음. 항상 core wrapper만 사용.
 - 실제 실행은 사용자 승인 후 `--apply --yes` 경로로만 진행.
+- post-apply PR summary는 skill 레이어 책임. core wrapper에 merge 후 요약 출력 책임을 추가하지 않는다.
+- PR body가 빈약하면 title, linked issue, merge 결과를 이용해 fallback 요약을 구성한다.
 
 ## References
 - Command options and examples: `references/commands.md`
