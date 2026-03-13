@@ -22,6 +22,7 @@ SCRIPT_NAMES = [
     "branch_guard.py",
     "dirty_worktree_guard.py",
     "worktree_config_bootstrap.sh",
+    "worktree_issue_metadata.sh",
     "worktree_pr_metadata.sh",
 ]
 
@@ -96,6 +97,31 @@ class PrCreateTests(unittest.TestCase):
 
         worktree = workspace / "pr-number-metadata--impl"
         subprocess.run(["git", "worktree", "add", str(worktree), branch], cwd=root, check=True, capture_output=True)
+        subprocess.run(
+            [
+                "bash",
+                "./scripts/repo/worktree_issue_metadata.sh",
+                "write",
+                "--number",
+                "24",
+                "--url",
+                "https://example.test/issues/24",
+                "--title",
+                "[bug] linked issue metadata required",
+                "--status-at-record",
+                "status:active",
+                "--branch",
+                branch,
+                "--worktree",
+                str(worktree),
+                "--recorded-at",
+                "2026-03-13T07:05:34Z",
+            ],
+            cwd=worktree,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
 
         body_file = workspace / "pr.md"
         body_file.write_text(PR_BODY, encoding="utf-8")
@@ -248,6 +274,40 @@ exit 1
         self.assertIn("PR 생성에 실패했습니다", result.stderr)
         self.assertIn("sandbox/network", result.stderr)
         self.assertIn("권한 상승으로 재실행", result.stderr)
+
+    def test_fails_without_linked_issue_metadata(self) -> None:
+        worktree, env, body_file = self.make_repo()
+        subprocess.run(
+            ["bash", "./scripts/repo/worktree_issue_metadata.sh", "clear"],
+            cwd=worktree,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        result = self.run_script(
+            worktree,
+            env,
+            "--title",
+            "[config] PR metadata 저장",
+            "--body-file",
+            str(body_file),
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("linked issue metadata 없이 PR을 생성할 수 없습니다", result.stderr)
+
+    def test_fails_when_primary_issue_differs_from_linked_issue_metadata(self) -> None:
+        worktree, env, body_file = self.make_repo()
+        body_file.write_text(PR_BODY.replace("Closes #24", "Closes #25"), encoding="utf-8")
+        result = self.run_script(
+            worktree,
+            env,
+            "--title",
+            "[config] PR metadata 저장",
+            "--body-file",
+            str(body_file),
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Primary Issue 섹션의 대표 이슈와 local linked issue metadata가 일치하지 않습니다", result.stderr)
 
 
 if __name__ == "__main__":
