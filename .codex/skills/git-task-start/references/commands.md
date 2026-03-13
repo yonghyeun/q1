@@ -32,6 +32,8 @@
 - 승인 후 실제 실행:
   - `./.codex/skills/git-task-start/scripts/run.sh --branch feature/signup-flow --apply --yes`
   - `./.codex/skills/git-task-start/scripts/run.sh --branch chore/task-start-issue-transition --issue 15 --apply --yes`
+- apply 후 issue 요약 생성:
+  - `gh issue view 15 --json number,title,body,labels,url | python3 ./.codex/skills/git-task-start/scripts/issue_summary.py`
 
 ## Notes
 - core wrapper는 기본적으로 dry-run만 수행.
@@ -39,5 +41,6 @@
 - `--issue` 지정 시 dry-run/apply 모두 GitHub issue 조회를 수행.
 - 네트워크 의존이 보이면 sandbox 실패를 기다리지 말고 첫 실행부터 승격 경로를 우선한다.
 - apply 성공 후 issue status는 `status:active` 로 맞춘다.
+- issue body 요약은 skill helper가 담당한다.
 - interactive prompt는 `task_start_interactive.sh` 같은 인간용 경로에서만 처리.
 - skill은 interactive wrapper가 아니라 core wrapper를 사용.
