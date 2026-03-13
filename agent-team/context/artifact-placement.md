@@ -98,6 +98,46 @@
 - issue `#103`에서 첫 task 생성:
   - `task-103-a`
 
+## Accepted Task Shape
+- `accepted-task.yaml`은 task 정본이다.
+- issue 연결 정보와 작업 정의는 이 파일이 소유한다.
+
+### Required Fields
+- `task_id`
+- `issue_ref`
+- `issue_url`
+- `objective`
+- `why`
+- `acceptance_criteria`
+- `constraints`
+- `non_goals`
+- `dependencies`
+- `open_points`
+- `status`
+- `created_at`
+- `updated_at`
+
+### Optional Fields
+- `source_type`
+- `source_ref`
+- `labels`
+- `related_docs`
+- `approved_by`
+- `approved_at`
+
+### Status Rule
+- 초기 허용 상태:
+  - `draft`
+  - `accepted`
+  - `blocked`
+  - `done`
+- runtime 진행 상태는 `accepted-task.yaml`이 아니라 `run.meta.yaml`과 ledger가 소유한다.
+
+### Why This Shape
+- run이 issue를 직접 추적하지 않으므로 task 정본이 issue 연결 정보를 반드시 가져야 한다.
+- planning, review, rerun이 모두 같은 task 정본에서 출발할 수 있어야 한다.
+- acceptance criteria, constraints, open points를 같이 두어야 task scope drift를 줄일 수 있다.
+
 ### 5. Runtime Artifact
 - `agent-team/runtime/runs/<run-id>/`
 - 목적:
@@ -204,6 +244,34 @@ latest_packet_id: packet-003
 latest_trace_id: trace-004
 latest_decision_id: decision-002
 ```
+
+## Run Metadata Lifecycle
+- `run.meta.yaml`은 run의 최신 포인터 metadata다.
+- run 정본은 packet, trace, decision, ledger 원본이지만, 최신 참조 포인터는 `run.meta.yaml`이 담당한다.
+
+### Create Timing
+- 아래 시점에 생성한다.
+  - 첫 runtime run이 시작될 때
+  - 첫 packet이 발행되기 직전 또는 직후
+
+### Update Timing
+- 아래 이벤트 직후 갱신한다.
+  - 새 packet 발행
+  - 새 trace 기록
+  - 새 decision 기록
+  - 새 commit 생성
+  - current ledger 상태 전이
+
+### Update Rule
+- `updated_at`은 매 갱신 시점에 갱신한다.
+- `latest_packet_id`, `latest_trace_id`, `latest_decision_id`, `latest_commit_sha`는 최신 포인터만 유지한다.
+- 과거 이력은 `run.meta.yaml`에 누적하지 않는다.
+- 과거 이력의 정본은 packet, trace, decision, snapshot artifact가 소유한다.
+
+### Projection Sync Rule
+- `run.meta.yaml`이 갱신되면 해당 task의 `run-index.yaml` projection도 같은 흐름에서 재생성한다.
+- `run-index.yaml`은 task 관점 projection이고, `run.meta.yaml`은 run 관점 projection이다.
+- 둘 중 어느 것도 packet/trace/decision 원본을 대체하지 않는다.
 
 ## Task-to-Run Linkage Rule
 - `task`는 작업 정의와 task-level 계획의 정본을 소유한다.
@@ -337,6 +405,9 @@ agent-team/
 
 ### Decision Log
 - `context/decisions/` 문서는 삭제 대신 후속 decision으로 supersede한다.
+
+## Open Point
+- 이 문서 범위에서 남은 open point 없음.
 
 ## Boundary
 - issue는 `what`, `why`, 제약, done signal을 담는 backlog input이다.
