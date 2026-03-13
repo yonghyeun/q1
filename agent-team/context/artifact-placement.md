@@ -5,17 +5,18 @@
 - backlog input SoT는 계속 GitHub issue가 소유한다.
 - agent-team 전용 장기 문서는 `agent-team/context/`에 둔다.
 - 승인된 task 정본과 task-level 분해 산출물은 `agent-team/tasks/<task-id>/`에 둔다.
-- 임시 협업 메모는 `agent-team/working-memory/issues/<issue-number>/`에 둔다.
+- 임시 협업 메모는 issue 단위와 task 단위로 나눠 `agent-team/working-memory/issues/<issue-number>/`, `agent-team/working-memory/tasks/<task-id>/`에 둔다.
 - runtime execution artifact는 `agent-team/runtime/`에 둔다.
 - `run` 경로나 이름에 issue 번호나 task 식별자가 직접 드러나지 않아도 허용한다.
 - 다만 모든 run root에는 issue/task 연결 metadata가 반드시 있어야 한다.
-- task와 run의 연결은 `agent-team/tasks/<task-id>/run-index.yaml`과 각 run metadata의 양방향 참조로 관리한다.
+- task와 run의 연결은 각 run metadata를 읽어 생성한 `agent-team/tasks/<task-id>/run-index.yaml` projection과 run metadata의 양방향 참조로 관리한다.
 - 장기 결정 기록은 계속 `context/decisions/`에 둔다.
 
 ## Why
 - issue, 임시 메모, runtime trace, 영구 decision log를 한 경로에 섞으면 SoT와 보존 주기가 흐려진다.
 - artifact type 기준 분리는 validator, retention rule, audit path를 단순하게 만든다.
 - 반면 사람은 issue/task 기준으로 탐색하고 싶어하므로, 탐색 문제는 별도 projection으로 해결하는 편이 구조 drift가 적다.
+- issue 수준 임시 메모와 task 수준 임시 메모를 분리하면 큰 작업의 공통 맥락과 세부 실행 메모를 분리할 수 있다.
 - `run` 이름에 issue 번호를 강제하지 않으면 naming 충돌과 rename 비용을 줄일 수 있다.
 - 대신 metadata와 인덱스를 강제하면 "어떤 run이 어떤 issue/task에 연결되는가"는 안정적으로 복원할 수 있다.
 
@@ -36,6 +37,7 @@
 
 ### 3. Temporary Working Memory
 - `agent-team/working-memory/issues/<issue-number>/`
+- `agent-team/working-memory/tasks/<task-id>/`
 - 목적:
   - 현재 작업 중에만 필요한 임시 협업 메모 저장
 - 예:
@@ -46,9 +48,10 @@
   - scratchpad 성격 유지
   - 장기 SoT로 인용하지 않음
   - task 종료 후 삭제 가능
-  - working memory의 기본 소유 단위는 `issue`다
-  - 하나의 issue 아래 여러 task가 생기면 파일 또는 하위 섹션으로 분리한다
-  - task별로 별도 최상위 working-memory 경로를 만들지 않는다
+  - issue 단위 working memory는 큰 목표, 공통 쟁점, task 간 공유 메모를 담는다
+  - task 단위 working memory는 특정 task의 세부 실행 메모를 담는다
+  - 같은 내용을 issue/task working memory에 중복 복제하지 않는다
+  - task working memory는 반드시 `issue_ref`, `task_ref`를 명시해 상위 issue와 연결되게 한다
 
 ### 4. Task Artifact
 - `agent-team/tasks/<task-id>/`
@@ -99,6 +102,10 @@ agent-team/
         plan.md
         open-points.md
         handoff-notes.md
+    tasks/
+      task-52-a/
+        notes.md
+        open-points.md
   runtime/
     runs/
       run-20260313-001/
@@ -183,6 +190,7 @@ latest_decision_id: decision-002
 - `run-index.yaml`은 task 관점의 run 목록 projection이다.
 - `run.meta.yaml`은 run 관점의 task 참조 metadata다.
 - 두 위치에 같은 packet, trace, ledger를 중복 저장하지 않는다.
+- `run-index.yaml`은 수동 정본이 아니라 run metadata를 읽어 생성하는 projection이다.
 
 ## Single-team Run Example
 - 아래 예시는 하나의 agent team이 issue 하나를 받아 `원자 작업 분해 -> 실행 -> 검증 -> 커밋`까지 진행한 경우다.
@@ -201,6 +209,10 @@ agent-team/
     issues/
       52/
         plan.md
+        open-points.md
+    tasks/
+      task-52-a/
+        notes.md
         open-points.md
 
   runtime/
@@ -250,7 +262,11 @@ agent-team/
 - `planning/execution-plan.yaml`
   - 특정 run에서 각 atomic task를 어떤 packet 순서로 처리할지 정한 계획
 - `tasks/task-52-a/run-index.yaml`
-  - 이 task에 연결된 run 목록과 최신 run 상태 요약
+  - run metadata를 읽어 생성한 이 task의 run 목록과 최신 run 상태 요약
+- `working-memory/issues/52/`
+  - issue 전체에서 공유되는 임시 메모
+- `working-memory/tasks/task-52-a/`
+  - 특정 task 실행 중에만 필요한 임시 메모
 - `trace-001-worker-execution.yaml`
   - 실제 수정 파일, 실행 커맨드, check 결과 요약
 - `trace-002-worker-commit.yaml`
@@ -264,6 +280,7 @@ agent-team/
 - 권장 projection 경로:
   - `agent-team/index/issues/<issue-number>.md`
   - `agent-team/index/tasks/<task-id>.md`
+- task별 `run-index.yaml`도 metadata를 읽어 생성하는 projection으로 본다.
 
 ### Issue Index Minimum Content
 - `issue_ref`
@@ -276,6 +293,8 @@ agent-team/
 ## Ownership By Artifact
 - issue 해석본:
   - `agent-team/working-memory/issues/<issue-number>/`
+- task 임시 메모:
+  - `agent-team/working-memory/tasks/<task-id>/`
 - accepted task:
   - `agent-team/tasks/<task-id>/accepted-task.yaml`
 - atomic task list:
@@ -313,16 +332,13 @@ agent-team/
 ## Boundary
 - issue는 `what`, `why`, 제약, done signal을 담는 backlog input이다.
 - working memory는 임시 협업 메모다.
-- working memory의 디렉터리 키는 `issue number`로 고정한다.
-- task는 working memory 최상위 key가 아니라 metadata와 runtime artifact 내부 식별자로 관리한다.
+- issue working memory는 `issue number`를 키로 쓴다.
+- task working memory는 `task id`를 키로 쓴다.
 - task는 승인된 작업 정의와 task-level 분해 산출물의 정본을 소유한다.
 - runtime artifact는 실행 이력과 현재 상태 projection이다.
 - run은 task의 복제본이 아니라 task를 참조하는 실행 단위다.
 - decision log는 장기 정책 판단 기록이다.
 - 같은 내용을 여러 계층에 중복 복제하지 않는다.
-
-## Remaining Open Point
-- `run-index.yaml`을 수동 유지 projection으로 둘지, metadata를 읽어 생성하는 projection으로 둘지는 구현 단계에서 다시 닫을 수 있다.
 
 ## Related Artifact
 - backlog input과 task ingress 경계는 [task-model.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/task-model.md)에 둔다.
