@@ -104,6 +104,8 @@
 
 ### Required Fields
 - `task_id`
+- `source_type`
+- `source_ref`
 - `issue_ref`
 - `issue_url`
 - `objective`
@@ -118,8 +120,6 @@
 - `updated_at`
 
 ### Optional Fields
-- `source_type`
-- `source_ref`
 - `labels`
 - `related_docs`
 - `approved_by`

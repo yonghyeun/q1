@@ -140,5 +140,5 @@
 - approval 대기 상태를 packet `status` enum에 별도 추가할지는 추후 packet schema 구현 단계에서 다시 닫는다.
 
 ## Related Artifact
-- 완료 정의와 gate 통과 기준은 [quality-gates.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/quality-gates.md)에 둔다.
-- 관측성과 failure 축적 규칙은 [observability.md](/home/yonghyeun/Desktop/git_repositories/agent-team-setup--ops/agent-team/context/observability.md)에 둔다.
+- 완료 정의와 gate 통과 기준은 [quality-gates.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/quality-gates.md)에 둔다.
+- 관측성과 failure 축적 규칙은 [observability.md](/home/yonghyeun/Desktop/git_repositories/agent-team-context-artifact-path-rules--docs/agent-team/context/observability.md)에 둔다.
