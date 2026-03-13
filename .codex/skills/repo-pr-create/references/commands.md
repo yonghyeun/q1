@@ -8,6 +8,12 @@
 - `--draft`
 - `--dry-run`
 
+## Existing PR revision
+- `./.codex/skills/repo-pr-create/scripts/run.sh --update --title "<PR title>" --body-file <path>`
+- Optional:
+  - `--number <pr-number>`
+  - `--dry-run`
+
 ## Title helper
 - 생성:
   - `./scripts/repo/pr_title_guard.sh generate --scope <scope> --summary "<요약>"`
@@ -26,10 +32,12 @@
 
 ## Existing PR revision
 - 이미 열린 PR의 title/body만 수정할 때:
-  - 로컬에서 body 초안을 다시 작성하고 gate를 통과시킨 뒤 `gh pr edit <number> --title "<title>" --body-file <path>` 사용
+  - 로컬에서 body 초안을 다시 작성.
+  - gate를 통과시킨 뒤 `./.codex/skills/repo-pr-create/scripts/run.sh --update --title "<title>" --body-file <path>` 사용.
+  - `--number`를 생략하면 현재 worktree의 PR metadata에서 번호를 읽는다.
 - 이유:
-  - 현재 local wrapper는 PR 생성 경로를 담당.
-  - remote PR 본문 수정은 `gh pr edit`가 직접 담당.
+  - remote PR 수정도 local wrapper가 공식 경로를 담당.
+  - 최종 remote update는 `gh api -X PATCH repos/<owner>/<repo>/pulls/<number>` 기반으로 수행한다.
 
 ## Gates reached through the wrapper
 - `pr-title`

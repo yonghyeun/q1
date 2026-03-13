@@ -23,12 +23,12 @@ Trigger when the user asks to open, draft, write, revise, or fix a GitHub pull r
 5. Write `Changes` as expected effects, operating model shifts, or newly enabled workflow. Do not default to a file-by-file changelog.
 6. Write `Decisions Made` with the context that forced the decision, the chosen direction, and why the rejected alternative was not kept.
 7. Run `./.codex/skills/repo-pr-create/scripts/run.sh` instead of raw `gh pr create`.
-8. If the PR already exists and only title/body must be revised, keep the same local draft flow and use `gh pr edit` only for the final remote update.
+8. If the PR already exists and only title/body must be revised, keep the same local draft flow and use `./.codex/skills/repo-pr-create/scripts/run.sh --update ...` for the final remote update.
 9. If a gate fails, follow the error message's `다음 행동:` and retry the same wrapper path.
 10. `gh_preflight.sh --require-api` 가 sandbox/network 차단을 알리면, 같은 wrapper 명령을 권한 상승으로 재실행한다.
 
 ## Guardrails
-- Raw `gh pr create` 직접 호출 지양.
+- Raw `gh pr create`, `gh pr edit` 직접 호출 지양.
 - `Primary Issue`에는 close keyword 필요.
 - `Related Issues`, `Decisions Made`, `Validation Notes`까지 빠짐없이 채우기.
 - `Changes`는 파일 목록보다 기대 효과와 운영 변화가 먼저 드러나야 함.
