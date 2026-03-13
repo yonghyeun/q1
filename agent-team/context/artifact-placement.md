@@ -6,6 +6,7 @@
 - agent-team 전용 장기 문서는 `agent-team/context/`에 둔다.
 - 승인된 task 정본과 task-level 분해 산출물은 `agent-team/tasks/<task-id>/`에 둔다.
 - 임시 협업 메모는 `agent-team/working-memory/tasks/<task-id>/`에 둔다.
+- task id 형식은 `task-<issue-number>-<seq>`로 고정한다.
 - runtime execution artifact는 `agent-team/runtime/`에 둔다.
 - `run` 경로나 이름에 issue 번호나 task 식별자가 직접 드러나지 않아도 허용한다.
 - 다만 모든 run root에는 task 연결 metadata가 반드시 있어야 한다.
@@ -64,6 +65,38 @@
   - task 정의의 정본은 task 폴더가 소유한다
   - 하나의 task에서 여러 run이 파생될 수 있다
   - run artifact를 task 폴더에 복제하지 않는다
+
+## Task ID Rule
+- task id는 로컬 실행 계층의 기본 식별자다.
+- task id 형식은 아래로 고정한다.
+  - `task-<issue-number>-<seq>`
+- 예:
+  - `task-52-a`
+  - `task-52-b`
+  - `task-103-a`
+
+### Rule
+- prefix는 항상 `task-`
+- `<issue-number>`는 연결된 GitHub issue 번호를 그대로 사용
+- `<seq>`는 같은 issue에서 여러 task가 생길 때 소문자 알파벳을 순서대로 사용
+- issue당 첫 task는 항상 `a`부터 시작
+- 문자 집합은 소문자, 숫자, 하이픈만 허용
+- 의미 slug는 task id에 넣지 않는다
+
+### Why This Form
+- issue와의 연결이 즉시 보인다
+- 같은 issue에서 task가 분기돼도 naming 충돌을 피할 수 있다
+- path 길이가 과도하게 길어지지 않는다
+- task 이름 변경 없이 objective 수정이나 문서 보강을 수용하기 쉽다
+- working-memory, runtime metadata, index projection이 같은 key를 재사용하기 쉽다
+
+### Example Mapping
+- issue `#52`에서 첫 task 생성:
+  - `task-52-a`
+- issue `#52`에서 두 번째 task 추가 생성:
+  - `task-52-b`
+- issue `#103`에서 첫 task 생성:
+  - `task-103-a`
 
 ### 5. Runtime Artifact
 - `agent-team/runtime/runs/<run-id>/`
