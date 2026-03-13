@@ -21,6 +21,13 @@ class PrIssueGuardTests(unittest.TestCase):
         )
         self.assertEqual(numbers, ["1234"])
 
+    def test_validate_pr_issue_link_success_with_expected_issue(self) -> None:
+        numbers = pr_issue_guard.validate_pr_issue_link(
+            pr_body="## Primary Issue\nCloses #1234\n\n## Related Issues\n- Related: #99",
+            expected_issue_number="1234",
+        )
+        self.assertEqual(numbers, ["1234"])
+
     def test_validate_pr_issue_link_rejects_keyword_outside_primary_issue(self) -> None:
         with self.assertRaises(pr_issue_guard.PrIssueGuardError) as ctx:
             pr_issue_guard.validate_pr_issue_link(
@@ -34,6 +41,23 @@ class PrIssueGuardTests(unittest.TestCase):
                 pr_body="## Primary Issue\n- 링크 키워드 없음",
             )
         self.assertEqual(ctx.exception.exit_code, pr_issue_guard.EXIT_LINK_MISSING)
+
+    def test_validate_pr_issue_link_rejects_mismatch_with_expected_issue(self) -> None:
+        with self.assertRaises(pr_issue_guard.PrIssueGuardError) as ctx:
+            pr_issue_guard.validate_pr_issue_link(
+                pr_body="## Primary Issue\nCloses #1234",
+                expected_issue_number="42",
+            )
+        self.assertEqual(ctx.exception.exit_code, pr_issue_guard.EXIT_LINK_MISMATCH)
+        self.assertIn("linked issue metadata", str(ctx.exception))
+
+    def test_validate_pr_issue_link_rejects_extra_close_keyword_when_expected_issue_present(self) -> None:
+        with self.assertRaises(pr_issue_guard.PrIssueGuardError) as ctx:
+            pr_issue_guard.validate_pr_issue_link(
+                pr_body="## Primary Issue\nCloses #42\nFixes #43",
+                expected_issue_number="42",
+            )
+        self.assertEqual(ctx.exception.exit_code, pr_issue_guard.EXIT_LINK_MISMATCH)
 
 
 if __name__ == "__main__":

@@ -5,6 +5,16 @@ ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "${ROOT_DIR}"
 source "${ROOT_DIR}/scripts/repo/gh_failure_guard.sh"
 
+read_issue_metadata() {
+  ./scripts/repo/worktree_issue_metadata.sh read 2>/dev/null || true
+}
+
+get_metadata_value() {
+  local metadata_output="$1"
+  local key="$2"
+  printf '%s\n' "${metadata_output}" | sed -n "s/^${key}=//p" | head -n 1
+}
+
 extract_json_field() {
   local json_input="$1"
   local field_name="$2"
@@ -37,6 +47,8 @@ BASE="main"
 DRAFT=0
 DRY_RUN=0
 BODY_FILE=""
+ISSUE_METADATA=""
+LINKED_ISSUE_NUMBER=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -97,7 +109,18 @@ if [[ ! -f "${BODY_FILE}" ]]; then
 fi
 
 python3 scripts/repo/pr_body_quality_guard.py --body-file "${BODY_FILE}"
-python3 scripts/repo/pr_issue_guard.py --pr-body-file "${BODY_FILE}"
+ISSUE_METADATA="$(read_issue_metadata)"
+if [[ -n "${ISSUE_METADATA}" ]]; then
+  LINKED_ISSUE_NUMBER="$(get_metadata_value "${ISSUE_METADATA}" "q1.issue.number")"
+fi
+
+if [[ -z "${LINKED_ISSUE_NUMBER}" ]]; then
+  echo "❌ linked issue metadata 없이 PR을 생성할 수 없습니다." >&2
+  echo "다음 행동: task start로 linked issue metadata를 기록하거나 현재 worktree에서 worktree_issue_metadata.sh write 후 다시 실행하세요." >&2
+  exit 1
+fi
+
+python3 scripts/repo/pr_issue_guard.py --pr-body-file "${BODY_FILE}" --expected-issue-number "${LINKED_ISSUE_NUMBER}"
 
 if [[ ${DRY_RUN} -eq 0 ]]; then
   ./scripts/repo/gh_preflight.sh --require-api
